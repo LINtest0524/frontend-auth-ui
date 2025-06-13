@@ -18,6 +18,7 @@ export default function UserListPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    console.log("✅ useEffect triggered")  
     const fetchUsers = async () => {
       setLoading(true)
       try {
@@ -26,6 +27,9 @@ export default function UserListPage() {
         const isoDate = oneDayAgo.toISOString()
 
         const token = localStorage.getItem("token")
+
+        console.log("🔑 token 是：", token) // ✅ 新增
+      console.log("📡 API URL：", `http://localhost:3001/user?from=${isoDate}&limit=${limit}`) // ✅ 新增
 
         const res = await fetch(
           `http://localhost:3001/user?from=${encodeURIComponent(isoDate)}&limit=${limit}`,
