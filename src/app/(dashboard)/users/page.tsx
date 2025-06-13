@@ -2,23 +2,20 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { User } from "@/types/user"
 
-interface User {
-  id: number
-  username: string
-  email: string
-  created_at: string
-  status: string
-}
+type SortKey = "id" | "created_at" | "last_login_at" | null
+type SortDirection = "asc" | "desc" | null
 
 export default function UserListPage() {
   const [users, setUsers] = useState<User[]>([])
   const [limit, setLimit] = useState(20)
   const [loading, setLoading] = useState(false)
+  const [sortKey, setSortKey] = useState<SortKey>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null)
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    console.log("✅ useEffect triggered")  
     const fetchUsers = async () => {
       setLoading(true)
       try {
@@ -27,9 +24,6 @@ export default function UserListPage() {
         const isoDate = oneDayAgo.toISOString()
 
         const token = localStorage.getItem("token")
-
-        console.log("🔑 token 是：", token) // ✅ 新增
-      console.log("📡 API URL：", `http://localhost:3001/user?from=${isoDate}&limit=${limit}`) // ✅ 新增
 
         const res = await fetch(
           `http://localhost:3001/user?from=${encodeURIComponent(isoDate)}&limit=${limit}`,
@@ -56,6 +50,59 @@ export default function UserListPage() {
     fetchUsers()
   }, [limit])
 
+  const getDeviceType = (userAgent?: string) => {
+    if (!userAgent) return "-"
+    return userAgent.toLowerCase().includes("mobile") ? "手機" : "電腦"
+  }
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key)
+      setSortDirection("desc")
+    } else {
+      if (sortDirection === "desc") {
+        setSortDirection("asc")
+      } else if (sortDirection === "asc") {
+        setSortDirection(null)
+        setSortKey(null)
+      } else {
+        setSortDirection("desc")
+      }
+    }
+  }
+
+  const getArrow = (key: SortKey) => {
+    const isActive = sortKey === key
+    const dir = isActive ? sortDirection : null
+    return (
+      <span
+        className={`ml-1 text-xs ${
+          isActive ? "text-black" : "text-gray-400"
+        }`}
+      >
+        {dir === "asc" && "↑"}
+        {dir === "desc" && "↓"}
+        {!dir && "⇅"}
+      </span>
+    )
+  }
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (!sortKey || !sortDirection) return 0
+
+    const getValue = (user: User) => {
+      if (sortKey === "last_login_at" || sortKey === "created_at") {
+        return user[sortKey] ? new Date(user[sortKey] as string).getTime() : 0
+      }
+      return (user[sortKey] as number) ?? 0
+    }
+
+    const aVal = getValue(a)
+    const bVal = getValue(b)
+
+    return sortDirection === "asc" ? aVal - bVal : bVal - aVal
+  })
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">👥 使用者列表</h1>
@@ -74,24 +121,63 @@ export default function UserListPage() {
       {loading ? (
         <p>載入中...</p>
       ) : (
-        <table className="w-full border-collapse border">
+        <table className="w-full border-collapse border text-sm">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">ID</th>
+            <tr className="bg-gray-200 text-center">
+              <th
+                className="border p-2 cursor-pointer"
+                onClick={() => toggleSort("id")}
+              >
+                ID{getArrow("id")}
+              </th>
               <th className="border p-2">帳號</th>
               <th className="border p-2">Email</th>
-              <th className="border p-2">註冊時間</th>
+              <th
+                className="border p-2 cursor-pointer"
+                onClick={() => toggleSort("created_at")}
+              >
+                註冊時間{getArrow("created_at")}
+              </th>
+              <th className="border p-2">登入 IP</th>
+              <th className="border p-2">登入平台</th>
+              <th
+                className="border p-2 cursor-pointer"
+                onClick={() => toggleSort("last_login_at")}
+              >
+                登入時間{getArrow("last_login_at")}
+              </th>
               <th className="border p-2">狀態</th>
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(users) && users.map((user) => (
-              <tr key={user.id} className="text-sm text-center">
+            {sortedUsers.map((user) => (
+              <tr key={user.id} className="text-center">
                 <td className="border p-2">{user.id}</td>
                 <td className="border p-2">{user.username}</td>
-                <td className="border p-2">{user.email}</td>
-                <td className="border p-2">{user.created_at}</td>
-                <td className="border p-2">{user.status}</td>
+                <td className="border p-2">{user.email || "-"}</td>
+                <td className="border p-2">
+                  {user.created_at
+                    ? new Date(user.created_at).toLocaleString("zh-TW", {
+                        timeZone: "Asia/Taipei",
+                        hour12: false,
+                      })
+                    : "-"}
+                </td>
+                <td className="border p-2">{user.last_login_ip || "-"}</td>
+                <td className="border p-2">
+                  {user.last_login_platform
+                    ? getDeviceType(user.last_login_platform)
+                    : "-"}
+                </td>
+                <td className="border p-2">
+                  {user.last_login_at
+                    ? new Date(user.last_login_at).toLocaleString("zh-TW", {
+                        timeZone: "Asia/Taipei",
+                        hour12: false,
+                      })
+                    : "-"}
+                </td>
+                <td className="border p-2">{user.status || "-"}</td>
               </tr>
             ))}
           </tbody>
