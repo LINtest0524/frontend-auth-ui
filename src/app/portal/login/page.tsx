@@ -29,14 +29,15 @@ export default function PortalLoginPage() {
       const data = await res.json()
       localStorage.setItem('portalToken', data.token)
 
-      alert('登入成功！')
-      // ✅ 可導向 dashboard，例如：/portal/dashboard
+      // ✅ 登入成功後重新導向頁面，讓 layout 正確刷新
+      window.location.href = '/portal'
     } catch (err: any) {
       setError(err.message || '登入失敗')
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6">
