@@ -35,15 +35,17 @@ export default function BannerPage() {
     const formData = new FormData()
     formData.append('file', file)
     const res = await fetch(`${API_BASE}/banners/upload`, {
-      method: 'POST',
-      headers: {
+        method: 'POST',
+        headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: formData,
+        },
+        body: formData,
     })
     const data = await res.json()
-    return data.url
-  }
+
+    // ✅ 加上 API 主機網址
+    return `${API_BASE}${data.url}`
+    }
 
   const handleSubmit = async () => {
     if (!desktopImage || !mobileImage) {
