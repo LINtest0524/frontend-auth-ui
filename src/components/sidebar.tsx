@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -13,10 +14,13 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [bannerOpen, setBannerOpen] = useState(false)
 
   return (
-    <aside className="w-60 h-screen bg-gray-900 text-white p-6">
+    <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
       <nav className="flex flex-col gap-4">
+
+        {/* 原本導覽項目 */}
         {navItems.map((item) => (
           <Link
             key={item.href}
@@ -29,6 +33,31 @@ export default function Sidebar() {
             {item.label}
           </Link>
         ))}
+
+        {/* Banner 管理項目（可展開） */}
+        <div>
+          <button
+            onClick={() => setBannerOpen(!bannerOpen)}
+            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
+          >
+            📁 Banner 管理
+          </button>
+          {bannerOpen && (
+            <div className="ml-4 mt-2 flex flex-col gap-1">
+              <Link
+                href="/banner"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/banner" && "bg-gray-700"
+                )}
+              >
+                ➤ 新增 Banner
+              </Link>
+              {/* 未來可以加更多子選單 */}
+            </div>
+          )}
+        </div>
+
       </nav>
     </aside>
   )

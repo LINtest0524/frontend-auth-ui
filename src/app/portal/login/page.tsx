@@ -22,9 +22,16 @@ export default function PortalLoginPage() {
       })
 
       if (!res.ok) {
-        const msg = await res.text()
-        throw new Error(msg || '登入失敗')
+        let msg = '登入失敗'
+        try {
+          const errorData = await res.json()
+          msg = errorData.message || msg
+        } catch (e) {
+          msg = '伺服器錯誤'
+        }
+        throw new Error(msg)
       }
+
 
       const data = await res.json()
       localStorage.setItem('portalToken', data.token)
@@ -66,7 +73,9 @@ export default function PortalLoginPage() {
         {loading ? '登入中...' : '登入'}
       </button>
 
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {error && <p className="text-red-500 mt-4 msgbox-1 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
+        {error}
+      </p>}
     </div>
   )
 }
