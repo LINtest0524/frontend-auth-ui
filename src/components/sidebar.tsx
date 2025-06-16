@@ -9,7 +9,8 @@ const navItems = [
   { label: "🏠 Dashboard", href: "/dashboard" },
   { label: "👥 用戶管理", href: "/users" },
   { label: "🔧 模組設定", href: "/modules" },
-  { label: "🚪 登出", href: "/logout" },
+  // ✅ 已經寫在右上角，不需要這裡登出
+  // { label: "🚪 登出", href: "/logout" },
 ]
 
 export default function Sidebar() {
@@ -20,7 +21,7 @@ export default function Sidebar() {
     <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
       <nav className="flex flex-col gap-4">
 
-        {/* 原本導覽項目 */}
+        {/* 導覽項目 */}
         {navItems.map((item) => (
           <Link
             key={item.href}
@@ -51,9 +52,17 @@ export default function Sidebar() {
                   pathname === "/banner" && "bg-gray-700"
                 )}
               >
+                📋 Banner 列表
+              </Link>
+              <Link
+                href="/banner/new"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/banner/new" && "bg-gray-700"
+                )}
+              >
                 ➤ 新增 Banner
               </Link>
-              {/* 未來可以加更多子選單 */}
             </div>
           )}
         </div>

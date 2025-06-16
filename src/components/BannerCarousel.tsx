@@ -35,7 +35,13 @@ export default function BannerCarousel() {
         if (!res.ok) throw new Error('無法取得 banner 資料')
 
         const data: Banner[] = await res.json()
-        const active = data.filter(b => b.status === 'ACTIVE')
+        const now = new Date()
+          const active = data.filter(b =>
+            b.status === 'ACTIVE' &&
+            new Date(b.start_time) <= now &&
+            new Date(b.end_time) >= now
+          )
+
         setBanners(active)
       } catch (err) {
         console.error('Banner 載入失敗', err)

@@ -1,219 +1,173 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+
+type Banner = {
+  id: number
+  title: string
+  sort: number
+  start_time: string
+  end_time: string
+  status: string
+  desktop_image_url: string
+  mobile_image_url: string
+}
 
 const API_BASE = 'http://localhost:3001'
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-export default function BannerPage() {
-  const [desktopImage, setDesktopImage] = useState<File | null>(null)
-  const [mobileImage, setMobileImage] = useState<File | null>(null)
-  const [form, setForm] = useState({
-    title: '',
-    start_time: '',
-    end_time: '',
-    sort: 0,
-    status: 'ACTIVE',
-  })
+export default function BannerListPage() {
+  const [banners, setBanners] = useState<Banner[]>([])
 
-  const desktopInputRef = useRef<HTMLInputElement | null>(null)
-  const mobileInputRef = useRef<HTMLInputElement | null>(null)
-
-  const [preview, setPreview] = useState({
-    desktop: '',
-    mobile: '',
-  })
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
-
-  const handleUpload = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await fetch(`${API_BASE}/banners/upload`, {
-        method: 'POST',
-        headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-    })
-    const data = await res.json()
-
-    // ✅ 加上 API 主機網址
-    return `${API_BASE}${data.url}`
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${API_BASE}/banners`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        setBanners(data)
+      } catch (err) {
+        console.error('載入 Banner 失敗', err)
+      }
     }
 
-  const handleSubmit = async () => {
-    if (!desktopImage || !mobileImage) {
-      alert('請選擇桌機與手機圖片')
-      return
-    }
+    fetchData()
+  }, [])
+
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm('確定要刪除這筆 Banner 嗎？')
+    if (!confirmed) return
 
     try {
-      const desktopUrl = await handleUpload(desktopImage)
-      const mobileUrl = await handleUpload(mobileImage)
-
-      const payload = {
-        ...form,
-        sort: Number(form.sort),
-        desktop_image_url: desktopUrl,
-        mobile_image_url: mobileUrl,
-        start_time: new Date(form.start_time).toISOString(),
-        end_time: new Date(form.end_time).toISOString(),
-        company: { id: 1 },
-      }
-
-      const res = await fetch(`${API_BASE}/banners`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(payload),
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${API_BASE}/banners/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (!res.ok) {
-        const err = await res.text()
-        throw new Error(err || '送出失敗')
-      }
+      if (!res.ok) throw new Error('刪除失敗')
 
-      alert('✅ 新增成功！')
-
-      // 清空表單
-      setForm({
-        title: '',
-        start_time: '',
-        end_time: '',
-        sort: 0,
-        status: 'ACTIVE',
-      })
-      setDesktopImage(null)
-      setMobileImage(null)
-      setPreview({ desktop: '', mobile: '' })
-      if (desktopInputRef.current) desktopInputRef.current.value = ''
-      if (mobileInputRef.current) mobileInputRef.current.value = ''
+      // 更新畫面
+      setBanners(prev => prev.filter(b => b.id !== id))
+      alert('✅ 刪除成功')
     } catch (err: any) {
-      alert(`❌ 新增失敗：${err.message}`)
+      console.error('❌ 刪除失敗', err)
+      alert(`❌ 刪除失敗：${err.message}`)
     }
+  }
+
+  const formatDateTime = (iso: string) => {
+    const date = new Date(iso)
+    return date.toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    })
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">新增 Banner</h2>
-      <div className="space-y-4">
-        <input
-          name="title"
-          value={form.title}
-          placeholder="標題"
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
+      <h2 className="text-xl font-bold mb-4">Banner 管理列表</h2>
 
-        <input
-          type="datetime-local"
-          name="start_time"
-          value={form.start_time}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
-        <input
-          type="datetime-local"
-          name="end_time"
-          value={form.end_time}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
+      <div className="overflow-auto">
+        <table className="table-auto w-full border border-gray-300 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-2 py-1">標題</th>
+              <th className="border px-2 py-1">排序</th>
+              <th className="border px-2 py-1">開放時間</th>
+              <th className="border px-2 py-1">圖片(網站)</th>
+              <th className="border px-2 py-1">圖片(手機)</th>
+              <th className="border px-2 py-1">是否顯示</th>
+              <th className="border px-2 py-1">管理</th>
+            </tr>
+          </thead>
+          <tbody>
+            {banners.map((banner) => (
+              <tr key={banner.id}>
+                <td className="border px-2 py-1">{banner.title}</td>
+                <td className="border px-2 py-1 text-center">{banner.sort}</td>
+                <td className="border px-2 py-1 whitespace-nowrap">
+                  {formatDateTime(banner.start_time)} ~<br />
+                  {formatDateTime(banner.end_time)}
+                </td>
+                <td className="border px-2 py-1 text-center">
+                  <button
+                    className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
+                    onClick={() => window.open(`${API_BASE}${banner.desktop_image_url}`, '_blank')}
+                  >
+                    🔍
+                  </button>
+                </td>
+                <td className="border px-2 py-1 text-center">
+                  <button
+                    className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
+                    onClick={() => window.open(`${API_BASE}${banner.mobile_image_url}`, '_blank')}
+                  >
+                    🔍
+                  </button>
+                </td>
 
-        <select
-          name="status"
-          value={form.status}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        >
-          <option value="ACTIVE">啟用</option>
-          <option value="INACTIVE">停用</option>
-        </select>
+                <td className="border px-2 py-1 text-center">
+                  <button
+                    onClick={async () => {
+                      const newStatus = banner.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+                      try {
+                        const res = await fetch(`${API_BASE}/banners/${banner.id}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                          },
+                          body: JSON.stringify({ status: newStatus }),
+                        })
+                        if (!res.ok) throw new Error('切換失敗')
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="sort">排序（數字越大越前面）</label>
-          <input
-            type="number"
-            id="sort"
-            name="sort"
-            value={form.sort === 0 ? '' : form.sort}
-            placeholder="請輸入排序數字"
-            className="border p-2 w-full"
-            onChange={handleChange}
-          />
-        </div>
+                        setBanners(prev =>
+                          prev.map(b =>
+                            b.id === banner.id ? { ...b, status: newStatus } : b
+                          )
+                        )
+                      } catch (err) {
+                        alert('❌ 無法切換狀態')
+                        console.error(err)
+                      }
+                    }}
+                    className={`text-xs px-2 py-0.5 rounded font-bold ${
+                      banner.status === 'ACTIVE'
+                        ? 'bg-green-200 text-green-800'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {banner.status === 'ACTIVE' ? 'ON' : 'OFF'}
+                  </button>
+                </td>
 
-        <div className="flex flex-col gap-2">
-          <label>桌機圖片</label>
-          <input
-            type="file"
-            ref={desktopInputRef}
-            accept="image/jpeg,image/png,image/webp"
-            onChange={e => {
-              const file = e.target.files?.[0] || null
-              if (file && !ACCEPTED_TYPES.includes(file.type)) {
-                alert('只接受 JPG / PNG / WEBP 圖片')
-                return
-              }
-              setDesktopImage(file)
-              setPreview(prev => ({
-                ...prev,
-                desktop: file ? URL.createObjectURL(file) : '',
-              }))
-            }}
-          />
-          {preview.desktop && (
-            <img
-              src={preview.desktop}
-              alt="桌機預覽"
-              className="mt-2 border max-w-[200px] rounded shadow"
-            />
-          )}
-        </div>
 
-        <div className="flex flex-col gap-2">
-          <label>手機圖片</label>
-          <input
-            type="file"
-            ref={mobileInputRef}
-            accept="image/jpeg,image/png,image/webp"
-            onChange={e => {
-              const file = e.target.files?.[0] || null
-              if (file && !ACCEPTED_TYPES.includes(file.type)) {
-                alert('只接受 JPG / PNG / WEBP 圖片')
-                return
-              }
-              setMobileImage(file)
-              setPreview(prev => ({
-                ...prev,
-                mobile: file ? URL.createObjectURL(file) : '',
-              }))
-            }}
-          />
-          {preview.mobile && (
-            <img
-              src={preview.mobile}
-              alt="手機預覽"
-              className="mt-2 border max-w-[200px] rounded shadow"
-            />
-          )}
-        </div>
 
-        <button
-          type="button"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={handleSubmit}
-        >
-          送出
-        </button>
+                <td className="border px-2 py-1 text-center">
+                  <div className="inline-flex gap-2">
+                    <Link href={`/banner/edit/${banner.id}`}>
+                      <button className="text-blue-600 underline text-sm">編輯</button>
+                    </Link>
+                    <button
+                      className="text-red-600 underline text-sm"
+                      onClick={() => handleDelete(banner.id)}
+                    >
+                      刪除
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
