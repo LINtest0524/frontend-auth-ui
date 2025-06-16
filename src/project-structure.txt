@@ -1,0 +1,60 @@
+列出資料夾 PATH
+磁碟區序號為 E2F6-7C6C
+D:.
+|   project-structure.txt
+|   
++---app
+|   |   favicon.ico
+|   |   globals.css
+|   |   layout.tsx
+|   |   page.tsx
+|   |   
+|   +---(dashboard)
+|   |   |   layout.tsx
+|   |   |   
+|   |   +---banner
+|   |   |   |   page.tsx
+|   |   |   |   
+|   |   |   +---edit
+|   |   |   |   \---[id]
+|   |   |   |           page.tsx
+|   |   |   |           
+|   |   |   \---new
+|   |   |           page.tsx
+|   |   |           
+|   |   +---dashboard 
+|   |   |       page.tsx
+|   |   |       
+|   |   \---users
+|   |           page.tsx
+|   |           
+|   +---login
+|   |       page.tsx
+|   |       
+|   \---portal
+|       |   layout.tsx
+|       |   page.tsx
+|       |   
+|       +---login
+|       |       page.tsx
+|       |       
+|       \---register
+|               page.tsx
+|               
++---components
+|   |   BannerCarousel.tsx
+|   |   sidebar.tsx
+|   |   
+|   \---ui
+|           button.tsx
+|           card.tsx
+|           input.tsx
+|           label.tsx
+|           
++---lib
+|       useAuth.ts
+|       utils.ts
+|       
+\---types
+        user.ts
+        

@@ -1,77 +1,56 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Autoplay } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/pagination'
+import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
 
 type Banner = {
-  id: number
-  title: string
-  desktop_image_url: string
-  mobile_image_url: string
-  start_time: string
-  end_time: string
-  status: string
-}
+  id: number;
+  title: string;
+  desktop_image_url: string;
+  mobile_image_url: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+};
 
-const API_BASE = 'http://localhost:3001'
+type Props = {
+  banners: Banner[];
+};
 
-export default function BannerCarousel() {
-  const [banners, setBanners] = useState<Banner[]>([])
-  const [isMobile, setIsMobile] = useState(false)
+export default function BannerCarousel({ banners }: Props) {
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        const res = await fetch(`${API_BASE}/banners`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (!res.ok) throw new Error('無法取得 banner 資料')
-
-        const data: Banner[] = await res.json()
-        const now = new Date()
-          const active = data.filter(b =>
-            b.status === 'ACTIVE' &&
-            new Date(b.start_time) <= now &&
-            new Date(b.end_time) >= now
-          )
-
-        setBanners(active)
-      } catch (err) {
-        console.error('Banner 載入失敗', err)
-      }
-    }
-
     const updateDevice = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-
-    fetchBanners()
-    updateDevice()
-    window.addEventListener('resize', updateDevice)
-
-    return () => window.removeEventListener('resize', updateDevice)
-  }, [])
+      setIsMobile(window.innerWidth <= 768);
+    };
+    updateDevice();
+    window.addEventListener('resize', updateDevice);
+    return () => window.removeEventListener('resize', updateDevice);
+  }, []);
 
   const getImageUrl = (url: string) => {
     try {
-        const parsed = new URL(url); // 是完整 URL 就直接用
-        return parsed.href;
+      const parsed = new URL(url);
+      return parsed.href;
     } catch {
-        return `${API_BASE}${url}`; // 是相對路徑才補主機
+      return `${process.env.NEXT_PUBLIC_API_BASE}${url}`;
     }
-    }
+  };
 
+  const now = new Date();
+  const activeBanners = banners.filter(
+    (b) =>
+      b.status === 'ACTIVE' &&
+      new Date(b.start_time) <= now &&
+      new Date(b.end_time) >= now
+  );
 
-
-  if (banners.length === 0) {
-    return <div className="text-center p-4">目前沒有上架的 Banner</div>
+  if (activeBanners.length === 0) {
+    return <div className="text-center p-4">目前沒有上架的 Banner</div>;
   }
 
   return (
@@ -82,15 +61,17 @@ export default function BannerCarousel() {
       loop
       className="w-full"
     >
-      {banners.map(banner => (
+      {activeBanners.map((banner) => (
         <SwiperSlide key={banner.id}>
           <img
-            src={getImageUrl(isMobile ? banner.mobile_image_url : banner.desktop_image_url)}
+            src={getImageUrl(
+              isMobile ? banner.mobile_image_url : banner.desktop_image_url
+            )}
             alt={banner.title}
             className="w-full object-cover max-h-[400px] rounded"
           />
         </SwiperSlide>
       ))}
     </Swiper>
-  )
+  );
 }
