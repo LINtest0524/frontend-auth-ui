@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react'
 
 const API_BASE = 'http://localhost:3001'
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export default function BannerPage() {
   const [desktopImage, setDesktopImage] = useState<File | null>(null)
@@ -80,7 +81,7 @@ export default function BannerPage() {
 
       alert('✅ 新增成功！')
 
-      // ✅ 清空狀態
+      // 清空表單
       setForm({
         title: '',
         start_time: '',
@@ -91,11 +92,8 @@ export default function BannerPage() {
       setDesktopImage(null)
       setMobileImage(null)
       setPreview({ desktop: '', mobile: '' })
-
-      // ✅ 清空 <input type="file">
       if (desktopInputRef.current) desktopInputRef.current.value = ''
       if (mobileInputRef.current) mobileInputRef.current.value = ''
-
     } catch (err: any) {
       alert(`❌ 新增失敗：${err.message}`)
     }
@@ -139,8 +137,8 @@ export default function BannerPage() {
         </select>
 
         <div className="flex flex-col gap-2">
-        <label htmlFor="sort">排序（數字越大越前面）</label>
-        <input
+          <label htmlFor="sort">排序（數字越大越前面）</label>
+          <input
             type="number"
             id="sort"
             name="sort"
@@ -148,18 +146,21 @@ export default function BannerPage() {
             placeholder="請輸入排序數字"
             className="border p-2 w-full"
             onChange={handleChange}
-        />
+          />
         </div>
-
 
         <div className="flex flex-col gap-2">
           <label>桌機圖片</label>
           <input
             type="file"
             ref={desktopInputRef}
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={e => {
               const file = e.target.files?.[0] || null
+              if (file && !ACCEPTED_TYPES.includes(file.type)) {
+                alert('只接受 JPG / PNG / WEBP 圖片')
+                return
+              }
               setDesktopImage(file)
               setPreview(prev => ({
                 ...prev,
@@ -167,7 +168,13 @@ export default function BannerPage() {
               }))
             }}
           />
-          {preview.desktop && <img src={preview.desktop} alt="桌機預覽" className="w-1/2 mt-2" />}
+          {preview.desktop && (
+            <img
+              src={preview.desktop}
+              alt="桌機預覽"
+              className="mt-2 border max-w-[200px] rounded shadow"
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -175,9 +182,13 @@ export default function BannerPage() {
           <input
             type="file"
             ref={mobileInputRef}
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={e => {
               const file = e.target.files?.[0] || null
+              if (file && !ACCEPTED_TYPES.includes(file.type)) {
+                alert('只接受 JPG / PNG / WEBP 圖片')
+                return
+              }
               setMobileImage(file)
               setPreview(prev => ({
                 ...prev,
@@ -185,7 +196,13 @@ export default function BannerPage() {
               }))
             }}
           />
-          {preview.mobile && <img src={preview.mobile} alt="手機預覽" className="w-1/2 mt-2" />}
+          {preview.mobile && (
+            <img
+              src={preview.mobile}
+              alt="手機預覽"
+              className="mt-2 border max-w-[200px] rounded shadow"
+            />
+          )}
         </div>
 
         <button
