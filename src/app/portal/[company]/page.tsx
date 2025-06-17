@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import BannerCarousel from '@/components/BannerCarousel';
 
+import Marquee from '@/components/Marquee'
+import { isModuleEnabled } from '@/lib/moduleChecker'
+
+
 export default function PortalCompanyPage() {
   const { company } = useParams();
   const [banners, setBanners] = useState([]);
@@ -21,6 +25,8 @@ console.log('🚀 company param:', company);
   return (
     <div className="container mx-auto p-6">
       <BannerCarousel banners={banners} />
+      {isModuleEnabled('marquee') && <Marquee />}
+
     </div>
   );
 }

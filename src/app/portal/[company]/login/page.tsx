@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 
 export default function CompanyLoginPage() {
   const router = useRouter();
-  const { company } = useParams(); // ✅ 動態取得公司參數
+  const { company } = useParams();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,30 +18,52 @@ export default function CompanyLoginPage() {
   const handleLogin = async () => {
     setError('');
     try {
-        const res = await fetch('http://localhost:3001/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            username,
-            password,
-            company: company, // ✅ 把網址參數帶進去
-        }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-        throw new Error(data.message || '登入失敗');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/login?company=${company}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
         }
+      );
 
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push(`/portal/${company}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || '登入失敗');
+      }
+
+      // ✅ 儲存基本資訊
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // ✅ 模組請求
+      const modulesRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/portal/module/my-modules`,
+        {
+          headers: { Authorization: `Bearer ${data.token}` },
+        }
+      );
+
+      const modulesArray = await modulesRes.json();
+      console.log('🧩 取得模組清單:', modulesArray);
+
+      if (!Array.isArray(modulesArray)) {
+        throw new Error('模組資料格式錯誤');
+      }
+
+      const moduleMap = Object.fromEntries(
+        modulesArray.map((key: string) => [key, true])
+      );
+
+      localStorage.setItem('enabledModules', JSON.stringify(moduleMap));
+
+      router.push(`/portal/${company}`);
     } catch (err: any) {
-        setError(err.message || '發生錯誤');
+      console.error('❌ 登入錯誤:', err);
+      setError(err.message || '發生錯誤');
     }
-    };
-
+  };
 
   return (
     <div className="flex h-screen justify-center items-center bg-gray-100">
@@ -49,7 +71,7 @@ export default function CompanyLoginPage() {
         <CardContent className="space-y-6 pt-10">
           <h2 className="text-center text-xl font-bold">
             {decodeURIComponent(company as string)} 登入 Login
-            </h2>
+          </h2>
 
           <div className="space-y-2">
             <Label>帳號 Username</Label>
