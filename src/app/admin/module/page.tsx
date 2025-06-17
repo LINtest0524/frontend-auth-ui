@@ -1,4 +1,3 @@
-// frontend/src/app/(admin)/module/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -9,17 +8,20 @@ interface CompanyModuleSetting {
   enabled: boolean
 }
 
+const availableModules = ['marquee', 'banner'] // ✅ 可選的模組
+
 export default function ModuleAdminPage() {
+  const [moduleKey, setModuleKey] = useState('marquee')
   const [settings, setSettings] = useState<CompanyModuleSetting[]>([])
 
   useEffect(() => {
-  fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/module/marquee`)
-    .then(res => res.json())
-    .then(data => {
-      console.log('🔥 回傳資料:', data) // 新增這行
-      setSettings(data)
-    })
-}, [])
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/module/${moduleKey}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log(`🔥 ${moduleKey} 回傳資料:`, data)
+        setSettings(data)
+      })
+  }, [moduleKey])
 
   const toggleEnabled = (index: number) => {
     const updated = [...settings]
@@ -28,7 +30,7 @@ export default function ModuleAdminPage() {
   }
 
   const saveChanges = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/module/marquee`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/module/${moduleKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
@@ -37,8 +39,22 @@ export default function ModuleAdminPage() {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <h2 className="text-xl font-bold">模組管理：跑馬燈 Marquee</h2>
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
+      <div className="flex items-center gap-4">
+        <h2 className="text-xl font-bold">模組管理</h2>
+        <select
+          value={moduleKey}
+          onChange={(e) => setModuleKey(e.target.value)}
+          className="border rounded px-2 py-1"
+        >
+          {availableModules.map((key) => (
+            <option key={key} value={key}>
+              {key}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <table className="w-full border">
         <thead>
           <tr className="bg-gray-100">
@@ -47,7 +63,7 @@ export default function ModuleAdminPage() {
           </tr>
         </thead>
         <tbody>
-          {settings.map((s, i) => (
+          {Array.isArray(settings) && settings.map((s, i) => (
             <tr key={s.companyId} className="border-t">
               <td className="p-2">{s.companyName}</td>
               <td className="text-center">
@@ -59,8 +75,10 @@ export default function ModuleAdminPage() {
               </td>
             </tr>
           ))}
+
         </tbody>
       </table>
+
       <button
         onClick={saveChanges}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
