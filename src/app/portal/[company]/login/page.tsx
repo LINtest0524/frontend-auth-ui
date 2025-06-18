@@ -1,104 +1,86 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from 'react'
+import { useUserStore } from '@/hooks/use-user-store'
+import { useParams } from 'next/navigation'
 
-export default function CompanyLoginPage() {
-  const router = useRouter();
-  const { company } = useParams();
+export default function PortalLoginPage() {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const setUser = useUserStore((s) => s.setUser)
+  const params = useParams()
+  const companyCode = params.company as string || 'default'
 
   const handleLogin = async () => {
-    setError('');
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/login?company=${company}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
-        }
-      );
+    setLoading(true)
+    setError('')
 
-      const data = await res.json();
+    try {
+      const res = await fetch(`http://localhost:3001/portal/auth/login?company=${companyCode}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
 
       if (!res.ok) {
-        throw new Error(data.message || '登入失敗');
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.message || '登入失敗')
       }
 
-      // ✅ 儲存基本資訊
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const data = await res.json()
 
-      // ✅ 模組請求
-      const modulesRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/portal/module/my-modules`,
-        {
-          headers: { Authorization: `Bearer ${data.token}` },
-        }
-      );
+      localStorage.setItem('portalToken', data.token)
+      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      setUser(data.user)
 
-      const modulesArray = await modulesRes.json();
-      console.log('🧩 取得模組清單:', modulesArray);
+      const targetCompany = data.user.company?.code || 'default'
+      console.log('✅ 登入成功，導向:', `/portal/${targetCompany}`)
 
-      if (!Array.isArray(modulesArray)) {
-        throw new Error('模組資料格式錯誤');
-      }
-
-      const moduleMap = Object.fromEntries(
-        modulesArray.map((key: string) => [key, true])
-      );
-
-      localStorage.setItem('enabledModules', JSON.stringify(moduleMap));
-
-      router.push(`/portal/${company}`);
+      window.location.href = `/portal/${targetCompany}`
     } catch (err: any) {
-      console.error('❌ 登入錯誤:', err);
-      setError(err.message || '發生錯誤');
+      setError(err.message || '登入失敗')
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="flex h-screen justify-center items-center bg-gray-100">
-      <Card className="w-[400px] shadow-2xl">
-        <CardContent className="space-y-6 pt-10">
-          <h2 className="text-center text-xl font-bold">
-            {decodeURIComponent(company as string)} 登入 Login
-          </h2>
+    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+      <h1 className="text-xl font-bold mb-4">會員登入</h1>
 
-          <div className="space-y-2">
-            <Label>帳號 Username</Label>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="請輸入帳號"
-            />
-          </div>
+      <input
+        type="text"
+        placeholder="帳號"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        className="border rounded px-4 py-2 mb-2 w-64"
+      />
+      <input
+        type="password"
+        placeholder="密碼"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="border rounded px-4 py-2 mb-4 w-64"
+      />
 
-          <div className="space-y-2">
-            <Label>密碼 Password</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="請輸入密碼"
-            />
-          </div>
+      <button
+        onClick={handleLogin}
+        disabled={loading}
+        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+      >
+        {loading ? '登入中...' : '登入'}
+      </button>
 
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-
-          <Button className="w-full" onClick={handleLogin}>
-            登入
-          </Button>
-        </CardContent>
-      </Card>
+      {error && (
+        <p className="text-red-500 mt-4 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
+          {error}
+        </p>
+      )}
     </div>
-  );
+  )
 }

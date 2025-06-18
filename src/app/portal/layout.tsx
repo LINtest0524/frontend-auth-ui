@@ -1,40 +1,40 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useUserStore } from '@/hooks/use-user-store'
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
+  const pathname = usePathname()
+  const { user, setUser, logout } = useUserStore()
+
+  const isLoginPage = pathname.match(/^\/portal\/[^/]+\/login$/)
 
   useEffect(() => {
     const token = localStorage.getItem('portalToken')
-    setIsLoggedIn(!!token)
-  }, [refreshKey]) // ✅ 每次 refreshKey 改變，就重新檢查 token
+    const userData = localStorage.getItem('portalUser')
 
-  const handleLogout = () => {
-    localStorage.removeItem('portalToken')
-    setRefreshKey((prev) => prev + 1) // ✅ 觸發 layout 重新渲染
-    router.push('/portal/login')
-  }
+    if (isLoginPage) return
+
+    if (!token) {
+      logout()
+      return
+    }
+
+    if (token && userData && !user) {
+      try {
+        const parsed = JSON.parse(userData)
+        setUser(parsed)
+      } catch (e) {
+        console.warn('❌ JSON parse failed', e)
+      }
+    }
+  }, [pathname])
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="flex justify-between items-center bg-gray-100 px-4 py-2 shadow">
-        <h1 className="text-lg font-semibold">會員中心</h1>
-
-        {isLoggedIn && (
-          <button
-            onClick={handleLogout}
-            className="text-sm text-red-500 hover:underline"
-          >
-            登出
-          </button>
-        )}
-      </header>
-
-      <main className="flex-1 p-4">{children}</main>
+      <main className="flex-1">{children}</main>
     </div>
   )
 }

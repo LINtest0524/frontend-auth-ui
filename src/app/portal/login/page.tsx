@@ -1,12 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { useUserStore } from '@/hooks/use-user-store'
 
 export default function PortalLoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const setUser = useUserStore((s) => s.setUser)
 
   const handleLogin = async () => {
     setLoading(true)
@@ -15,28 +18,20 @@ export default function PortalLoginPage() {
     try {
       const res = await fetch('http://localhost:3001/portal/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       })
 
       if (!res.ok) {
-        let msg = '登入失敗'
-        try {
-          const errorData = await res.json()
-          msg = errorData.message || msg
-        } catch (e) {
-          msg = '伺服器錯誤'
-        }
-        throw new Error(msg)
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.message || '登入失敗')
       }
-
 
       const data = await res.json()
       localStorage.setItem('portalToken', data.token)
+      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      setUser(data.user)
 
-      // ✅ 登入成功後重新導向頁面，讓 layout 正確刷新
       window.location.href = '/portal'
     } catch (err: any) {
       setError(err.message || '登入失敗')
@@ -44,7 +39,6 @@ export default function PortalLoginPage() {
       setLoading(false)
     }
   }
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6">
@@ -73,9 +67,11 @@ export default function PortalLoginPage() {
         {loading ? '登入中...' : '登入'}
       </button>
 
-      {error && <p className="text-red-500 mt-4 msgbox-1 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
-        {error}
-      </p>}
+      {error && (
+        <p className="text-red-500 mt-4 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
