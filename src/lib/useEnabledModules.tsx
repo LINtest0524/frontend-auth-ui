@@ -1,4 +1,5 @@
-'use client'
+import { FC } from 'react'
+import React from 'react'
 
 import { useUserStore } from '@/hooks/use-user-store'
 import BannerCarousel from '@/components/BannerCarousel'
@@ -6,11 +7,10 @@ import Marquee from '@/components/Marquee'
 
 type ModuleConfig = {
   key: string
-  Component: any
+  Component: FC<any>  // ✅ 重點在這
   position: 'top' | 'bottom'
 }
 
-// ✅ 加上這段 → 定義 User 型別，讓 TS 知道有 enabledModules
 type User = {
   enabledModules?: string[]
 }
@@ -28,13 +28,14 @@ export function useEnabledModules(): ModuleConfig[] {
     },
     marquee: {
       key: 'marquee',
-      Component: Marquee,
+      Component: () => {
+        return <Marquee />
+      },
       position: 'top',
     },
   }
 
-  return Array.from(new Set(user.enabledModules)) // ✅ 避免重複 key
-  .map((key: string) => configs[key])
-  .filter(Boolean)
-
+  return Array.from(new Set(user.enabledModules))
+    .map((key: string) => configs[key])
+    .filter(Boolean)
 }
