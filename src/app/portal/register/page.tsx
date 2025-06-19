@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useParams } from 'next/navigation'
 
 export default function PortalRegisterPage() {
   const [username, setUsername] = useState('')
@@ -10,13 +11,16 @@ export default function PortalRegisterPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  const { company } = useParams()
+  const companyCode = typeof company === 'string' ? company : 'default'
+
   const handleRegister = async () => {
     setLoading(true)
     setError('')
     setSuccess(false)
 
     try {
-      const res = await fetch('http://localhost:3001/portal/auth/register', {
+      const res = await fetch(`http://localhost:3001/portal/auth/register?company=${companyCode}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,7 +35,10 @@ export default function PortalRegisterPage() {
 
       const data = await res.json()
       localStorage.setItem('portalToken', data.token)
-      setSuccess(true)
+      localStorage.setItem('portalUser', JSON.stringify(data.user))
+
+      // ✅ 註冊成功後導向該公司首頁
+      window.location.href = `/portal/${companyCode}`
     } catch (err: any) {
       setError(err.message || '發生錯誤')
     } finally {
