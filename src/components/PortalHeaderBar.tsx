@@ -1,12 +1,13 @@
 'use client'
 
 import { useUserStore } from '@/hooks/use-user-store'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function PortalHeaderBar() {
   const { user, setUser } = useUserStore()
   const { company } = useParams()
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -14,15 +15,14 @@ export default function PortalHeaderBar() {
   }, [])
 
   const handleLogout = () => {
-    // ✅ 清除登入資訊
     localStorage.removeItem('portalUser')
     localStorage.removeItem('portalToken')
     localStorage.removeItem('enabledModules')
     setUser(null)
+  }
 
-    // ✅ ❌ 不導頁！讓使用者停留在當前頁面
-    // 如果你希望跳回首頁也可改成：
-    // window.location.href = `/portal/${company}`
+  const handleGoToMember = () => {
+    router.push(`/portal/${company}/member`)
   }
 
   if (!mounted) return null
@@ -46,7 +46,13 @@ export default function PortalHeaderBar() {
         </>
       ) : (
         <>
-          <span>👤 {user.username}</span>
+          <button
+            onClick={handleGoToMember}
+            className="hover:underline text-gray-700"
+            title="查看會員中心"
+          >
+            👤 {user.username}
+          </button>
           <button
             onClick={handleLogout}
             className="text-red-600 hover:underline"

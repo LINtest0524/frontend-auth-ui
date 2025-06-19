@@ -1,12 +1,5 @@
 import { create } from 'zustand'
-
-export type User = {
-  userId: number
-  username: string
-  role: string
-  companyId: number | null
-  enabledModules?: string[]
-}
+import { User } from '@/types/user'
 
 type Store = {
   user: User | null
@@ -22,7 +15,7 @@ export const useUserStore = create<Store>((set) => ({
   },
 
   logout: () => {
-    // 可以做額外清除動作（如果未來需要）
+    // 可擴充清除行為（如 localStorage）
     set({ user: null })
   }
 }))

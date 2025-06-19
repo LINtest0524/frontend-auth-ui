@@ -31,5 +31,10 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
   if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
 
-  return <>{children}</>
+  return (
+    <div>
+      {/* 主畫面 */}
+      <div>{children}</div>
+    </div>
+  )
 }
