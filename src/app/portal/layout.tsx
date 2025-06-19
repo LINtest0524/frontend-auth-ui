@@ -1,40 +1,35 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
+import { usePathname } from 'next/navigation'
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
+  const { setUser } = useUserStore()
   const pathname = usePathname()
-  const { user, setUser, logout } = useUserStore()
-
-  const isLoginPage = pathname.match(/^\/portal\/[^/]+\/login$/)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('portalToken')
     const userData = localStorage.getItem('portalUser')
 
-    if (isLoginPage) return
-
-    if (!token) {
-      logout()
-      return
-    }
-
-    if (token && userData && !user) {
+    if (token && userData) {
       try {
         const parsed = JSON.parse(userData)
         setUser(parsed)
-      } catch (e) {
-        console.warn('❌ JSON parse failed', e)
+
+        if (parsed.enabledModules) {
+          localStorage.setItem('enabledModules', JSON.stringify(parsed.enabledModules))
+        }
+      } catch (err) {
+        console.warn('❌ parse user error', err)
       }
     }
-  }, [pathname])
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1">{children}</main>
-    </div>
-  )
+    setHydrated(true)
+  }, [pathname, setUser])
+
+  if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
+
+  return <>{children}</>
 }

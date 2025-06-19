@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
+import PortalHeaderBar from '@/components/PortalHeaderBar'
+import BannerCarousel from '@/components/BannerCarousel'
+import Marquee from '@/components/Marquee'
 
 export default function PortalCompanyPage() {
   const { company } = useParams()
@@ -13,46 +16,55 @@ export default function PortalCompanyPage() {
   const [banners, setBanners] = useState<any[]>([])
   const [marquees, setMarquees] = useState<any[]>([])
 
-  useEffect(() => {
-    if (!company || typeof company !== 'string') return
+  const comp = typeof company === 'string' ? company : 'a'
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${company}`)
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${comp}`)
       .then(res => res.ok ? res.json() : [])
       .then(setBanners)
       .catch(() => setBanners([]))
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${company}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${comp}`)
       .then(res => res.ok ? res.json() : [])
       .then(setMarquees)
       .catch(() => setMarquees([]))
-  }, [company])
+  }, [comp])
 
-  const renderModule = (key: string, props: any = {}) => {
+  const renderModule = useCallback((key: string, props: any = {}) => {
     const mod = modules.find((m) => m.key === key)
     if (!mod) return null
     const Comp = mod.Component
     return <Comp {...props} />
-  }
+  }, [modules])
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <>
+      <PortalHeaderBar />
 
-      
+      <div className="container mx-auto p-6 space-y-6">
+        {user ? (
+          <>
+            {/* ✅ 已登入顯示模組 + 會員中心 */}
+            {renderModule('marquee', { marquees })}
 
-      {/* ✅ 想要插入跑馬燈的地方 */}
-      {renderModule('marquee', { marquees })}
+            <div className="border rounded p-4 bg-white shadow">
+              <h1 className="text-xl font-bold mb-4">歡迎來到會員中心</h1>
+              <p>這裡可以顯示你要的內容</p>
+              <p className="text-sm text-gray-600 mt-4">🧑 使用者：{user.username}</p>
+            </div>
 
-      <div className="border rounded p-4 bg-white shadow">
-        <h1 className="text-xl font-bold mb-4">歡迎來到會員中心</h1>
-        <p>這裡可以顯示你要的內容</p>
-        <p className="text-sm text-gray-600 mt-4">🧑 使用者：{user?.username}</p>
+            {renderModule('banner', { banners })}
+            {renderModule('marquee', { marquees })}
+          </>
+        ) : (
+          <>
+            {/* ✅ 未登入也能看到的公開資訊 */}
+            <Marquee />
+            <BannerCarousel banners={banners} />
+          </>
+        )}
       </div>
-
-      {/* ✅ 想要插入 banner 的位置 */}
-      {renderModule('banner', { banners })}
-
-      {/* ✅ 如果你要再插一次跑馬燈 */}
-      {renderModule('marquee', { marquees })}
-    </div>
+    </>
   )
+
 }

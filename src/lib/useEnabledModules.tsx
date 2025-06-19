@@ -1,24 +1,16 @@
 import { FC } from 'react'
-import React from 'react'
-
 import { useUserStore } from '@/hooks/use-user-store'
 import BannerCarousel from '@/components/BannerCarousel'
 import Marquee from '@/components/Marquee'
 
 type ModuleConfig = {
   key: string
-  Component: FC<any>  // ✅ 重點在這
+  Component: FC<any>
   position: 'top' | 'bottom'
 }
 
-type User = {
-  enabledModules?: string[]
-}
-
 export function useEnabledModules(): ModuleConfig[] {
-  const { user } = useUserStore() as { user: User | null }
-
-  if (!user?.enabledModules) return []
+  const { user } = useUserStore()
 
   const configs: Record<string, ModuleConfig> = {
     banner: {
@@ -28,14 +20,16 @@ export function useEnabledModules(): ModuleConfig[] {
     },
     marquee: {
       key: 'marquee',
-      Component: () => {
-        return <Marquee />
-      },
+      Component: Marquee,
       position: 'top',
     },
   }
 
-  return Array.from(new Set(user.enabledModules))
-    .map((key: string) => configs[key])
+  const enabled = user?.enabledModules?.length
+    ? user.enabledModules
+    : ['banner', 'marquee'] // ✅ 未登入時的預設模組
+
+  return Array.from(new Set(enabled))
+    .map((key) => configs[key])
     .filter(Boolean)
 }

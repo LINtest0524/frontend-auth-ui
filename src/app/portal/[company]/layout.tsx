@@ -1,41 +1,35 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
-export default function CompanyPortalLayout({ children }: { children: ReactNode }) {
-  const router = useRouter()
+export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
+  const { setUser } = useUserStore()
   const pathname = usePathname()
-  const { user, setUser, logout } = useUserStore()
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('portalToken')
     const userData = localStorage.getItem('portalUser')
 
-    const match = pathname.match(/^\/portal\/([^/]+)/)
-    const company = match?.[1] || 'default'
-
-    if (!token) {
-      logout()
-      router.push(`/portal/${company}/login`)
-      return
-    }
-
-    if (token && userData && !user) {
+    if (token && userData) {
       try {
         const parsed = JSON.parse(userData)
         setUser(parsed)
-        console.log('✅ user restored from localStorage', parsed)
-      } catch (e) {
-        console.warn('❌ 無法解析 user', e)
+
+        if (parsed.enabledModules) {
+          localStorage.setItem('enabledModules', JSON.stringify(parsed.enabledModules))
+        }
+      } catch (err) {
+        console.warn('❌ 無法解析 user 資料', err)
       }
     }
-  }, [pathname, user, logout, setUser, router])
 
-  return (
-    <div>
-      <main className="p-4">{children}</main>
-    </div>
-  )
+    setHydrated(true)
+  }, [pathname, setUser])
+
+  if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
+
+  return <>{children}</>
 }

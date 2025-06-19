@@ -12,7 +12,7 @@ export default function PortalLoginPage() {
 
   const setUser = useUserStore((s) => s.setUser)
   const params = useParams()
-  const companyCode = params.company as string || 'default'
+  const companyCode = (params.company as string) || 'default'
 
   const handleLogin = async () => {
     setLoading(true)
@@ -21,9 +21,7 @@ export default function PortalLoginPage() {
     try {
       const res = await fetch(`http://localhost:3001/portal/auth/login?company=${companyCode}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       })
 
@@ -38,9 +36,13 @@ export default function PortalLoginPage() {
       localStorage.setItem('portalUser', JSON.stringify(data.user))
       setUser(data.user)
 
+      // ✅ 這行非常關鍵：寫入 enabledModules
+      if (data.user.enabledModules) {
+        localStorage.setItem('enabledModules', JSON.stringify(data.user.enabledModules))
+      }
+
       const targetCompany = data.user.company?.code || 'default'
       console.log('✅ 登入成功，導向:', `/portal/${targetCompany}`)
-
       window.location.href = `/portal/${targetCompany}`
     } catch (err: any) {
       setError(err.message || '登入失敗')

@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 
-type User = {
+export type User = {
   userId: number
   username: string
   role: string
   companyId: number | null
+  enabledModules?: string[]
 }
 
 type Store = {
@@ -15,6 +16,13 @@ type Store = {
 
 export const useUserStore = create<Store>((set) => ({
   user: null,
-  setUser: (user) => set({ user }),
-  logout: () => set({ user: null }),
+
+  setUser: (user) => {
+    set({ user })
+  },
+
+  logout: () => {
+    // 可以做額外清除動作（如果未來需要）
+    set({ user: null })
+  }
 }))
