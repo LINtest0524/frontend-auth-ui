@@ -13,7 +13,7 @@ type Banner = {
   desktop_image_url: string
   mobile_image_url: string
 }
-
+// 這是測試 Git 分支流程
 const API_BASE = 'http://localhost:3001'
 
 export default function BannerListPage() {
