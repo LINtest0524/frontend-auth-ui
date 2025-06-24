@@ -153,7 +153,7 @@ export default function BannerListPage() {
 
                 <td className="border px-2 py-1 text-center">
                   <div className="inline-flex gap-2">
-                    <Link href={`/banner/edit/${banner.id}`}>
+                    <Link href={`/admin/banner/edit/${banner.id}`}>
                       <button className="text-blue-600 underline text-sm">編輯</button>
                     </Link>
                     <button
