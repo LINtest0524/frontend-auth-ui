@@ -6,10 +6,11 @@ import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
+import IdVerification from '@/app/portal/[company]/member/id-verification/page'
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification'>('profile')
 
   return (
     <div>
@@ -44,6 +45,14 @@ export default function MemberPage() {
           >
             修改個人資料
           </button>
+          <button
+            onClick={() => setTab('id-verification')}
+            className={`block w-full text-left px-3 py-2 rounded ${
+              tab === 'id-verification' ? 'bg-blue-600 text-white' : 'hover:bg-gray-200'
+            }`}
+          >
+            身分證驗證
+          </button>
         </aside>
 
         {/* 右側內容 */}
@@ -53,6 +62,7 @@ export default function MemberPage() {
           {tab === 'profile' && <MemberProfile />}
           {tab === 'password' && <MemberPasswordForm />}
           {tab === 'edit' && <MemberEditForm />}
+          {tab === 'id-verification' && <IdVerification />}
 
         </main>
       </div>
