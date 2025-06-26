@@ -19,6 +19,8 @@ export default function PortalHeaderBar() {
     localStorage.removeItem('portalToken')
     localStorage.removeItem('enabledModules')
     setUser(null)
+
+    router.push(`/portal/${company}/`)
   }
 
   const handleGoToMember = () => {

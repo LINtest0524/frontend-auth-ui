@@ -58,7 +58,7 @@ export default function Sidebar() {
           {bannerOpen && (
             <div className="ml-4 mt-2 flex flex-col gap-1">
               <Link
-                href="/banner"
+                href="/admin/banner"
                 className={cn(
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/banner" && "bg-gray-700"
@@ -67,10 +67,10 @@ export default function Sidebar() {
                 📋 Banner 列表
               </Link>
               <Link
-                href="/banner/new"
+                href="/admin/banner/new"
                 className={cn(
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/banner/new" && "bg-gray-700"
+                  pathname === "/admin/banner/new" && "bg-gray-700"
                 )}
               >
                 ➤ 新增 Banner

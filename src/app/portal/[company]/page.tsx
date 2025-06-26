@@ -44,13 +44,10 @@ export default function PortalCompanyPage() {
       <div className="container mx-auto p-6 space-y-6">
         {user ? (
           <>
-            {/* ✅ 已登入顯示模組 + 會員中心 */}
-            {renderModule('marquee', { marquees })}
-
+      
             <div className="border rounded p-4 bg-white shadow">
-              <h1 className="text-xl font-bold mb-4">歡迎來到會員中心</h1>
+              <h1 className="text-xl font-bold mb-4">首頁</h1>
               <p>這裡可以顯示你要的內容</p>
-              <p className="text-sm text-gray-600 mt-4">🧑 使用者：{user.username}</p>
             </div>
 
             {renderModule('banner', { banners })}

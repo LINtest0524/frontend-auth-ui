@@ -98,7 +98,7 @@ export default function EditBannerPage() {
       if (!res.ok) throw new Error('更新失敗')
 
       alert('✅ 更新成功')
-      router.push('/banner')
+      router.push('/admin/banner')
     } catch (err: any) {
       alert(`❌ ${err.message}`)
     }
@@ -183,7 +183,7 @@ export default function EditBannerPage() {
           <button
             type="button"
             className="bg-gray-400 text-white px-4 py-2 rounded"
-            onClick={() => router.push('/banner')}
+            onClick={() => router.push('/admin/banner')}
           >
             返回
           </button>
