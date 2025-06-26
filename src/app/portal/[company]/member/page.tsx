@@ -59,7 +59,10 @@ export default function MemberPage() {
         <main className="flex-1 p-6">
           <h1 className="text-xl font-bold mb-4">會員中心</h1>
 
-          {tab === 'profile' && <MemberProfile />}
+          {tab === 'profile' && (
+            <MemberProfile onGoToVerification={() => setTab('id-verification')} />
+          )}
+
           {tab === 'password' && <MemberPasswordForm />}
           {tab === 'edit' && <MemberEditForm />}
           {tab === 'id-verification' && <IdVerification />}
