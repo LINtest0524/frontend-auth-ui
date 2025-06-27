@@ -16,9 +16,12 @@ export default function PortalCompanyPage() {
   const [banners, setBanners] = useState<any[]>([])
   const [marquees, setMarquees] = useState<any[]>([])
 
-  const comp = typeof company === 'string' ? company : 'a'
+  const comp = typeof company === 'string' ? company : null
 
   useEffect(() => {
+    
+    if (!comp) return
+    
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${comp}`)
       .then(res => res.ok ? res.json() : [])
       .then(setBanners)
