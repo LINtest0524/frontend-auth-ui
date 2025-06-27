@@ -43,7 +43,7 @@ export default function IdVerificationAdminPage() {
 ) => {
   try {
     await axios.post(
-      `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/review`,
+      `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin`,
       {
         identity_verification_id: id,
         status,
