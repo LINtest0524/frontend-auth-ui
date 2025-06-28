@@ -111,6 +111,18 @@ export default function Sidebar() {
           )}
         </div>
 
+        <Link
+          href="/admin/id-verification"
+          className={cn(
+            "text-left px-3 py-2 rounded hover:bg-gray-700",
+            pathname?.startsWith("/admin/id-verification") &&
+              !pathname.includes("/id-verification") &&
+              "bg-gray-700"
+          )}
+        >
+          驗證通知
+        </Link>
+
 
       </nav>
     </aside>
