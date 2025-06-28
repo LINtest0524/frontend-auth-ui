@@ -7,10 +7,13 @@ import PortalHeaderBar from '@/components/PortalHeaderBar'
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
 import IdVerification from '@/app/portal/[company]/member/id-verification/page'
+import BankVerification from '@/app/portal/[company]/member/bank-verification/page'
+
+
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' >('profile')
 
   return (
     <div>
@@ -53,6 +56,19 @@ export default function MemberPage() {
           >
             身分證驗證
           </button>
+
+          <button
+            onClick={() => setTab('bank-verification')}
+            className={`block w-full text-left px-3 py-2 rounded ${
+              tab === 'bank-verification' ? 'bg-blue-600 text-white' : 'hover:bg-gray-200'
+            }`}
+          >
+            銀行帳戶驗證
+          </button>
+
+  
+
+
         </aside>
 
         {/* 右側內容 */}
@@ -60,12 +76,17 @@ export default function MemberPage() {
           <h1 className="text-xl font-bold mb-4">會員中心</h1>
 
           {tab === 'profile' && (
-            <MemberProfile onGoToVerification={() => setTab('id-verification')} />
+            <MemberProfile
+              onGoToIdVerification={() => setTab('id-verification')}
+              onGoToBankVerification={() => setTab('bank-verification')}
+            />
           )}
+
 
           {tab === 'password' && <MemberPasswordForm />}
           {tab === 'edit' && <MemberEditForm />}
           {tab === 'id-verification' && <IdVerification />}
+          {tab === 'bank-verification' && <BankVerification />}
 
         </main>
       </div>

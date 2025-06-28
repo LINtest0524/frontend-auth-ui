@@ -6,54 +6,103 @@ import axios, { AxiosError } from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
+type VerifyType = 'ID_CARD' | 'BANK_ACCOUNT'
+type VerifyStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'NONE'
 
 interface MemberProfileProps {
-  onGoToVerification?: () => void
+  onGoToIdVerification?: () => void
+  onGoToBankVerification?: () => void
 }
 
-export default function MemberProfile({ onGoToVerification }: MemberProfileProps) {
+export default function MemberProfile({
+  onGoToIdVerification,
+  onGoToBankVerification,
+}: MemberProfileProps) {
   const { user } = useUserStore()
-  const [status, setStatus] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | 'NONE'>('NONE')
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      const token = localStorage.getItem('portalToken')
-      if (!token) return
+  const [statusMap, setStatusMap] = useState<Record<VerifyType, VerifyStatus>>({
+    ID_CARD: 'NONE',
+    BANK_ACCOUNT: 'NONE',
+  })
 
-      try {
-        const res = await axios.get(`${API_URL}/api/id-verification/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-console.log('✅ 驗證資料：', res.data)
-        setStatus(res.data?.status || 'NONE')
-      } catch (err: unknown) {
-        const error = err as AxiosError
-        if (error.response?.status === 404) {
-          setStatus('NONE')
-        } else {
-          console.error('❌ 取得驗證狀態失敗：', err)
-        }
-      }
-    }
-
-    fetchStatus()
-  }, [])
-
-  const handleDelete = async () => {
+  const fetchStatus = async (type: VerifyType) => {
     const token = localStorage.getItem('portalToken')
     if (!token) return
 
+    try {
+      const res = await axios.get(`${API_URL}/api/id-verification/me?type=${type}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      console.log(`✅ ${type} 驗證資料：`, res.data)
+      setStatusMap((prev) => ({ ...prev, [type]: res.data?.status || 'NONE' }))
+    } catch (err: unknown) {
+      const error = err as AxiosError
+      if (error.response?.status === 404) {
+        setStatusMap((prev) => ({ ...prev, [type]: 'NONE' }))
+      } else {
+        console.error(`❌ 取得 ${type} 驗證狀態失敗：`, err)
+      }
+    }
+  }
+
+  const handleDelete = async (type: VerifyType) => {
+    const token = localStorage.getItem('portalToken')
+    if (!token) return
     if (!confirm('確定要刪除驗證資料嗎？')) return
 
     try {
-      await axios.delete(`${API_URL}/api/id-verification`, {
+      await axios.delete(`${API_URL}/api/id-verification?type=${type}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      setStatus('NONE')
+      setStatusMap((prev) => ({ ...prev, [type]: 'NONE' }))
     } catch (err) {
-      console.error('刪除失敗:', err)
+      console.error(`❌ 刪除 ${type} 驗證失敗:`, err)
       alert('刪除失敗，請稍後再試')
     }
+  }
+
+  useEffect(() => {
+    fetchStatus('ID_CARD')
+    fetchStatus('BANK_ACCOUNT')
+  }, [])
+
+  const renderStatus = (
+    type: VerifyType,
+    label: string,
+    onGo?: () => void
+  ) => {
+    const status = statusMap[type]
+
+    return (
+      <div>
+        <span className="font-medium">{label}：</span>
+        {status === 'NONE' && (
+          <button
+            className="text-blue-600 underline ml-2"
+            onClick={onGo}
+          >
+            前往驗證
+          </button>
+        )}
+        {status === 'PENDING' && (
+          <span className="text-yellow-600 ml-2">等待驗證中</span>
+        )}
+        {status === 'APPROVED' && (
+          <span className="text-green-600 ml-2">已驗證</span>
+        )}
+        {status === 'REJECTED' && (
+          <>
+            <span className="text-red-600 ml-2">驗證失敗</span>
+            <button
+              className="text-blue-600 underline ml-2"
+              onClick={() => handleDelete(type)}
+            >
+              重新驗證
+            </button>
+          </>
+        )}
+      </div>
+    )
   }
 
   if (!user) return <div className="text-gray-500">尚未登入</div>
@@ -74,32 +123,8 @@ console.log('✅ 驗證資料：', res.data)
           <span className="font-medium">角色：</span>
           <span>{user.role || '（無）'}</span>
         </div>
-        <div>
-          <span className="font-medium">身分證驗證：</span>
-          {status === 'NONE' && (
-            <button
-              className="text-blue-600 underline ml-2"
-              onClick={() => onGoToVerification?.()}
-
-            >
-              前往驗證
-            </button>
-          )}
-          {status === 'PENDING' && <span className="text-yellow-600 ml-2">等待驗證中</span>}
-          {status === 'APPROVED' && <span className="text-green-600 ml-2">已驗證</span>}
-          {status === 'REJECTED' && (
-            <>
-              <span className="text-red-600 ml-2">驗證失敗</span>
-              <button
-                className="text-blue-600 underline ml-2"
-                onClick={handleDelete}
-              >
-                重新驗證
-              </button>
-            </>
-          )}
-          
-        </div>
+        {renderStatus('ID_CARD', '身分證驗證', onGoToIdVerification)}
+        {renderStatus('BANK_ACCOUNT', '銀行帳戶驗證', onGoToBankVerification)}
       </div>
     </div>
   )

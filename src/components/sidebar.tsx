@@ -10,6 +10,9 @@ export default function Sidebar() {
   const [bannerOpen, setBannerOpen] = useState(false)
   const [marqueeOpen, setMarqueeOpen] = useState(false)
 
+
+  
+
   return (
     <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
       <nav className="flex flex-col gap-4">
@@ -110,6 +113,12 @@ export default function Sidebar() {
             </div>
           )}
         </div>
+
+
+
+
+
+
 
         <Link
           href="/admin/id-verification"
