@@ -1,3 +1,5 @@
+// 已修正版本：保留搜尋 UI + 穩定排序更新邏輯
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,8 +21,8 @@ export default function UserListPage() {
   const [loading, setLoading] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  const searchParams = useSearchParams();
 
+  // 搜尋欄位狀態
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [blacklist, setBlacklist] = useState("");
@@ -31,11 +33,10 @@ export default function UserListPage() {
 
   const sortUsers = (data: User[]) => {
     if (!sortKey || !sortDirection) return data;
-
     return [...data].sort((a, b) => {
       const getValue = (user: User) => {
-        if (sortKey === "last_login_at" || sortKey === "created_at") {
-          return user[sortKey] ? new Date(user[sortKey] as string).getTime() : 0;
+        if (sortKey === "created_at" || sortKey === "last_login_at") {
+          return user[sortKey] ? new Date(user[sortKey]!).getTime() : 0;
         }
         return (user[sortKey] as number) ?? 0;
       };
@@ -61,7 +62,6 @@ export default function UserListPage() {
           },
         }
       );
-
       const data = await res.json();
       setUsers(sortUsers(data));
     } catch (err) {
@@ -78,11 +78,6 @@ export default function UserListPage() {
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
   }, [sortKey, sortDirection]);
-
-  const getDeviceType = (userAgent?: string) => {
-    if (!userAgent) return "-";
-    return userAgent.toLowerCase().includes("mobile") ? "手機" : "電腦";
-  };
 
   const toggleSort = (key: SortKey) => {
     if (sortKey !== key) {
@@ -112,7 +107,6 @@ export default function UserListPage() {
   const handleToggleStatus = async (userId: number, currentStatus: string) => {
     const token = localStorage.getItem("token");
     const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-
     await fetch(`http://localhost:3001/user/${userId}`, {
       method: "PATCH",
       headers: {
@@ -121,19 +115,11 @@ export default function UserListPage() {
       },
       body: JSON.stringify({ status: newStatus }),
     });
-
-    setUsers((prev) =>
-      sortUsers(
-        prev.map((user) =>
-          user.id === userId ? { ...user, status: newStatus } : user
-        )
-      )
-    );
+    setUsers((prev) => sortUsers(prev.map((u) => u.id === userId ? { ...u, status: newStatus } : u)));
   };
 
   const handleToggleBlacklist = async (userId: number, current: boolean) => {
     const token = localStorage.getItem("token");
-
     await fetch(`http://localhost:3001/user/${userId}`, {
       method: "PATCH",
       headers: {
@@ -142,21 +128,49 @@ export default function UserListPage() {
       },
       body: JSON.stringify({ is_blacklisted: !current }),
     });
+    setUsers((prev) => sortUsers(prev.map((u) => u.id === userId ? { ...u, is_blacklisted: !current } : u)));
+  };
 
-    setUsers((prev) =>
-      sortUsers(
-        prev.map((user) =>
-          user.id === userId ? { ...user, is_blacklisted: !current } : user
-        )
-      )
-    );
+  const getDeviceType = (ua?: string) => {
+    if (!ua) return "-";
+    return ua.toLowerCase().includes("mobile") ? "手機" : "電腦";
   };
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">👥 使用者列表</h1>
 
-      {/* 省略：搜尋表單區與表格設定區，這邊照你原本就好 */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <input type="text" placeholder="帳號" value={username} onChange={(e) => setUsername(e.target.value)} className="border rounded px-3 py-2 w-full" />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border rounded px-3 py-2 w-full">
+          <option value="">狀態（全部）</option>
+          <option value="ACTIVE">啟用</option>
+          <option value="INACTIVE">停用</option>
+          <option value="BANNED">封鎖</option>
+        </select>
+        <select value={blacklist} onChange={(e) => setBlacklist(e.target.value)} className="border rounded px-3 py-2 w-full">
+          <option value="">黑名單（全部）</option>
+          <option value="true">是</option>
+          <option value="false">否</option>
+        </select>
+        <div className="flex gap-2">
+          <input type="date" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="border rounded px-2 py-1 w-full" />
+          <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="border rounded px-2 py-1 w-full" />
+        </div>
+        <div className="flex gap-2">
+          <input type="date" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="border rounded px-2 py-1 w-full" />
+          <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="border rounded px-2 py-1 w-full" />
+        </div>
+        <button onClick={() => alert("尚未串接搜尋功能") } className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+          查詢
+        </button>
+      </div>
+
+      <div className="mb-4 flex items-center gap-2">
+        <label>每頁顯示筆數：</label>
+        <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
+        <span className="text-sm text-gray-500">預設查詢近 1 日內新增會員</span>
+      </div>
 
       <table className="w-full border-collapse border text-sm">
         <thead>
@@ -183,18 +197,12 @@ export default function UserListPage() {
               <td className="border p-2">{user.last_login_platform ? getDeviceType(user.last_login_platform) : "-"}</td>
               <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
               <td className="border p-2">
-                <button
-                  onClick={() => handleToggleStatus(user.id, user.status)}
-                  className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}
-                >
+                <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
                   {user.status === "ACTIVE" ? "啟用" : "停用"}
                 </button>
               </td>
               <td className="border p-2">
-                <button
-                  onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)}
-                  className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}
-                >
+                <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
                   {user.is_blacklisted ? "是" : "否"}
                 </button>
               </td>
