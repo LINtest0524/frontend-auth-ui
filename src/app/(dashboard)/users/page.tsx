@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { User } from "@/types/user";
 
 type SortKey = "id" | "created_at" | "last_login_at" | null;
@@ -13,9 +12,21 @@ const statusMap: Record<string, string> = {
   BANNED: "封鎖",
 };
 
+
+
 export default function UserListPage() {
+
+  
+  
   const [users, setUsers] = useState<User[]>([]);
   const [limit, setLimit] = useState(20);
+
+
+  const [page, setPage] = useState(1);
+
+
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -44,44 +55,49 @@ export default function UserListPage() {
   };
 
   const fetchUsers = async () => {
-  setLoading(true)
-  try {
-    const token = localStorage.getItem("token")
-    const params = new URLSearchParams()
 
-    if (username) params.append("username", username)
-    if (status) params.append("status", status)
-    if (blacklist) params.append("blacklist", blacklist)
-    if (createdFrom) params.append("createdFrom", createdFrom)
-    if (createdTo) params.append("createdTo", createdTo)
-    if (loginFrom) params.append("loginFrom", loginFrom)
-    if (loginTo) params.append("loginTo", loginTo)
+    
+    if (!Number.isFinite(limit) || !Number.isFinite(page)) return;
 
-    const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const params = new URLSearchParams();
 
-    const data = await res.json()
-    setUsers(data)
-  } catch (err) {
-    console.error("Fetch failed", err)
-  } finally {
-    setLoading(false)
-  }
-}
-
+      if (username) params.append("username", username);
+      if (status) params.append("status", status);
+      if (blacklist) params.append("blacklist", blacklist);
+      if (createdFrom) params.append("createdFrom", createdFrom);
+      if (createdTo) params.append("createdTo", createdTo);
+      if (loginFrom) params.append("loginFrom", loginFrom);
+      if (loginTo) params.append("loginTo", loginTo);
+      params.append("limit", limit.toString());
+      params.append("page", page.toString());
+console.log(params.toString())
+      const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      setUsers(sortUsers(result.data));
+      setTotalPages(result.totalPages);
+      setTotalCount(result.totalCount);
+    } catch (err) {
+      console.error("Fetch failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
-  }, [limit]);
+  }, [limit, page]);
 
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
   }, [sortKey, sortDirection]);
 
   const handleSearch = () => {
+    setPage(1);
     fetchUsers();
   };
 
@@ -121,7 +137,7 @@ export default function UserListPage() {
       },
       body: JSON.stringify({ status: newStatus }),
     });
-    setUsers((prev) => sortUsers(prev.map((u) => u.id === userId ? { ...u, status: newStatus } : u)));
+    fetchUsers();
   };
 
   const handleToggleBlacklist = async (userId: number, current: boolean) => {
@@ -134,12 +150,72 @@ export default function UserListPage() {
       },
       body: JSON.stringify({ is_blacklisted: !current }),
     });
-    setUsers((prev) => sortUsers(prev.map((u) => u.id === userId ? { ...u, is_blacklisted: !current } : u)));
+    fetchUsers();
   };
 
   const getDeviceType = (ua?: string) => {
     if (!ua) return "-";
     return ua.toLowerCase().includes("mobile") ? "手機" : "電腦";
+  };
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxVisible = 5;
+    const half = Math.floor(maxVisible / 2);
+    let start = Math.max(1, page - half);
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`px-3 py-1 border rounded ${i === page ? "bg-gray-300" : "bg-white"}`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="mt-4 flex justify-center items-center gap-2">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          上一頁
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <button
+            key={p}
+            onClick={() => setPage(p)}
+            className={`px-3 py-1 rounded border ${
+              page === p ? "bg-blue-600 text-white" : "hover:bg-gray-200"
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          下一頁
+        </button>
+
+        <p className="text-sm text-gray-500">
+          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -175,47 +251,53 @@ export default function UserListPage() {
       <div className="mb-4 flex items-center gap-2">
         <label>每頁顯示筆數：</label>
         <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
-        <span className="text-sm text-gray-500">預設查詢近 1 日內新增會員</span>
       </div>
 
-      <table className="w-full border-collapse border text-sm">
-        <thead>
-          <tr className="bg-gray-200 text-center">
-            <th className="border p-2 cursor-pointer" onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
-            <th className="border p-2">帳號</th>
-            <th className="border p-2">Email</th>
-            <th className="border p-2 cursor-pointer" onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
-            <th className="border p-2">登入 IP</th>
-            <th className="border p-2">登入平台</th>
-            <th className="border p-2 cursor-pointer" onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
-            <th className="border p-2">狀態</th>
-            <th className="border p-2">黑名單</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id} className="text-center">
-              <td className="border p-2">{user.id}</td>
-              <td className="border p-2">{user.username}</td>
-              <td className="border p-2">{user.email || "-"}</td>
-              <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-              <td className="border p-2">{user.last_login_ip || "-"}</td>
-              <td className="border p-2">{user.last_login_platform ? getDeviceType(user.last_login_platform) : "-"}</td>
-              <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-              <td className="border p-2">
-                <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
-                  {user.status === "ACTIVE" ? "啟用" : "停用"}
-                </button>
-              </td>
-              <td className="border p-2">
-                <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
-                  {user.is_blacklisted ? "是" : "否"}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {loading ? (
+        <p>載入中...</p>
+      ) : (
+        <>
+          <table className="w-full border-collapse border text-sm">
+            <thead>
+              <tr className="bg-gray-200 text-center">
+                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
+                <th className="border p-2">帳號</th>
+                <th className="border p-2">Email</th>
+                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
+                <th className="border p-2">登入 IP</th>
+                <th className="border p-2">登入平台</th>
+                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
+                <th className="border p-2">狀態</th>
+                <th className="border p-2">黑名單</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="text-center">
+                  <td className="border p-2">{user.id}</td>
+                  <td className="border p-2">{user.username}</td>
+                  <td className="border p-2">{user.email || "-"}</td>
+                  <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                  <td className="border p-2">{user.last_login_ip || "-"}</td>
+                  <td className="border p-2">{user.last_login_platform ? getDeviceType(user.last_login_platform) : "-"}</td>
+                  <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                  <td className="border p-2">
+                    <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
+                      {user.status === "ACTIVE" ? "啟用" : "停用"}
+                    </button>
+                  </td>
+                  <td className="border p-2">
+                    <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
+                      {user.is_blacklisted ? "是" : "否"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {renderPagination()}
+        </>
+      )}
     </div>
   );
 }
