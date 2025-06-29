@@ -21,6 +21,15 @@ export default function UserListPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
   const searchParams = useSearchParams()
 
+  // Search Form States
+  const [username, setUsername] = useState("")
+  const [status, setStatus] = useState("")
+  const [blacklist, setBlacklist] = useState("")
+  const [createdFrom, setCreatedFrom] = useState("")
+  const [createdTo, setCreatedTo] = useState("")
+  const [loginFrom, setLoginFrom] = useState("")
+  const [loginTo, setLoginTo] = useState("")
+
   const fetchUsers = async () => {
     setLoading(true)
     try {
@@ -127,6 +136,78 @@ export default function UserListPage() {
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">👥 使用者列表</h1>
 
+      {/* 搜尋欄位區域 */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <input
+          type="text"
+          placeholder="帳號"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        />
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        >
+          <option value="">狀態（全部）</option>
+          <option value="ACTIVE">啟用</option>
+          <option value="INACTIVE">停用</option>
+          <option value="BANNED">封鎖</option>
+        </select>
+        <select
+          value={blacklist}
+          onChange={(e) => setBlacklist(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        >
+          <option value="">黑名單（全部）</option>
+          <option value="true">是</option>
+          <option value="false">否</option>
+        </select>
+        <div className="flex gap-2">
+          <input
+            type="date"
+            value={createdFrom}
+            onChange={(e) => setCreatedFrom(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+            placeholder="註冊起"
+          />
+          <input
+            type="date"
+            value={createdTo}
+            onChange={(e) => setCreatedTo(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+            placeholder="註冊迄"
+          />
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="date"
+            value={loginFrom}
+            onChange={(e) => setLoginFrom(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+            placeholder="登入起"
+          />
+          <input
+            type="date"
+            value={loginTo}
+            onChange={(e) => setLoginTo(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+            placeholder="登入迄"
+          />
+        </div>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          onClick={() => {
+            // TODO: 實作查詢功能
+            alert("尚未串接搜尋功能")
+          }}
+        >
+          查詢
+        </button>
+      </div>
+
+      {/* 每頁筆數設定 */}
       <div className="mb-4 flex items-center gap-2">
         <label>每頁顯示筆數：</label>
         <input
@@ -138,6 +219,7 @@ export default function UserListPage() {
         <span className="text-sm text-gray-500">預設查詢近 1 日內新增會員</span>
       </div>
 
+      {/* 表格 */}
       {loading ? (
         <p>載入中...</p>
       ) : (
