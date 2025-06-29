@@ -1,5 +1,3 @@
-// 已修正版本：保留搜尋 UI + 穩定排序更新邏輯
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,7 +20,6 @@ export default function UserListPage() {
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // 搜尋欄位狀態
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [blacklist, setBlacklist] = useState("");
@@ -47,29 +44,34 @@ export default function UserListPage() {
   };
 
   const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const now = new Date();
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const isoDate = oneDayAgo.toISOString();
-      const token = localStorage.getItem("token");
+  setLoading(true)
+  try {
+    const token = localStorage.getItem("token")
+    const params = new URLSearchParams()
 
-      const res = await fetch(
-        `http://localhost:3001/user?from=${encodeURIComponent(isoDate)}&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
-      setUsers(sortUsers(data));
-    } catch (err) {
-      console.error("Fetch failed", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (username) params.append("username", username)
+    if (status) params.append("status", status)
+    if (blacklist) params.append("blacklist", blacklist)
+    if (createdFrom) params.append("createdFrom", createdFrom)
+    if (createdTo) params.append("createdTo", createdTo)
+    if (loginFrom) params.append("loginFrom", loginFrom)
+    if (loginTo) params.append("loginTo", loginTo)
+
+    const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const data = await res.json()
+    setUsers(data)
+  } catch (err) {
+    console.error("Fetch failed", err)
+  } finally {
+    setLoading(false)
+  }
+}
+
 
   useEffect(() => {
     fetchUsers();
@@ -78,6 +80,10 @@ export default function UserListPage() {
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
   }, [sortKey, sortDirection]);
+
+  const handleSearch = () => {
+    fetchUsers();
+  };
 
   const toggleSort = (key: SortKey) => {
     if (sortKey !== key) {
@@ -161,7 +167,7 @@ export default function UserListPage() {
           <input type="date" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="border rounded px-2 py-1 w-full" />
           <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="border rounded px-2 py-1 w-full" />
         </div>
-        <button onClick={() => alert("尚未串接搜尋功能") } className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        <button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
           查詢
         </button>
       </div>
