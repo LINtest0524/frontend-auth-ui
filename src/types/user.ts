@@ -13,7 +13,8 @@ export interface User {
 
   is_blacklisted: boolean;
 
-  role?: 'USER' | 'AGENT_SUPPORT' | 'AGENT_OWNER' | 'SUPER_ADMIN';
+  role?: 'USER' | 'AGENT_SUPPORT' | 'AGENT_OWNER' | 'GLOBAL_ADMIN' | 'SUPER_ADMIN';
+
   companyId?: number;
   company?: {
     id: number;
