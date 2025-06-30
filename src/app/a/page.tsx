@@ -1,37 +1,32 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import BannerCarousel from '@/components/BannerCarousel'
 import Marquee from '@/components/Marquee'
 
-export default function PortalCompanyPage() {
-  const { company } = useParams()
+export default function AgentAHomePage() {
   const { user } = useUserStore()
   const modules = useEnabledModules()
 
   const [banners, setBanners] = useState<any[]>([])
   const [marquees, setMarquees] = useState<any[]>([])
 
-  const comp = typeof company === 'string' ? company : null
+  const companyCode = 'a' // ✅ 固定 company 為代理商 A
 
   useEffect(() => {
-    
-    if (!comp) return
-    
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${comp}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setBanners)
       .catch(() => setBanners([]))
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${comp}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setMarquees)
       .catch(() => setMarquees([]))
-  }, [comp])
+  }, [])
 
   const renderModule = useCallback((key: string, props: any = {}) => {
     const mod = modules.find((m) => m.key === key)
@@ -45,12 +40,11 @@ export default function PortalCompanyPage() {
       <PortalHeaderBar />
 
       <div className="container mx-auto p-6 space-y-6">
+        <h1 className="text-xl font-bold mb-4">A首頁</h1>
+        <p>這裡可以顯示你要的內容</p>
         {user ? (
           <>
-      
             <div className="border rounded p-4 bg-white shadow">
-              <h1 className="text-xl font-bold mb-4">首頁</h1>
-              <p>這裡可以顯示你要的內容</p>
             </div>
 
             {renderModule('banner', { banners })}
@@ -58,7 +52,6 @@ export default function PortalCompanyPage() {
           </>
         ) : (
           <>
-            {/* ✅ 未登入也能看到的公開資訊 */}
             <Marquee marquees={marquees} />
             <BannerCarousel banners={banners} />
           </>
@@ -66,5 +59,4 @@ export default function PortalCompanyPage() {
       </div>
     </>
   )
-
 }

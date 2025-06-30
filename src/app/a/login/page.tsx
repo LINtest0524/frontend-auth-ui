@@ -2,19 +2,23 @@
 
 import { useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
-import { useParams } from 'next/navigation'
 
-export default function PortalLoginPage() {
+
+export default function AgentLoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const setUser = useUserStore((s) => s.setUser)
-  const params = useParams()
-  const companyCode = (params.company as string) || 'default'
+  const companyCode = 'a'
 
   const handleLogin = async () => {
+    if (!companyCode) {
+      setError('無法取得公司代碼')
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -34,16 +38,14 @@ export default function PortalLoginPage() {
 
       localStorage.setItem('portalToken', data.token)
       localStorage.setItem('portalUser', JSON.stringify(data.user))
-      setUser(data.user)
-
-      // ✅ 這行非常關鍵：寫入 enabledModules
       if (data.user.enabledModules) {
         localStorage.setItem('enabledModules', JSON.stringify(data.user.enabledModules))
       }
 
-      const targetCompany = data.user.company?.code || 'default'
-      console.log('✅ 登入成功，導向:', `/portal/${targetCompany}`)
-      window.location.href = `/portal/${targetCompany}`
+      setUser(data.user)
+
+      // ✅ 動態導回該公司首頁
+      window.location.href = `/${companyCode}`
     } catch (err: any) {
       setError(err.message || '登入失敗')
     } finally {

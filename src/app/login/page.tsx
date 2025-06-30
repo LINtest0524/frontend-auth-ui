@@ -45,7 +45,7 @@ export default function Login() {
     <div className="flex h-screen justify-center items-center bg-gray-100">
       <Card className="w-[400px] shadow-2xl">
         <CardContent className="space-y-6 pt-10">
-          <h2 className="text-center text-xl font-bold">登入 Login</h2>
+          <h2 className="text-center text-xl font-bold">登入管理後台 Login</h2>
 
           <div className="space-y-2">
             <Label>帳號 Username</Label>

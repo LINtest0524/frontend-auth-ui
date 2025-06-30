@@ -6,8 +6,8 @@ import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
-import IdVerification from '@/app/portal/[company]/member/id-verification/page'
-import BankVerification from '@/app/portal/[company]/member/bank-verification/page'
+import IdVerification from '@/app/a/member/id-verification/page'
+import BankVerification from '@/app/a/member/bank-verification/page'
 
 
 

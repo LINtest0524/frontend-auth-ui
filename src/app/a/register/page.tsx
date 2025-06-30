@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import { useCompanySlug } from '@/hooks/useCompanySlug'
 
 export default function PortalRegisterPage() {
-  const { company } = useParams()
+  const company = useCompanySlug()
   const router = useRouter()
   const { setUser } = useUserStore()
 
@@ -21,15 +22,23 @@ export default function PortalRegisterPage() {
       return
     }
 
+    if (!company) {
+      setMessage('❌ 無法辨識公司代碼')
+      return
+    }
+
     setLoading(true)
     setMessage('')
 
     try {
-      const res = await fetch(`http://localhost:3001/portal/auth/register?company=${company}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email }),
-      })
+      const res = await fetch(
+        `http://localhost:3001/portal/auth/register?company=${company}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, email }),
+        }
+      )
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
@@ -38,7 +47,6 @@ export default function PortalRegisterPage() {
 
       const data = await res.json()
 
-      // ✅ 寫入 localStorage
       localStorage.setItem('portalToken', data.token)
       localStorage.setItem('portalUser', JSON.stringify(data.user))
       if (data.user.enabledModules) {
@@ -47,8 +55,8 @@ export default function PortalRegisterPage() {
 
       setUser(data.user)
 
-      const targetCompany = data.user.company?.code || 'default'
-      router.push(`/portal/${targetCompany}`)
+      const targetCompany = data.user.company?.code || company
+      router.push(`/${targetCompany}`) // ✅ 導回無 portal 的路徑
     } catch (err: any) {
       setMessage(`❌ ${err.message || '發生錯誤'}`)
     } finally {
