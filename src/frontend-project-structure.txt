@@ -1,0 +1,137 @@
+列出資料夾 PATH
+磁碟區序號為 E2F6-7C6C
+D:.
+|   project-structure.txt
+|   
++---app
+|   |   favicon.ico
+|   |   globals.css
+|   |   layout.tsx
+|   |   page.tsx
+|   |   
+|   +---(dashboard)
+|   |   |   layout.tsx
+|   |   |   
+|   |   +---admin
+|   |   |   +---banner
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---edit
+|   |   |   |   |   \---[id]
+|   |   |   |   |           page.tsx
+|   |   |   |   |           
+|   |   |   |   \---new
+|   |   |   |           page.tsx
+|   |   |   |           
+|   |   |   +---id-verification
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---marquee
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---new
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[id]
+|   |   |   |       \---edit
+|   |   |   |               page.tsx
+|   |   |   |               
+|   |   |   \---module
+|   |   |           page.tsx
+|   |   |           
+|   |   +---dashboard
+|   |   |       page.tsx
+|   |   |       
+|   |   \---users
+|   |           page.tsx
+|   |           
+|   +---a
+|   |   |   layout.tsx
+|   |   |   page.tsx
+|   |   |   
+|   |   +---login
+|   |   |       layout.tsx
+|   |   |       page.tsx
+|   |   |       
+|   |   +---member
+|   |   |   |   page.tsx
+|   |   |   |   
+|   |   |   +---bank-verification
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---id-verification
+|   |   |           page.tsx
+|   |   |           
+|   |   \---register
+|   |           page.tsx
+|   |           
+|   +---b
+|   |   |   layout.tsx
+|   |   |   page.tsx
+|   |   |   
+|   |   +---login
+|   |   |       layout.tsx
+|   |   |       page.tsx
+|   |   |       
+|   |   +---member
+|   |   |   |   page.tsx
+|   |   |   |   
+|   |   |   +---bank-verification
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---id-verification
+|   |   |           page.tsx
+|   |   |           
+|   |   \---register
+|   |           page.tsx
+|   |           
+|   +---login
+|   |       page.tsx
+|   |       
+|   \---portal
+|       |   layout - 複製.tsx
+|       |   layout.tsx
+|       |   page.tsx
+|       |   
+|       +---login
+|       |       page.tsx
+|       |       
+|       \---register
+|               page.tsx
+|               
++---components
+|   |   BannerCarousel.tsx
+|   |   Marquee.tsx
+|   |   PortalHeaderBar.tsx
+|   |   sidebar.tsx
+|   |   topbar.tsx
+|   |   
+|   +---member
+|   |       MemberEditForm.tsx
+|   |       MemberPasswordForm.tsx
+|   |       MemberProfile.tsx
+|   |       VerificationStatus暫未使用.tsx
+|   |       
+|   \---ui
+|           button.tsx
+|           card.tsx
+|           checkbox.tsx
+|           input.tsx
+|           label.tsx
+|           
++---hooks
+|       use-user-store.ts
+|       useCompanySlug.ts
+|       useEnabledModules.ts
+|       
++---lib
+|       moduleChecker.ts
+|       moduleRegistry.ts
+|       useAuth.ts
+|       useEnabledModules.tsx
+|       useModules.ts
+|       utils.ts
+|       
+\---types
+        user.ts
+        

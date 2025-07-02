@@ -72,12 +72,19 @@ export default function UserListPage() {
       if (loginFrom) params.append("loginFrom", loginFrom);
       if (loginTo) params.append("loginTo", loginTo);
       params.append("limit", limit.toString());
+
       params.append("page", page.toString());
-console.log(params.toString())
+
+      params.append("excludeUserRole", "false");
+
+
       const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
+
+ 
+
       setUsers(sortUsers(result.data));
       setTotalPages(result.totalPages);
       setTotalCount(result.totalCount);
@@ -91,6 +98,12 @@ console.log(params.toString())
   useEffect(() => {
     fetchUsers();
   }, [limit, page]);
+
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, [limit, page, username, status, blacklist, createdFrom, createdTo, loginFrom, loginTo]);
+
+
 
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
@@ -129,29 +142,52 @@ console.log(params.toString())
   const handleToggleStatus = async (userId: number, currentStatus: string) => {
     const token = localStorage.getItem("token");
     const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    await fetch(`http://localhost:3001/user/${userId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
-    fetchUsers();
+
+    try {
+      await fetch(`http://localhost:3001/user/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    } catch (err) {
+      console.error("切換狀態失敗", err);
+    }
   };
+
 
   const handleToggleBlacklist = async (userId: number, current: boolean) => {
     const token = localStorage.getItem("token");
-    await fetch(`http://localhost:3001/user/${userId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ is_blacklisted: !current }),
-    });
-    fetchUsers();
+
+    try {
+      await fetch(`http://localhost:3001/user/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_blacklisted: !current }),
+      });
+
+      // ✅ 這裡用 setUsers 更新單筆狀態，不整頁 fetch
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId ? { ...user, is_blacklisted: !current } : user
+        )
+      );
+    } catch (err) {
+      console.error("切換黑名單失敗", err);
+    }
   };
+
 
   const getDeviceType = (ua?: string) => {
     if (!ua) return "-";

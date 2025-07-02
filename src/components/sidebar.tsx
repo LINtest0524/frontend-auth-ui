@@ -28,13 +28,23 @@ export default function Sidebar() {
         </Link>
 
         <Link
+          href="/admin/admin-user"
+          className={cn(
+            "text-left px-3 py-2 rounded hover:bg-gray-700",
+            pathname === "/admin/admin-user" && "bg-gray-700"
+          )}
+        >
+          👥 管理員管理
+        </Link>
+
+        <Link
           href="/users"
           className={cn(
             "text-left px-3 py-2 rounded hover:bg-gray-700",
             pathname === "/users" && "bg-gray-700"
           )}
         >
-          👥 用戶管理
+          👥 會員管理
         </Link>
 
         {/* ✅ 新增模組設定連結 */}
