@@ -14,7 +14,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
     const token = localStorage.getItem('portalToken')
     const userData = localStorage.getItem('portalUser')
 
-    const currentCompanyCode = pathname.split('/')[1] // a 或 b
+    const currentCompanyCode = pathname.split('/')[1]
     const publicPaths = [`/${currentCompanyCode}`, `/${currentCompanyCode}/login`, `/${currentCompanyCode}/register`]
     const isPublicPage = publicPaths.includes(pathname)
 
@@ -29,16 +29,14 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
         const userCompanyCode = parsed?.company?.code
         if (userCompanyCode !== currentCompanyCode) {
-          console.warn('⚠️ 公司代碼不符，強制清除登入資訊但保留模組設定')
+          console.warn('⚠️ 公司代碼不符，強制清除登入資訊與模組設定')
           localStorage.removeItem('portalUser')
           localStorage.removeItem('portalToken')
+          localStorage.removeItem('enabledModules')
           setUser(null)
-          setHydrated(true)  // ⬅️ 這個很重要，不然會卡在「載入模組中」
+          setHydrated(true)
           return
         }
-
-
-
       } catch (err) {
         console.warn('❌ 無法解析登入資料', err)
         localStorage.clear()
@@ -46,7 +44,15 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
         return
       }
     } else {
-      // 沒登入 → 若不是公開頁，就導回 login
+      // ✅ 未登入：清除殘留模組資料，然後打 API 抓回正確值
+      localStorage.removeItem('enabledModules')
+
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/module?company=${currentCompanyCode}`)
+        .then((res) => res.json())
+        .then((enabled: string[]) => {
+          localStorage.setItem('enabledModules', JSON.stringify(enabled))
+        })
+
       if (!isPublicPage) {
         router.replace(`/${currentCompanyCode}/login`)
         return

@@ -36,27 +36,22 @@ export default function AgentAHomePage() {
   }, [modules])
 
   return (
-    <>
-      <PortalHeaderBar />
-
-      <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-xl font-bold mb-4">A首頁</h1>
-        <p>這裡可以顯示你要的內容</p>
-        {user ? (
-          <>
+      <>
+        <PortalHeaderBar />
+  
+        <div className="container mx-auto p-6 space-y-6">
+          <h1 className="text-xl font-bold mb-4">A首頁</h1>
+  
+          {user && (
             <div className="border rounded p-4 bg-white shadow">
+              <p>這裡可以顯示你要的內容</p>
             </div>
-
-            {renderModule('banner', { banners })}
-            {renderModule('marquee', { marquees })}
-          </>
-        ) : (
-          <>
-            <Marquee marquees={marquees} />
-            <BannerCarousel banners={banners} />
-          </>
-        )}
-      </div>
-    </>
-  )
+          )}
+  
+          {renderModule('banner', { banners })}
+          {renderModule('marquee', { marquees })}
+        </div>
+  
+      </>
+    )
 }

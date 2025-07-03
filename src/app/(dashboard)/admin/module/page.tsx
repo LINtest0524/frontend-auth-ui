@@ -35,8 +35,13 @@ export default function ModuleAdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
     })
+
+    // ✅ 派發事件通知全站：模組更新了
+    window.dispatchEvent(new Event('enabled-modules-updated'))
+
     alert('設定已儲存')
   }
+
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
