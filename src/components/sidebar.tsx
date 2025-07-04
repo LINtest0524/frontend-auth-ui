@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
-  const pathname = usePathname()
-  const [bannerOpen, setBannerOpen] = useState(false)
-  const [marqueeOpen, setMarqueeOpen] = useState(false)
+  const pathname = usePathname();
+  const [bannerOpen, setBannerOpen] = useState(false);
+  const [marqueeOpen, setMarqueeOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false); // ✅ 操作紀錄展開控制
 
   return (
     <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
@@ -43,7 +44,6 @@ export default function Sidebar() {
           👥 會員管理
         </Link>
 
-        {/* ✅ 新增模組設定連結 */}
         <Link
           href="/admin/module"
           className={cn(
@@ -56,7 +56,7 @@ export default function Sidebar() {
           🔧 模組設定
         </Link>
 
-        {/* Banner 管理項目 */}
+        {/* ✅ Banner 管理 */}
         <div>
           <button
             onClick={() => setBannerOpen(!bannerOpen)}
@@ -70,7 +70,7 @@ export default function Sidebar() {
                 href="/admin/banner"
                 className={cn(
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/banner" && "bg-gray-700"
+                  pathname === "/admin/banner" && "bg-gray-700"
                 )}
               >
                 📋 Banner 列表
@@ -88,7 +88,7 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* Marquee 管理項目 */}
+        {/* ✅ Marquee 管理 */}
         <div>
           <button
             onClick={() => setMarqueeOpen(!marqueeOpen)}
@@ -129,20 +129,59 @@ export default function Sidebar() {
               "bg-gray-700"
           )}
         >
-          驗證通知
+          🧾 驗證通知
         </Link>
 
-        {/* ✅ 新增：操作紀錄 */}
-        <Link
-          href="/audit-log"
-          className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
-            pathname === "/audit-log" && "bg-gray-700"
+        {/* ✅ 操作紀錄：展開四種 */}
+        <div>
+          <button
+            onClick={() => setAuditOpen(!auditOpen)}
+            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
+          >
+            🪵 操作紀錄
+          </button>
+          {auditOpen && (
+            <div className="ml-4 mt-2 flex flex-col gap-1">
+              <Link
+                href="/audit-log/back-login"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-login" && "bg-gray-700"
+                )}
+              >
+                🧾 後台登入紀錄
+              </Link>
+              <Link
+                href="/audit-log/portal-login"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/portal-login" && "bg-gray-700"
+                )}
+              >
+                🧑‍💻 前台登入紀錄
+              </Link>
+              <Link
+                href="/audit-log/back-action"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-action" && "bg-gray-700"
+                )}
+              >
+                📌 後管操作紀錄
+              </Link>
+              <Link
+                href="/audit-log/portal-action"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/portal-action" && "bg-gray-700"
+                )}
+              >
+                📝 前台操作紀錄
+              </Link>
+            </div>
           )}
-        >
-          🪵 操作紀錄
-        </Link>
+        </div>
       </nav>
     </aside>
-  )
+  );
 }
