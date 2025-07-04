@@ -315,7 +315,21 @@ export default function UserListPage() {
                   <td className="border p-2">{user.email || "-"}</td>
                   <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">{user.last_login_ip || "-"}</td>
-                  <td className="border p-2">{user.last_login_platform ? getDeviceType(user.last_login_platform) : "-"}</td>
+
+                  <td className="p-2">
+                    {user.last_login_platform ? (
+                      <>
+                        <span className="text-sm text-gray-800">
+                          {user.last_login_platform}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+
+
+
                   <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">
                     <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
