@@ -10,13 +10,9 @@ export default function Sidebar() {
   const [bannerOpen, setBannerOpen] = useState(false)
   const [marqueeOpen, setMarqueeOpen] = useState(false)
 
-
-  
-
   return (
     <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
       <nav className="flex flex-col gap-4">
-        
         <Link
           href="/dashboard"
           className={cn(
@@ -124,12 +120,6 @@ export default function Sidebar() {
           )}
         </div>
 
-
-
-
-
-
-
         <Link
           href="/admin/id-verification"
           className={cn(
@@ -142,7 +132,16 @@ export default function Sidebar() {
           驗證通知
         </Link>
 
-
+        {/* ✅ 新增：操作紀錄 */}
+        <Link
+          href="/audit-log"
+          className={cn(
+            "text-left px-3 py-2 rounded hover:bg-gray-700",
+            pathname === "/audit-log" && "bg-gray-700"
+          )}
+        >
+          🪵 操作紀錄
+        </Link>
       </nav>
     </aside>
   )
