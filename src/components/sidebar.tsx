@@ -161,6 +161,17 @@ export default function Sidebar() {
               >
                 📌 Banner紀錄
               </Link>
+
+              <Link
+                href="/audit-log/back-marquee"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-marquee" && "bg-gray-700"
+                )}
+              >
+                📺 跑馬燈紀錄
+              </Link>
+
               
               <Link
                 href="/audit-log/back-blacklist"
