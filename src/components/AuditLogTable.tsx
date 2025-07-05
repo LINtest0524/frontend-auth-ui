@@ -1,3 +1,4 @@
+// frontend\src\components\AuditLogTable.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,31 +19,48 @@ interface AuditLog {
 export default function AuditLogTable({
   keyword,
   title,
+  target,
 }: {
   keyword: string;
   title: string;
+  target?: string;
 }) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [filtered, setFiltered] = useState<AuditLog[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // const [target, setTarget] = useState("")
+
   const [search, setSearch] = useState("");
   const [userSearch, setUserSearch] = useState("");
   const [ipSearch, setIpSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-
-  const totalPages = Math.ceil(filtered.length / limit);
-  const paginated = filtered.slice((page - 1) * limit, page * limit);
 
   const fetchLogs = async () => {
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/audit-log", {
+      const params = new URLSearchParams();
+
+
+
+      if (target) params.append("target", target);
+      if (search) params.append("search", search);
+      if (userSearch) params.append("user", userSearch);
+      if (ipSearch) params.append("ip", ipSearch);
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+      params.append("page", page.toString());
+      params.append("limit", limit.toString());
+
+      const res = await fetch(`http://localhost:3001/audit-log?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,15 +69,11 @@ export default function AuditLogTable({
       if (!res.ok) throw new Error(`API 錯誤: ${res.status}`);
 
       const result = await res.json();
-      if (!Array.isArray(result)) throw new Error("API 回傳不是陣列");
+      if (!Array.isArray(result.data)) throw new Error("API 回傳格式錯誤");
 
-      const keywordFiltered = result.filter((log: AuditLog) =>
-        log.action.includes(keyword)
-      );
-
-      setLogs(keywordFiltered);
-      setFiltered([]); // 不自動顯示，等查詢
-      setPage(1);
+      setLogs(result.data);
+      setTotalPages(result.totalPages);
+      setTotalCount(result.totalCount);
     } catch (err: any) {
       console.error("API 錯誤:", err);
       setError(err.message || "API 讀取失敗");
@@ -68,33 +82,15 @@ export default function AuditLogTable({
     }
   };
 
-  const applyFilter = () => {
-    const q = search.trim().toLowerCase();
-    const userQ = userSearch.trim().toLowerCase();
-    const ipQ = ipSearch.trim();
-    const fromDate = from ? dayjs(from).startOf("day") : null;
-    const toDate = to ? dayjs(to).endOf("day") : null;
-
-    const result = logs.filter((log) => {
-      const time = dayjs(log.created_at);
-      const inDateRange = (!fromDate || time.isAfter(fromDate)) && (!toDate || time.isBefore(toDate));
-      const matchSearch = q === "" || log.action.toLowerCase().includes(q);
-      const matchUser = userQ === "" || (log.user?.username?.toLowerCase().includes(userQ));
-      const matchIp = ipQ === "" || log.ip.includes(ipQ);
-      return inDateRange && matchSearch && matchUser && matchIp;
-    });
-
-    setFiltered(result);
-    setPage(1);
-  };
-
   const clearFilter = () => {
     setSearch("");
     setUserSearch("");
     setIpSearch("");
     setFrom("");
     setTo("");
-    setFiltered([]);
+    setLogs([]);
+    setTotalPages(1);
+    setTotalCount(0);
   };
 
   const quickSetDate = (type: string) => {
@@ -166,21 +162,19 @@ export default function AuditLogTable({
           下一頁
         </button>
         <p className="text-gray-500 ml-4 whitespace-nowrap">
-          第 {page} / {totalPages} 頁（共 {filtered.length} 筆）
+          第 {page} / {totalPages} 頁（共 {totalCount} 筆）
         </p>
       </div>
     );
   };
-
-  useEffect(() => {
-    fetchLogs();
-  }, []);
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">{title}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+
+
         <input
           type="text"
           value={search}
@@ -223,16 +217,16 @@ export default function AuditLogTable({
         <button onClick={() => quickSetDate("thisMonth")} className="px-2 py-1 bg-gray-100 rounded">本月</button>
         <button onClick={() => quickSetDate("lastMonth")} className="px-2 py-1 bg-gray-100 rounded">上月</button>
         <div className="ml-auto flex gap-2">
-          <button onClick={applyFilter} className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">查詢</button>
+          <button onClick={() => { setPage(1); fetchLogs(); }} className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">查詢</button>
           <button onClick={clearFilter} className="px-4 py-1 bg-gray-300 text-black rounded hover:bg-gray-400">清除</button>
         </div>
       </div>
 
       {loading && <p>載入中...</p>}
       {error && <p className="text-red-500">錯誤：{error}</p>}
-      {!loading && !error && filtered.length === 0 && <p className="text-gray-500">尚無紀錄</p>}
+      {!loading && !error && logs.length === 0 && <p className="text-gray-500">尚無紀錄</p>}
 
-      {!loading && !error && filtered.length > 0 && (
+      {!loading && !error && logs.length > 0 && (
         <>
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -246,7 +240,7 @@ export default function AuditLogTable({
               </tr>
             </thead>
             <tbody>
-              {paginated.map((log) => (
+              {logs.map((log) => (
                 <tr key={log.id} className="text-center">
                   <td className="border p-2">{log.id}</td>
                   <td className="border p-2">{log.user?.username || "未知使用者"}</td>
