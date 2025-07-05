@@ -151,6 +151,27 @@ export default function Sidebar() {
               >
                 🧾 後台登入紀錄
               </Link>
+              
+              <Link
+                href="/audit-log/back-banner"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-banner" && "bg-gray-700"
+                )}
+              >
+                📌 Banner紀錄
+              </Link>
+              
+              <Link
+                href="/audit-log/back-blacklist"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-blacklist" && "bg-gray-700"
+                )}
+              >
+                🚫 黑名單紀錄
+              </Link>
+
               <Link
                 href="/audit-log/portal-login"
                 className={cn(
@@ -160,15 +181,7 @@ export default function Sidebar() {
               >
                 🧑‍💻 前台登入紀錄
               </Link>
-              <Link
-                href="/audit-log/back-action"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-action" && "bg-gray-700"
-                )}
-              >
-                📌 後管操作紀錄
-              </Link>
+
               <Link
                 href="/audit-log/portal-action"
                 className={cn(
@@ -178,6 +191,7 @@ export default function Sidebar() {
               >
                 📝 前台操作紀錄
               </Link>
+
             </div>
           )}
         </div>
