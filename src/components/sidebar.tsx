@@ -143,6 +143,16 @@ export default function Sidebar() {
           {auditOpen && (
             <div className="ml-4 mt-2 flex flex-col gap-1">
               <Link
+                href="/audit-log/admin-user"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/admin-user" && "bg-gray-700"
+                )}
+              >
+                👮 管理員操作紀錄
+              </Link>
+
+              <Link
                 href="/audit-log/back-login"
                 className={cn(
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",

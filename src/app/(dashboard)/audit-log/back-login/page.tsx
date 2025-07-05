@@ -5,7 +5,7 @@ export default function BackLoginLogPage() {
     <AuditLogTable
       keyword="登入後台"
       title="🧾 後台登入紀錄"
-      target="login" // ✅ 新增：對應 login 模組紀錄
+      target="login:admin" // ✅ 新增：對應 login 模組紀錄
     />
 
   );
