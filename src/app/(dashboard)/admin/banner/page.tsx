@@ -27,6 +27,7 @@ export default function BannerListPage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
+        console.log('🧾 撈到 banners:', data) // ✅ 印出來比對
         setBanners(data)
       } catch (err) {
         console.error('載入 Banner 失敗', err)
@@ -35,6 +36,7 @@ export default function BannerListPage() {
 
     fetchData()
   }, [])
+
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm('確定要刪除這筆 Banner 嗎？')
