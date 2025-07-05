@@ -5,7 +5,7 @@ export default function PortalLoginLogPage() {
     <AuditLogTable
       keyword="登入代理商"
       title="🧑‍💻 前台登入紀錄"
-      target="portal-login"
+      target="login-portal" // ✅ 對應後端這邊補的 target
     />
   );
 }
