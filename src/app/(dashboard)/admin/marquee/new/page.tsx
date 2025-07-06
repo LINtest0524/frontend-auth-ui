@@ -1,34 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function MarqueeCreatePage() {
-  const router = useRouter()
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE
+  const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE;
 
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [link, setLink] = useState("")
-  const [isActive, setIsActive] = useState(true)
-  const [loading, setLoading] = useState(false)
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [link, setLink] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // ✅ 取得 companyId（從 localStorage 中的 user）
-  const userJson = typeof window !== "undefined" ? localStorage.getItem("user") : null
-  const companyId = userJson ? JSON.parse(userJson)?.company?.id : null
+  const userJson =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const companyId = userJson ? JSON.parse(userJson)?.company?.id : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return alert("請輸入標題")
-    if (!companyId) return alert("找不到公司 ID，請重新登入")
+    e.preventDefault();
+    if (!title.trim()) return alert("請輸入標題");
+    if (!companyId) return alert("找不到公司 ID，請重新登入");
+    if (!token) return alert("未登入或 token 遺失，請重新登入");
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       const res = await fetch(`${apiBase}/admin/marquee`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title,
@@ -37,22 +41,22 @@ export default function MarqueeCreatePage() {
           isActive,
           companyId,
         }),
-      })
+      });
 
       if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(`伺服器錯誤：${res.status} - ${errText}`)
+        const errText = await res.text();
+        throw new Error(`伺服器錯誤：${res.status} - ${errText}`);
       }
 
-      alert("新增成功！")
-      router.push("/admin/marquee")
+      alert("新增成功！");
+      router.push("/admin/marquee");
     } catch (err: any) {
-      alert("新增失敗：" + err.message)
-      console.error("新增失敗", err)
+      alert("新增失敗：" + err.message);
+      console.error("新增失敗", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="p-6 max-w-xl">
@@ -109,5 +113,5 @@ export default function MarqueeCreatePage() {
         </button>
       </form>
     </div>
-  )
+  );
 }

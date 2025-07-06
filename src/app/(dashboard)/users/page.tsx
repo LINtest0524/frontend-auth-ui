@@ -72,12 +72,19 @@ export default function UserListPage() {
       if (loginFrom) params.append("loginFrom", loginFrom);
       if (loginTo) params.append("loginTo", loginTo);
       params.append("limit", limit.toString());
+
       params.append("page", page.toString());
-console.log(params.toString())
+
+      params.append("excludeUserRole", "false");
+
+
       const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
+
+ 
+
       setUsers(sortUsers(result.data));
       setTotalPages(result.totalPages);
       setTotalCount(result.totalCount);
@@ -91,6 +98,12 @@ console.log(params.toString())
   useEffect(() => {
     fetchUsers();
   }, [limit, page]);
+
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, [limit, page, username, status, blacklist, createdFrom, createdTo, loginFrom, loginTo]);
+
+
 
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
@@ -129,29 +142,52 @@ console.log(params.toString())
   const handleToggleStatus = async (userId: number, currentStatus: string) => {
     const token = localStorage.getItem("token");
     const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    await fetch(`http://localhost:3001/user/${userId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
-    fetchUsers();
+
+    try {
+      await fetch(`http://localhost:3001/user/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    } catch (err) {
+      console.error("切換狀態失敗", err);
+    }
   };
+
 
   const handleToggleBlacklist = async (userId: number, current: boolean) => {
     const token = localStorage.getItem("token");
-    await fetch(`http://localhost:3001/user/${userId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ is_blacklisted: !current }),
-    });
-    fetchUsers();
+
+    try {
+      await fetch(`http://localhost:3001/user/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_blacklisted: !current }),
+      });
+
+      // ✅ 這裡用 setUsers 更新單筆狀態，不整頁 fetch
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId ? { ...user, is_blacklisted: !current } : user
+        )
+      );
+    } catch (err) {
+      console.error("切換黑名單失敗", err);
+    }
   };
+
 
   const getDeviceType = (ua?: string) => {
     if (!ua) return "-";
@@ -279,7 +315,21 @@ console.log(params.toString())
                   <td className="border p-2">{user.email || "-"}</td>
                   <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">{user.last_login_ip || "-"}</td>
-                  <td className="border p-2">{user.last_login_platform ? getDeviceType(user.last_login_platform) : "-"}</td>
+
+                  <td className="p-2">
+                    {user.last_login_platform ? (
+                      <>
+                        <span className="text-sm text-gray-800">
+                          {user.last_login_platform}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+
+
+
                   <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">
                     <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>

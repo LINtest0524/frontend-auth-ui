@@ -1,65 +1,86 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { format } from "date-fns"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
 
 type MarqueeItem = {
-  id: number
-  title: string
-  content: string
-  link?: string
-  isActive: boolean
-  createdAt: string
-}
+  id: number;
+  title: string;
+  content: string;
+  link?: string;
+  isActive: boolean;
+  createdAt: string;
+};
 
 export default function MarqueeListPage() {
-  const [items, setItems] = useState<MarqueeItem[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [items, setItems] = useState<MarqueeItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE;
 
-  const userJson = typeof window !== "undefined" ? localStorage.getItem("user") : null
-  const companyId = userJson ? JSON.parse(userJson)?.company?.id : null
+  const userJson =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const companyId = userJson ? JSON.parse(userJson)?.company?.id : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const fetchData = async () => {
     if (!companyId) {
-      setError("找不到公司 ID，請重新登入")
-      return
+      setError("找不到公司 ID，請重新登入");
+      return;
+    }
+    if (!token) {
+      setError("未登入或 token 遺失，請重新登入");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/admin/marquee/${companyId}`)
+      const res = await fetch(`${apiBase}/admin/marquee/${companyId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      setItems(data)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setItems(data);
     } catch (err: any) {
-      console.error("Fetch error:", err)
-      setError("資料載入失敗")
+      console.error("Fetch error:", err);
+      setError("資料載入失敗");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("確定要刪除這筆跑馬燈嗎？")) return
-    await fetch(`${apiBase}/admin/marquee/${id}`, { method: "DELETE" })
-    fetchData()
-  }
+    if (!confirm("確定要刪除這筆跑馬燈嗎？")) return;
+    if (!token) {
+      alert("無法取得 token，請重新登入");
+      return;
+    }
+
+    await fetch(`${apiBase}/admin/marquee/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    fetchData();
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">📋 跑馬燈列表</h1>
         <Link
-          href="/admin/marquee/new" // ✅ 修正路徑
+          href="/admin/marquee/new"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           ➕ 新增內容
@@ -89,14 +110,20 @@ export default function MarqueeListPage() {
                 <td className="border px-3 py-2">{item.content || "-"}</td>
                 <td className="border px-3 py-2">
                   {item.link ? (
-                    <a href={item.link} target="_blank" className="text-blue-500 underline">
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      className="text-blue-500 underline"
+                    >
                       查看
                     </a>
                   ) : (
                     "-"
                   )}
                 </td>
-                <td className="border px-3 py-2">{item.isActive ? "✅" : "❌"}</td>
+                <td className="border px-3 py-2">
+                  {item.isActive ? "✅" : "❌"}
+                </td>
                 <td className="border px-3 py-2">
                   {format(new Date(item.createdAt), "yyyy-MM-dd HH:mm")}
                 </td>
@@ -127,5 +154,5 @@ export default function MarqueeListPage() {
         </table>
       )}
     </div>
-  )
+  );
 }

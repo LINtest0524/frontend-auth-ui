@@ -1,65 +1,84 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 export default function EditMarqueePage() {
-  const { id } = useParams()
-  const router = useRouter()
+  const { id } = useParams();
+  const router = useRouter();
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [link, setLink] = useState('')
-  const [isActive, setIsActive] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [link, setLink] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const fetchData = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${apiBase}/admin/marquee/item/${id}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      setTitle(data.title || '')
-      setContent(data.content || '')
-      setLink(data.link || '')
-      setIsActive(data.isActive)
-    } catch (err: any) {
-      setError('資料載入失敗')
-      console.error(err)
-    } finally {
-      setLoading(false)
+    if (!token) {
+      setError("未登入或 token 遺失，請重新登入");
+      return;
     }
-  }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/admin/marquee/item/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setTitle(data.title || "");
+      setContent(data.content || "");
+      setLink(data.link || "");
+      setIsActive(data.isActive);
+    } catch (err: any) {
+      setError("資料載入失敗");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (!token) {
+      setError("未登入或 token 遺失，請重新登入");
+      return;
+    }
 
     try {
       const res = await fetch(`${apiBase}/admin/marquee/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ title, content, link, isActive }),
-      })
+      });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      router.push('/admin/marquee')
+      router.push("/admin/marquee");
     } catch (err) {
-      setError('儲存失敗')
-      console.error(err)
+      setError("儲存失敗");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (id) fetchData()
-  }, [id])
+    if (id) fetchData();
+  }, [id]);
 
   return (
     <div className="p-6">
@@ -117,5 +136,5 @@ export default function EditMarqueePage() {
         </button>
       </form>
     </div>
-  )
+  );
 }

@@ -7,6 +7,10 @@ export interface User {
   updated_at?: string;
   deleted_at?: string | null;
 
+  created_by?: {
+    username: string;
+  } | null;
+
   last_login_ip?: string | null;
   last_login_platform?: string | null;
   last_login_at?: string | null;
