@@ -153,6 +153,16 @@ export default function Sidebar() {
               </Link>
 
               <Link
+                href="/audit-log/back-userstatus"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/audit-log/back-userstatus" && "bg-gray-700"
+                )}
+              >
+                👥 會員狀態紀錄
+              </Link>
+
+              <Link
                 href="/audit-log/back-login"
                 className={cn(
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
