@@ -40,7 +40,7 @@ export default function ProductDetailCreatePage() {
       const parsed = JSON.parse(rawUser);
       setCurrentUser(parsed);
 
-      if (parsed.role === "SUPER_ADMIN") {
+      if (parsed.role === "SUPER_ADMIN" || parsed.role === "GLOBAL_ADMIN") {
         fetch("http://localhost:3001/company", {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -69,37 +69,92 @@ export default function ProductDetailCreatePage() {
     }));
   };
 
+
+
+
+
+
+
   const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
+  setLoading(true);
+  setError("");
 
-    const token = localStorage.getItem("token");
-    const payload = {
-      ...form,
-      companyId:
-        currentUser.role === "SUPER_ADMIN"
-          ? form.companyId
-          : currentUser.companyId,
-    };
+  const token = localStorage.getItem("token");
 
-    try {
-      const res = await fetch("http://localhost:3001/admin/product-detail", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+  const numericFields = [
+    "firstAmount",
+    "creditPeriod",
+    "openRate",
+    "setupFee",
+    "chargeRate",
+    "weeklyProfit",
+    "morningRate",
+    "extensionDays",
+    "maxAdvanceCount",
+    "installmentPeriod",
+    "minPeriod",
+    "maxPeriod",
+    "dailyProfit",
+    "companyId",
+  ];
 
-      if (!res.ok) throw new Error("建立失敗");
-      router.push("/admin/product-detail");
-    } catch (err: any) {
-      setError(err.message || "發生錯誤");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const cleanedForm: any = { ...form };
+
+  numericFields.forEach((key) => {
+    const value = form[key as keyof typeof form];
+    cleanedForm[key] =
+      value === "" || value === undefined ? null : Number(value);
+  });
+
+  const payload = {
+  product_type: form.productType,
+  product_name: form.productName,
+  first_amount: Number(form.firstAmount),
+  credit_period: Number(form.creditPeriod),
+  open_rate: Number(form.openRate),
+  setup_fee: Number(form.setupFee),
+  charge_rate: Number(form.chargeRate),
+  weekly_profit: Number(form.weeklyProfit),
+  morning_rate: Number(form.morningRate),
+  extension_days: Number(form.extensionDays),
+  max_advance_count: Number(form.maxAdvanceCount),
+  advance_rule: form.advanceRule,
+  installment_period: Number(form.installmentPeriod),
+  min_period: Number(form.minPeriod),
+  max_period: Number(form.maxPeriod),
+  daily_profit: Number(form.dailyProfit),
+  interest_rule: form.interestRule,
+
+  company_id:
+    ["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(currentUser.role)
+      ? form.companyId
+      : currentUser.companyId,
+};
+
+
+  try {
+
+    console.log("🚀 payload to send:", payload);
+
+
+    const res = await fetch("http://localhost:3001/admin/loan-product", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("建立失敗");
+    router.push("/admin/loan-product");
+  } catch (err: any) {
+    setError(err.message || "發生錯誤");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -153,7 +208,7 @@ export default function ProductDetailCreatePage() {
           </select>
         </div>
 
-        {currentUser?.role === "SUPER_ADMIN" && (
+        {['SUPER_ADMIN', 'GLOBAL_ADMIN'].includes(currentUser?.role) && (
           <div>
             <label className="block font-medium mb-1">所屬公司</label>
             <select

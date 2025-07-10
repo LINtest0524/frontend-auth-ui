@@ -112,7 +112,7 @@ export default function AdminUserListPage() {
 
 
 
-  const canModify = currentUser?.role === "AGENT_OWNER" || currentUser?.role === "SUPER_ADMIN";
+  const canModify = currentUser?.role === "AGENT_OWNER" || currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "GLOBAL_ADMIN";
 
 
   return (

@@ -27,7 +27,7 @@ export default function AdminUserCreatePage() {
       const parsed = JSON.parse(rawUser);
       setCurrentUser(parsed);
 
-      if (parsed.role === "SUPER_ADMIN") {
+      if (["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(parsed.role)) {
         fetch("http://localhost:3001/company", {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -54,6 +54,12 @@ export default function AdminUserCreatePage() {
         { value: "AGENT_OWNER", label: "代理商老闆" },
         { value: "AGENT_SUPPORT", label: "客服" },
         { value: "GLOBAL_ADMIN", label: "全域管理員" },
+      ];
+    }
+    if (currentUser.role === "GLOBAL_ADMIN") {
+      return [
+        { value: "AGENT_OWNER", label: "代理商老闆" },
+        { value: "AGENT_SUPPORT", label: "客服" },
       ];
     }
     if (currentUser.role === "AGENT_OWNER") {
@@ -147,7 +153,7 @@ export default function AdminUserCreatePage() {
           </select>
         </div>
 
-        {currentUser?.role === "SUPER_ADMIN" && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(currentUser?.role) && (
           <div>
             <label className="block font-medium mb-1">所屬公司</label>
             <select

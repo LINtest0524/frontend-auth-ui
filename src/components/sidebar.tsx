@@ -2,14 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+
+
+import { useUserStore } from "@/hooks/use-user-store";
+
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [bannerOpen, setBannerOpen] = useState(false);
   const [marqueeOpen, setMarqueeOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false); // ✅ 操作紀錄展開控制
+  const [productOpen, setProductOpen] = useState(false); // ✅ 產品管理展開控制
+
+  const currentUser = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setUser(parsed);
+      } catch (e) {
+        console.error("無法解析 user JSON", e);
+      }
+    }
+  }, []);
+
+
+
+  const role = currentUser?.role ?? "";
+
+
 
   return (
     <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
@@ -131,6 +157,51 @@ export default function Sidebar() {
         >
           🧾 驗證通知
         </Link>
+
+
+
+
+
+
+        {/* ✅ 產品管理 */}
+        <div>
+          <button
+            onClick={() => setProductOpen(!productOpen)}
+            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
+          >
+            📦 產品管理
+          </button>
+          {productOpen && (
+            <div className="ml-4 mt-2 flex flex-col gap-1">
+              <Link
+                href="/admin/loan-product"
+                className={cn(
+                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  pathname === "/admin/loan-product" && "bg-gray-700"
+                )}
+              >
+                📋 產品列表
+              </Link>
+
+              {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
+                <Link
+                  href="/admin/loan-product/new"
+                  className={cn(
+                    "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                    pathname === "/admin/loan-product/new" && "bg-gray-700"
+                  )}
+                >
+                  ➕ 新增產品
+                </Link>
+              )}
+
+            </div>
+          )}
+        </div>
+
+
+
+
 
         {/* ✅ 操作紀錄：展開四種 */}
         <div>
