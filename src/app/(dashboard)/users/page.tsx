@@ -39,6 +39,32 @@ export default function UserListPage() {
   const [loginFrom, setLoginFrom] = useState("");
   const [loginTo, setLoginTo] = useState("");
 
+  const [exportFormat, setExportFormat] = useState('');
+
+
+
+  const handleExport = (format: 'csv' | 'xlsx') => {
+    const token = localStorage.getItem("token");
+    const params = new URLSearchParams();
+
+    if (username) params.append("username", username);
+    if (status) params.append("status", status);
+    if (blacklist) params.append("blacklist", blacklist);
+    if (createdFrom) params.append("createdFrom", createdFrom);
+    if (createdTo) params.append("createdTo", createdTo);
+    if (loginFrom) params.append("loginFrom", loginFrom);
+    if (loginTo) params.append("loginTo", loginTo);
+    params.append("excludeUserRole", "false");
+    params.append("format", format);
+
+    params.append("token", token || "");
+
+    const url = `http://localhost:3001/user/export?${params.toString()}`;
+    window.open(url);
+  };
+
+
+
   const sortUsers = (data: User[]) => {
     if (!sortKey || !sortDirection) return data;
     return [...data].sort((a, b) => {
@@ -284,9 +310,45 @@ export default function UserListPage() {
         </button>
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <label>每頁顯示筆數：</label>
-        <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
+
+      <div className="mb-4 flex  justify-between items-center">
+
+        <div>
+          <label>每頁顯示筆數：</label>
+          <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
+
+        </div>
+
+
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm">資料匯出：</label>
+          <select
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value)}
+            className="border px-2 py-1 rounded"
+          >
+            <option value="">選擇格式</option>
+            <option value="csv">CSV 匯出</option>
+            <option value="xlsx">Excel 匯出</option>
+          </select>
+          <button
+            onClick={() => {
+              if (!exportFormat) {
+                alert('請先選擇匯出格式');
+                return;
+              }
+              handleExport(exportFormat as 'csv' | 'xlsx');
+            }}
+            className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            匯出
+          </button>
+        </div>
+
+
+
+
       </div>
 
       {loading ? (
