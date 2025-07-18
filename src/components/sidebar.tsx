@@ -4,22 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-
-
 import { useUserStore } from "@/hooks/use-user-store";
-
-import '@/styles/components/sidebar.css'
-
+import "@/styles/components/sidebar.css";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [bannerOpen, setBannerOpen] = useState(false);
-  const [marqueeOpen, setMarqueeOpen] = useState(false);
-  const [auditOpen, setAuditOpen] = useState(false); // ✅ 操作紀錄展開控制
-  const [productOpen, setProductOpen] = useState(false); // ✅ 產品管理展開控制
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [currentActive, setCurrentActive] = useState<string | null>(null);
 
   const currentUser = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+  const role = currentUser?.role ?? "";
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -33,254 +28,197 @@ export default function Sidebar() {
     }
   }, []);
 
+  useEffect(() => {
+    // 自動展開符合 pathname 的 menu（但不會控制高亮）
+    if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
+    else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
+    else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
+    else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
+    else setActiveMenu(null);
+  }, [pathname]);
 
-
-  const role = currentUser?.role ?? "";
-
-
+  const toggleMenu = (menu: string) => {
+    setActiveMenu((prev) => (prev === menu ? null : menu));
+  };
 
   return (
     <div className="sidebar-box">
-
       <nav>
         <Link
           href="/dashboard"
-          className={cn(
-            "sidebar-box-li",
-            pathname === "/dashboard" && "on"
-          )}
-        >儀錶板
+          onClick={() => setCurrentActive(null)}
+          className={cn("sidebar-item", pathname === "/dashboard" && currentActive === null && "active")}
+        >
+          儀錶板
         </Link>
 
         <Link
           href="/admin/admin-user"
-          className={cn(
-            "sidebar-box-li",
-            pathname === "/admin/admin-user" && "on"
-          )}
-        >管理員管理
+          onClick={() => setCurrentActive(null)}
+          className={cn("sidebar-item", pathname === "/admin/admin-user" && currentActive === null && "active")}
+        >
+          管理員管理
         </Link>
 
         <Link
           href="/users"
-          className={cn(
-            "sidebar-box-li",
-            pathname === "/users" && "on"
-          )}
-        >會員管理
+          onClick={() => setCurrentActive(null)}
+          className={cn("sidebar-item", pathname === "/users" && currentActive === null && "active")}
+        >
+          會員管理
         </Link>
 
         <Link
           href="/admin/module"
+          onClick={() => setCurrentActive(null)}
           className={cn(
-            "sidebar-box-li",
+            "sidebar-item",
             pathname?.startsWith("/admin/module") &&
               !pathname.includes("/marquee") &&
-              "on"
+              currentActive === null &&
+              "active"
           )}
-        >模組設定
+        >
+          模組設定
         </Link>
 
-        {/* ✅ Banner 管理 */}
-        <div>
-        <button
-          onClick={() => setBannerOpen(!bannerOpen)}
-          className={cn("sidebar-box-li", bannerOpen && "on")}
-        >
-          BANNER 管理
-        </button>
-
-        {bannerOpen && (
-          <div className="ml-4">
-            <Link
-              href="/admin/banner"
-              className={cn(
-                "sidebar-box-li",
-                pathname === "/admin/banner" && "on"
-              )}
-            >
-              Banner 列表
-            </Link>
-            <Link
-              href="/admin/banner/new"
-              className={cn(
-                "sidebar-box-li",
-                pathname === "/admin/banner/new" && "on"
-              )}
-            >
-              新增 Banner
-            </Link>
-          </div>
-        )}
-      </div>
-
-
-        {/* ✅ Marquee 管理 */}
+        {/* BANNER 管理 */}
         <div>
           <button
-            onClick={() => setMarqueeOpen(!marqueeOpen)}
-            className="sidebar-box-li"
-          >跑馬燈管理
+            onClick={() => {
+              toggleMenu("banner");
+              setCurrentActive("banner");
+            }}
+            className={cn("sidebar-item", currentActive === "banner" && "active")}
+          >
+            BANNER 管理
           </button>
-          {marqueeOpen && (
-            <div className="ml-4 mt-2 flex flex-col gap-1">
+
+          <div className={cn("sidebar-submenu", activeMenu === "banner" && "open")}>
+            <div className="sidebar-fd">
               <Link
-                href="/admin/marquee"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/admin/marquee" && "bg-gray-700"
-                )}
-              >跑馬燈列表
+                href="/admin/banner"
+                onClick={() => setCurrentActive(null)}
+                className={cn("sidebar-subitem", pathname === "/admin/banner" && currentActive === null && "active")}
+              >
+                Banner 列表
               </Link>
               <Link
-                href="/admin/marquee/new"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/admin/marquee/new" && "bg-gray-700"
-                )}
-              >新增內容
+                href="/admin/banner/new"
+                onClick={() => setCurrentActive(null)}
+                className={cn("sidebar-subitem", pathname === "/admin/banner/new" && currentActive === null && "active")}
+              >
+                新增 Banner
               </Link>
             </div>
-          )}
+          </div>
         </div>
 
-
+        {/* 跑馬燈管理 */}
+        <div>
+          <button
+            onClick={() => {
+              toggleMenu("marquee");
+              setCurrentActive("marquee");
+            }}
+            className={cn("sidebar-item", currentActive === "marquee" && "active")}
+          >
+            跑馬燈管理
+          </button>
+          <div className={cn("sidebar-submenu", activeMenu === "marquee" && "open")}>
+            <Link
+              href="/admin/marquee"
+              onClick={() => setCurrentActive(null)}
+              className={cn("sidebar-subitem", pathname === "/admin/marquee" && currentActive === null && "active")}
+            >
+              跑馬燈列表
+            </Link>
+            <Link
+              href="/admin/marquee/new"
+              onClick={() => setCurrentActive(null)}
+              className={cn("sidebar-subitem", pathname === "/admin/marquee/new" && currentActive === null && "active")}
+            >
+              新增內容
+            </Link>
+          </div>
+        </div>
 
         <Link
           href="/admin/id-verification"
-          className={cn(
-            "sidebar-box-li",
-            pathname?.startsWith("/admin/id-verification") && "on"
-          )}
-        >驗證通知
+          onClick={() => setCurrentActive(null)}
+          className={cn("sidebar-item", pathname?.startsWith("/admin/id-verification") && currentActive === null && "active")}
+        >
+          驗證通知
         </Link>
 
-
-
-
-
-
-        {/* ✅ 產品管理 */}
+        {/* 產品管理 */}
         <div>
           <button
-            onClick={() => setProductOpen(!productOpen)}
-            className="sidebar-box-li"
-          >產品管理
+            onClick={() => {
+              toggleMenu("product");
+              setCurrentActive("product");
+            }}
+            className={cn("sidebar-item", currentActive === "product" && "active")}
+          >
+            產品管理
           </button>
-          {productOpen && (
-            <div className="">
+          <div className={cn("sidebar-submenu", activeMenu === "product" && "open")}>
+            <Link
+              href="/admin/loan-product"
+              onClick={() => setCurrentActive(null)}
+              className={cn("sidebar-subitem", pathname === "/admin/loan-product" && currentActive === null && "active")}
+            >
+              產品列表
+            </Link>
+            {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
               <Link
-                href="/admin/loan-product"
-                className={cn(
-                  "",
-                  pathname === "/admin/loan-product" && "bg-gray-700"
-                )}
-              >產品列表
+                href="/admin/loan-product/new"
+                onClick={() => setCurrentActive(null)}
+                className={cn("sidebar-subitem", pathname === "/admin/loan-product/new" && currentActive === null && "active")}
+              >
+                新增產品
               </Link>
-
-              {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
-                <Link
-                  href="/admin/loan-product/new"
-                  className={cn(
-                    "",
-                    pathname === "/admin/loan-product/new" && "bg-gray-700"
-                  )}
-                >新增產品
-                </Link>
-              )}
-
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-
-
-
-
-        {/* ✅ 操作紀錄：展開四種 */}
+        {/* 操作紀錄 */}
         <div>
           <button
-            onClick={() => setAuditOpen(!auditOpen)}
-            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
-          >操作紀錄
+            onClick={() => {
+              toggleMenu("audit");
+              setCurrentActive("audit");
+            }}
+            className={cn("sidebar-item", currentActive === "audit" && "active")}
+          >
+            操作紀錄
           </button>
-          {auditOpen && (
-            <div className="ml-4 mt-2 flex flex-col gap-1">
-              <Link
-                href="/audit-log/admin-user"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/admin-user" && "bg-gray-700"
-                )}
-              >管理員操作紀錄
-              </Link>
-
-              <Link
-                href="/audit-log/back-userstatus"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-userstatus" && "bg-gray-700"
-                )}
-              >會員狀態紀錄
-              </Link>
-
-              <Link
-                href="/audit-log/back-login"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-login" && "bg-gray-700"
-                )}
-              >後台登入紀錄
-              </Link>
-              
-              <Link
-                href="/audit-log/back-banner"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-banner" && "bg-gray-700"
-                )}
-              >BANNER紀錄
-              </Link>
-
-              <Link
-                href="/audit-log/back-marquee"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-marquee" && "bg-gray-700"
-                )}
-              >跑馬燈紀錄
-              </Link>
-
-              
-              <Link
-                href="/audit-log/back-blacklist"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/back-blacklist" && "bg-gray-700"
-                )}
-              >黑名單紀錄
-              </Link>
-
-              <Link
-                href="/audit-log/portal-login"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/portal-login" && "bg-gray-700"
-                )}
-              >前台登入紀錄
-              </Link>
-
-              <Link
-                href="/audit-log/portal-action"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/audit-log/portal-action" && "bg-gray-700"
-                )}
-              >前台操作紀錄
-              </Link>
-
-            </div>
-          )}
+          <div className={cn("sidebar-submenu", activeMenu === "audit" && "open")}>
+            <Link href="/audit-log/admin-user" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/admin-user" && currentActive === null && "active")}>
+              管理員操作紀錄
+            </Link>
+            <Link href="/audit-log/back-userstatus" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/back-userstatus" && currentActive === null && "active")}>
+              會員狀態紀錄
+            </Link>
+            <Link href="/audit-log/back-login" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/back-login" && currentActive === null && "active")}>
+              後台登入紀錄
+            </Link>
+            <Link href="/audit-log/back-banner" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/back-banner" && currentActive === null && "active")}>
+              BANNER紀錄
+            </Link>
+            <Link href="/audit-log/back-marquee" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/back-marquee" && currentActive === null && "active")}>
+              跑馬燈紀錄
+            </Link>
+            <Link href="/audit-log/back-blacklist" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/back-blacklist" && currentActive === null && "active")}>
+              黑名單紀錄
+            </Link>
+            <Link href="/audit-log/portal-login" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/portal-login" && currentActive === null && "active")}>
+              前台登入紀錄
+            </Link>
+            <Link href="/audit-log/portal-action" onClick={() => setCurrentActive(null)} className={cn("sidebar-subitem", pathname === "/audit-log/portal-action" && currentActive === null && "active")}>
+              前台操作紀錄
+            </Link>
+          </div>
         </div>
       </nav>
     </div>

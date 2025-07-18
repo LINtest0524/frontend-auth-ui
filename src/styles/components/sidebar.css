@@ -14,14 +14,13 @@
 }
 
 
-.sidebar-box nav>a, .sidebar-box nav>div {
+.sidebar-box nav>a, .sidebar-box nav>div , .sidebar-subitem{
     color: #a7b1c2;
 }
 
 
 .sidebar-box nav>a, .sidebar-box nav>div>button {
     color: #b8c1ce;
-    font-weight: 600;
     padding: 14px 20px 14px 25px;
     cursor: pointer;
     text-align: left;
@@ -29,7 +28,32 @@
     font-size: 16px;
 }
 
-.sidebar-box-li.on, .sidebar-box-li:hover{
+/* 這是a標籤用 */
+.sidebar-item.active, .sidebar-item:hover{
     background-color: #293846;
     color: #fff;
 }
+
+
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.sidebar-submenu.open {
+  max-height: 500px; /* 根據實際情況調整 */
+  opacity: 1;
+}
+
+.sidebar-submenu:not(.open) {
+  pointer-events: none;
+}
+
+.sidebar-fd{
+    display: flex;
+    flex-direction: column;
+}
+
+
