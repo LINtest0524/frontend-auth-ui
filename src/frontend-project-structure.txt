@@ -13,6 +13,19 @@ D:.
 |   |   |   layout.tsx
 |   |   |   
 |   |   +---admin
+|   |   |   +---admin-user
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---new
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[id]
+|   |   |   |       +---edit
+|   |   |   |       |       page.tsx
+|   |   |   |       |       
+|   |   |   |       \---reset-password
+|   |   |   |               page.tsx
+|   |   |   |               
 |   |   |   +---banner
 |   |   |   |   |   page.tsx
 |   |   |   |   |   
@@ -26,6 +39,18 @@ D:.
 |   |   |   +---id-verification
 |   |   |   |       page.tsx
 |   |   |   |       
+|   |   |   +---loan-product
+|   |   |   |   |   page.tsx
+|   |   |   |   |   
+|   |   |   |   +---new
+|   |   |   |   |       page.tsx
+|   |   |   |   |       
+|   |   |   |   \---[id]
+|   |   |   |       |   page.tsx
+|   |   |   |       |   
+|   |   |   |       \---edit
+|   |   |   |               page.tsx
+|   |   |   |               
 |   |   |   +---marquee
 |   |   |   |   |   page.tsx
 |   |   |   |   |   
@@ -39,10 +64,41 @@ D:.
 |   |   |   \---module
 |   |   |           page.tsx
 |   |   |           
+|   |   +---audit-log
+|   |   |   |   page.tsx
+|   |   |   |   
+|   |   |   +---admin-user
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---back-banner
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---back-blacklist
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---back-login
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---back-marquee
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---back-userstatus
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   +---portal-action
+|   |   |   |       page.tsx
+|   |   |   |       
+|   |   |   \---portal-login
+|   |   |           page.tsx
+|   |   |           
+|   |   +---back-menu
+|   |   |       page.tsx
+|   |   |       
 |   |   +---dashboard
 |   |   |       page.tsx
 |   |   |       
 |   |   \---users
+|   |           page - 複製.tsx
 |   |           page.tsx
 |   |           
 |   +---a
@@ -88,6 +144,9 @@ D:.
 |   +---login
 |   |       page.tsx
 |   |       
+|   +---not-authorized
+|   |       page.tsx
+|   |       
 |   \---portal
 |       |   layout - 複製.tsx
 |       |   layout.tsx
@@ -96,10 +155,34 @@ D:.
 |       +---login
 |       |       page.tsx
 |       |       
-|       \---register
-|               page.tsx
-|               
+|       +---register
+|       |       page.tsx
+|       |       
+|       \---[company]
+|           |   layout.tsx
+|           |   page.tsx
+|           |   
+|           +---change-password--先亂改名以後砍掉
+|           |       page.tsx
+|           |       
+|           +---home
+|           |       page.tsx
+|           |       
+|           +---login
+|           |       layout.tsx
+|           |       page.tsx
+|           |       
+|           +---member
+|           |   |   page.tsx
+|           |   |   
+|           |   \---id-verification
+|           |           page.tsx
+|           |           
+|           \---register
+|                   page.tsx
+|                   
 +---components
+|   |   AuditLogTable.tsx
 |   |   BannerCarousel.tsx
 |   |   Marquee.tsx
 |   |   PortalHeaderBar.tsx
@@ -118,6 +201,9 @@ D:.
 |           checkbox.tsx
 |           input.tsx
 |           label.tsx
+|           switch.tsx
+|           tabs.tsx
+|           textarea.tsx
 |           
 +---hooks
 |       use-user-store.ts

@@ -1,0 +1,44 @@
+
+
+.conbox-back-login{
+  width: 100%;
+  max-width: 1920px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: linear-gradient(to right bottom, #c6fffa, #c1f8fc, #bef0fc, #bfe7f9, #c1dff5, #c3def3, #c5ddf0, #c7dcee, #cce2ee, #d3e8ee, #dcedef, #e6f2f1);
+
+}
+
+.login-box1{
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    margin-top: -80px;
+    text-align: center;
+    align-items: center;
+
+} 
+
+.txt-h2{
+    color: #676a6c;
+    font-weight: 600;
+    font-size: 26px;
+    margin: 20px 0;
+}
+
+
+
+
+
+
+ 
+.btn-primary {
+    background-color: #1ab394;
+    border-color: #1ab394;
+    color: #FFF;
+    height: 34px;
+    border-radius: 3px;
+}

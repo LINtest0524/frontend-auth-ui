@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+// import { Input } from '@/components/ui/input'
+// import { Button } from '@/components/ui/button'
+// import { Card, CardContent } from '@/components/ui/card'
+// import { Label } from '@/components/ui/label'
+
+import '@/styles/pages/back-login.css'
 
 export default function Login() {
   const router = useRouter()
@@ -28,51 +30,54 @@ export default function Login() {
         throw new Error(data.message || '登入失敗')
       }
 
-      // ✅ 儲存 token & user 資訊
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
 
-      // ✅ 導頁
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || '發生錯誤')
     }
   }
 
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    handleLogin()
+  }
 
   return (
-    <div className="flex h-screen justify-center items-center bg-gray-100">
-      <Card className="w-[400px] shadow-2xl">
-        <CardContent className="space-y-6 pt-10">
-          <h2 className="text-center text-xl font-bold">登入管理後台 Login</h2>
+    <div className="bigbox">
+      <div className="conbox-back-login">
 
-          <div className="space-y-2">
-            <Label>帳號 Username</Label>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="請輸入帳號"
-            />
-          </div>
+            <form onSubmit={handleSubmit} className="login-box1">
+              <h2 className="txt-h2">登入管理後台</h2>
 
-          <div className="space-y-2">
-            <Label>密碼 Password</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="請輸入密碼"
-            />
-          </div>
+                <label htmlFor="username1" className="dn-1">帳號</label>
+                <input
+                  type="text"
+                  id="username1"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="請輸入帳號"
+                />
 
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+                <label htmlFor="userpw" className="dn-1">密碼</label>
+                <input
+                  type="password"
+                  id="userpw"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="請輸入密碼"
+                />
+          
 
-          <Button className="w-full" onClick={handleLogin}>
-            登入
-          </Button>
-        </CardContent>
-      </Card>
+              {error && <div className="ps-err mb15">{error}</div>}
+
+              <button className="btn-primary w100" type="submit">
+                登入
+              </button>
+            </form>
+
+      </div>
     </div>
   )
 }

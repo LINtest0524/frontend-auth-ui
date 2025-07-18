@@ -1,4 +1,4 @@
-
+/* 
 @import "tw-animate-css";
 @import 'swiper/css';
 @import 'swiper/css/pagination';
@@ -196,5 +196,356 @@
     @apply bg-background text-foreground;
   }
 }
+
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+body,
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+form,
+fieldset,
+input,
+textarea,
+p,
+blockquote,
+th,
+td {
+  margin: 0;
+  padding: 0;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+fieldset,
+img {
+  border: 0;
+}
+address,
+caption,
+cite,
+code,
+dfn,
+em,
+strong,
+th,
+var {
+  font-style: normal;
+  font-weight: normal;
+}
+
+caption,
+th {
+  text-align: left;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+  font-weight: normal;
+}
+q:before,
+q:after {
+  content: "";
+}
+abbr,
+acronym {
+  border: 0;
+}
+
+*{
+  box-sizing: border-box;
+}
+
+a {
+  outline: none; /* for Firefox */
+  /* hlbr: expression(this.onFocus=this.blur()); for IE */
+  text-decoration: none;
+}
+
+button {
+  border: none;
+  background-color: transparent;
+}
+
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+font,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  vertical-align: baseline;
+}
+
+body {
+  line-height: 1;
+}
+
+@media screen and (-ms-high-contrast: active),(-ms-high-contrast: none){
+    body {
+      line-height: 110%;
+    }
+}
+
+
+
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: "";
+  content: none;
+}
+
+/* remember to define focus styles! */
+:focus {
+  outline: 0;
+}
+
+/* remember to highlight inserts somehow! */
+ins {
+  text-decoration: none;
+}
+del {
+  text-decoration: line-through;
+}
+
+/* tables still need 'cellspacing="0"' in the markup */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent; /*手機版點擊透明藍色拿掉*/
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%; /*移除ios文字亂改大小*/
+  min-height: 100vh;
+}
+
+.dn-1{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.w100{
+  width: 100%;
+}
+
+.mb15{
+  margin-bottom: 15px;
+}
+
+.bigbox{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+input{
+  background-color: #FFF;
+  background-image: none;
+  border: 1px solid #e5e6e7;
+  border-radius: 1px;
+  color: inherit;
+  display: block;
+  padding: 0px 12px;
+  -webkit-transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
+  transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
+  width: 100%;
+  font-size: 14px;
+  height: 34px;
+  margin-bottom: 15px;
+}
+
+input:focus {
+    border-color: #1ab394 !important;
+}
+
+input::placeholder{
+  color: #a6a6c4;
+}
+
+.ps-err{
+  font-size: 14px;
+    border-radius: 3px;
+    border: #ffb8b8 1px solid;
+    width: fit-content;
+    padding: 6px 20px;
+    display: flex;
+    background-color: #fbeeee;
+    color: #333;
+}
+
+
+
+
 
 

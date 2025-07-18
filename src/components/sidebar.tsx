@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 import { useUserStore } from "@/hooks/use-user-store";
 
+import '@/styles/components/sidebar.css'
+
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -38,89 +40,87 @@ export default function Sidebar() {
 
 
   return (
-    <aside className="w-60 h-screen bg-gray-900 text-white p-6 overflow-y-auto">
-      <nav className="flex flex-col gap-4">
+    <div className="sidebar-box">
+
+      <nav>
         <Link
           href="/dashboard"
           className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
-            pathname === "/dashboard" && "bg-gray-700"
+            "sidebar-box-li",
+            pathname === "/dashboard" && "on"
           )}
-        >
-          🏠 Dashboard
+        >儀錶板
         </Link>
 
         <Link
           href="/admin/admin-user"
           className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
-            pathname === "/admin/admin-user" && "bg-gray-700"
+            "sidebar-box-li",
+            pathname === "/admin/admin-user" && "on"
           )}
-        >
-          👥 管理員管理
+        >管理員管理
         </Link>
 
         <Link
           href="/users"
           className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
-            pathname === "/users" && "bg-gray-700"
+            "sidebar-box-li",
+            pathname === "/users" && "on"
           )}
-        >
-          👥 會員管理
+        >會員管理
         </Link>
 
         <Link
           href="/admin/module"
           className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
+            "sidebar-box-li",
             pathname?.startsWith("/admin/module") &&
               !pathname.includes("/marquee") &&
-              "bg-gray-700"
+              "on"
           )}
-        >
-          🔧 模組設定
+        >模組設定
         </Link>
 
         {/* ✅ Banner 管理 */}
         <div>
-          <button
-            onClick={() => setBannerOpen(!bannerOpen)}
-            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
-          >
-            📁 Banner 管理
-          </button>
-          {bannerOpen && (
-            <div className="ml-4 mt-2 flex flex-col gap-1">
-              <Link
-                href="/admin/banner"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/admin/banner" && "bg-gray-700"
-                )}
-              >
-                📋 Banner 列表
-              </Link>
-              <Link
-                href="/admin/banner/new"
-                className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
-                  pathname === "/admin/banner/new" && "bg-gray-700"
-                )}
-              >
-                ➤ 新增 Banner
-              </Link>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setBannerOpen(!bannerOpen)}
+          className={cn("sidebar-box-li", bannerOpen && "on")}
+        >
+          BANNER 管理
+        </button>
+
+        {bannerOpen && (
+          <div className="ml-4">
+            <Link
+              href="/admin/banner"
+              className={cn(
+                "sidebar-box-li",
+                pathname === "/admin/banner" && "on"
+              )}
+            >
+              Banner 列表
+            </Link>
+            <Link
+              href="/admin/banner/new"
+              className={cn(
+                "sidebar-box-li",
+                pathname === "/admin/banner/new" && "on"
+              )}
+            >
+              新增 Banner
+            </Link>
+          </div>
+        )}
+      </div>
+
 
         {/* ✅ Marquee 管理 */}
         <div>
           <button
             onClick={() => setMarqueeOpen(!marqueeOpen)}
-            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
-          >
-            📺 跑馬燈管理
+            className="sidebar-box-li"
+          >跑馬燈管理
           </button>
           {marqueeOpen && (
             <div className="ml-4 mt-2 flex flex-col gap-1">
@@ -130,8 +130,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/admin/marquee" && "bg-gray-700"
                 )}
-              >
-                📋 跑馬燈列表
+              >跑馬燈列表
               </Link>
               <Link
                 href="/admin/marquee/new"
@@ -139,23 +138,21 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/admin/marquee/new" && "bg-gray-700"
                 )}
-              >
-                ➤ 新增內容
+              >新增內容
               </Link>
             </div>
           )}
         </div>
 
+
+
         <Link
           href="/admin/id-verification"
           className={cn(
-            "text-left px-3 py-2 rounded hover:bg-gray-700",
-            pathname?.startsWith("/admin/id-verification") &&
-              !pathname.includes("/id-verification") &&
-              "bg-gray-700"
+            "sidebar-box-li",
+            pathname?.startsWith("/admin/id-verification") && "on"
           )}
-        >
-          🧾 驗證通知
+        >驗證通知
         </Link>
 
 
@@ -167,31 +164,28 @@ export default function Sidebar() {
         <div>
           <button
             onClick={() => setProductOpen(!productOpen)}
-            className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
-          >
-            📦 產品管理
+            className="sidebar-box-li"
+          >產品管理
           </button>
           {productOpen && (
-            <div className="ml-4 mt-2 flex flex-col gap-1">
+            <div className="">
               <Link
                 href="/admin/loan-product"
                 className={cn(
-                  "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                  "",
                   pathname === "/admin/loan-product" && "bg-gray-700"
                 )}
-              >
-                📋 產品列表
+              >產品列表
               </Link>
 
               {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
                 <Link
                   href="/admin/loan-product/new"
                   className={cn(
-                    "text-sm px-3 py-2 rounded hover:bg-gray-700",
+                    "",
                     pathname === "/admin/loan-product/new" && "bg-gray-700"
                   )}
-                >
-                  ➕ 新增產品
+                >新增產品
                 </Link>
               )}
 
@@ -208,8 +202,7 @@ export default function Sidebar() {
           <button
             onClick={() => setAuditOpen(!auditOpen)}
             className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 bg-gray-800"
-          >
-            🪵 操作紀錄
+          >操作紀錄
           </button>
           {auditOpen && (
             <div className="ml-4 mt-2 flex flex-col gap-1">
@@ -219,8 +212,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/admin-user" && "bg-gray-700"
                 )}
-              >
-                👮 管理員操作紀錄
+              >管理員操作紀錄
               </Link>
 
               <Link
@@ -229,8 +221,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/back-userstatus" && "bg-gray-700"
                 )}
-              >
-                👥 會員狀態紀錄
+              >會員狀態紀錄
               </Link>
 
               <Link
@@ -239,8 +230,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/back-login" && "bg-gray-700"
                 )}
-              >
-                🧾 後台登入紀錄
+              >後台登入紀錄
               </Link>
               
               <Link
@@ -249,8 +239,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/back-banner" && "bg-gray-700"
                 )}
-              >
-                📌 Banner紀錄
+              >BANNER紀錄
               </Link>
 
               <Link
@@ -259,8 +248,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/back-marquee" && "bg-gray-700"
                 )}
-              >
-                📺 跑馬燈紀錄
+              >跑馬燈紀錄
               </Link>
 
               
@@ -270,8 +258,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/back-blacklist" && "bg-gray-700"
                 )}
-              >
-                🚫 黑名單紀錄
+              >黑名單紀錄
               </Link>
 
               <Link
@@ -280,8 +267,7 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/portal-login" && "bg-gray-700"
                 )}
-              >
-                🧑‍💻 前台登入紀錄
+              >前台登入紀錄
               </Link>
 
               <Link
@@ -290,14 +276,13 @@ export default function Sidebar() {
                   "text-sm px-3 py-2 rounded hover:bg-gray-700",
                   pathname === "/audit-log/portal-action" && "bg-gray-700"
                 )}
-              >
-                📝 前台操作紀錄
+              >前台操作紀錄
               </Link>
 
             </div>
           )}
         </div>
       </nav>
-    </aside>
+    </div>
   );
 }
