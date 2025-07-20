@@ -310,11 +310,13 @@ a {
   outline: none; /* for Firefox */
   /* hlbr: expression(this.onFocus=this.blur()); for IE */
   text-decoration: none;
+  user-select: none;
 }
 
 button {
   border: none;
   background-color: transparent;
+  user-select: none;
 }
 
 html,
@@ -435,9 +437,10 @@ html {
 
 body {
   -webkit-tap-highlight-color: transparent; /*手機版點擊透明藍色拿掉*/
-  font-family: sans-serif;
+  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-text-size-adjust: 100%; /*移除ios文字亂改大小*/
   min-height: 100vh;
+  background-color: #f3f3f4;
 }
 
 .dn-1{
@@ -451,13 +454,31 @@ body {
   border: 0;
 }
 
+.w50{
+  width: 50%;
+}
+
 .w100{
   width: 100%;
+}
+
+.max100{
+  max-width: 100px;
+}
+
+.max150{
+  max-width: 150px;
 }
 
 .mb15{
   margin-bottom: 15px;
 }
+
+.mr20{
+  margin-right: 20px;
+}
+
+
 
 .bigbox{
   width: 100%;
@@ -466,6 +487,23 @@ body {
 }
 
 
+.fo5{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fl4{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.fl6{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 
 
 
@@ -482,6 +520,148 @@ body {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 右邊 */
+.b-right-box{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.b-right-bottom-box{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 30px;
+}
+
+
+/* 區塊 */
+.b-ibox{
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  border-top: #e7eaec 4px solid;
+}
+
+.b-ibox h1{
+  font-size: 24px;
+  font-weight: 100;
+  border-bottom: #e7eaec 1px solid;
+  width: 100%;
+  padding: 14px 15px 7px;
+  min-height: 48px;
+}
+
+.b-ibox-s{
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 30px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 按鈕 */
+.b-btn1{
+  background-color: #18a689;
+  border-color: #18a689;
+  color: #FFF;
+  font-size: 14px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+
+
+
+
+
+/* 登出列 */
+.content-tabs{
+  width: 100%;
+  border-bottom: solid 2px #2f4050;
+  height: 42px;
+  background: #fafafa;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: #999;
+}
+
+.content-tabs button{
+  color: #999;
+  border-left: solid 1px #eee;
+  background: #fff;
+  height: 40px;
+  width: 60px;
+  outline: 0;
+  cursor: pointer;
+}
+
+.content-tabs .b-username{
+  border-left: solid 1px #eee;
+  background: #fff;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+}
+
+
+
+.txtbox1{
+  max-width: 70px;
+}
 
 
 
@@ -522,7 +702,6 @@ input{
   width: 100%;
   font-size: 14px;
   height: 34px;
-  margin-bottom: 15px;
 }
 
 input:focus {

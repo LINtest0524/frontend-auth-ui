@@ -116,45 +116,60 @@ export default function AdminUserListPage() {
 
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">🛡️ 管理員列表</h1>
+    <div className="b-ibox">
+
+      <h1>管理員列表</h1>
+
+      <div className="b-ibox-s">
 
       {canModify && (
-        <div className="mb-4 text-right">
           <button
             onClick={() => router.push("/admin/admin-user/new")}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            className="b-btn1 mb15"
           >
-            ➕ 新增管理員
+            新增管理員
           </button>
-        </div>
       )}
 
-      <div className="mb-6 flex gap-4">
-        <input
-          type="text"
-          placeholder="帳號"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        >
-          查詢
-        </button>
+
+
+      
+      <div className="w100 fo5">
+
+        <div className="w50 fl4">
+          <label htmlFor="page1">每頁&nbsp;</label>
+          <input
+            type="number"
+            id="page1"
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="txtbox1"
+          />
+          <p>&nbsp;顯示筆數</p>
+        </div>
+
+
+
+        <div className="w50 fl6">
+          <input
+            type="text"
+            placeholder="帳號"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="max150 mr20"
+          />
+          <button
+            onClick={handleSearch}
+            className="b-btn1"
+          >
+            查詢
+          </button>
+        </div>
+
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <label>每頁顯示筆數：</label>
-        <input
-          type="number"
-          value={limit}
-          onChange={(e) => setLimit(Number(e.target.value))}
-          className="border rounded px-2 py-1 w-20"
-        />
-      </div>
+
+
 
       {loading ? (
         <p>載入中...</p>
@@ -245,6 +260,9 @@ export default function AdminUserListPage() {
           目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
         </p>
       </div>
+
+      </div>
+
     </div>
   );
 }

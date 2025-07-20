@@ -26,6 +26,8 @@
     text-align: left;
     width: 100%;
     font-size: 16px;
+    display: flex;
+    align-items: center;
 }
 
 /* 這是a標籤用 */
@@ -39,7 +41,7 @@
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: all 0.4s ease-in-out;
+  transition: all 0.2s ease;
 }
 
 .sidebar-submenu.open {
@@ -55,5 +57,103 @@
     display: flex;
     flex-direction: column;
 }
+
+.sidebar-subitem{
+  display: flex;
+  align-items: center;
+  height: 34px;
+  width: 100%;
+  padding-left: 52px;
+  background-color: #293846;
+}
+
+.sidebar-subitem:hover{
+color: #fff;
+}
+
+.sidebar-item .icon{
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 6px;
+}
+
+.sidebar-item.i-admin .icon{
+  background-image: url("/icon/i-admin.svg");
+}
+.sidebar-item.i-admin:hover .icon, .sidebar-item.i-admin.active .icon{
+  background-image: url("/icon/i-admin-on.svg");
+}
+
+.sidebar-item.i-user .icon{
+  background-image: url("/icon/i-user.svg");
+}
+.sidebar-item.i-user:hover .icon, .sidebar-item.i-user.active .icon{
+  background-image: url("/icon/i-user-on.svg");
+}
+
+.sidebar-item.i-banner .icon{
+  background-image: url("/icon/i-banner.svg");
+}
+.sidebar-item.i-banner:hover .icon, .sidebar-item.i-banner.active .icon{
+  background-image: url("/icon/i-banner-on.svg");
+}
+
+.sidebar-item.i-marquee .icon{
+  background-image: url("/icon/i-marquee.svg");
+}
+.sidebar-item.i-marquee:hover .icon, .sidebar-item.i-marquee.active .icon{
+  background-image: url("/icon/i-marquee-on.svg");
+}
+
+.sidebar-item.i-verify .icon{
+  background-image: url("/icon/i-verify.svg");
+}
+.sidebar-item.i-verify:hover .icon, .sidebar-item.i-verify.active .icon{
+  background-image: url("/icon/i-verify-on.svg");
+}
+
+.sidebar-item.i-plan .icon{
+  background-image: url("/icon/i-plan.svg");
+}
+.sidebar-item.i-plan:hover .icon, .sidebar-item.i-plan.active .icon{
+  background-image: url("/icon/i-plan-on.svg");
+}
+
+.sidebar-item.i-log .icon{
+  background-image: url("/icon/i-log.svg");
+}
+.sidebar-item.i-log:hover .icon, .sidebar-item.i-log.active .icon{
+  background-image: url("/icon/i-log-on.svg");
+}
+
+.sidebar-item.i-dashboard .icon{
+  background-image: url("/icon/i-dashboard.svg");
+}
+.sidebar-item.i-dashboard:hover .icon, .sidebar-item.i-dashboard.active .icon{
+  background-image: url("/icon/i-dashboard-on.svg");
+}
+
+.sidebar-item.i-modules .icon{
+  background-image: url("/icon/i-modules.svg");
+}
+.sidebar-item.i-modules:hover .icon, .sidebar-item.i-modules.active .icon{
+  background-image: url("/icon/i-modules-on.svg");
+}
+
+
+
+
+
+
+
+
+
+
+
 
 

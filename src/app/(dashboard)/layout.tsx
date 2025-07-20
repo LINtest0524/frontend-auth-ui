@@ -34,32 +34,35 @@ export default function DashboardLayout({
   return (
     <div className="bigbox">
 
-
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        {/* 頂部：登入者資訊 */}
-        <div className="flex justify-end items-center bg-gray-100 px-6 py-3 text-sm text-gray-800 border-b">
+
+      <div className="b-right-box">
+
+
           {username ? (
-            <div className="flex items-center gap-4">
-              <span className="font-medium">{username}</span>
+            <div className="content-tabs">
+              <span className="b-username">{username}</span>
               <button
                 onClick={handleLogout}
-                className="text-red-600 hover:underline"
               >
                 登出
               </button>
             </div>
           ) : (
-            <span className="text-gray-400">未登入</span>
+            <span className="">未登入</span>
           )}
-        </div>
+      
 
         {/* 下方區域：頁面內容 */}
-        <div className="flex-1 overflow-y-auto bg-white">
+        <div className="b-right-bottom-box">
           {children}
         </div>
+
+
+
       </div>
+
     </div>
   )
 }
