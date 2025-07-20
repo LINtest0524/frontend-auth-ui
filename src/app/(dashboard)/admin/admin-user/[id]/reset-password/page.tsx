@@ -35,7 +35,7 @@ export default function AdminUserResetPasswordPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ newPassword: password }), // ✅ 這裡改了
+        body: JSON.stringify({ newPassword: password }), 
       });
       if (!res.ok) throw new Error("重設失敗");
       setSuccess(true);
@@ -48,44 +48,47 @@ export default function AdminUserResetPasswordPage() {
 
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-4">🔐 重設密碼</h1>
+    <div className="b-ibox">
+      <h1>重設密碼</h1>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">新密碼</label>
+      <div className="b-ibox-s">
+
+        <div className="b-form-group-1 w100 fl4">
+          <label>新密碼</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
           />
         </div>
 
-        <div>
-          <label className="block font-medium mb-1">確認新密碼</label>
+        <div className="b-form-group-1 w100 fl4">
+          <label>確認新密碼</label>
           <input
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
           />
         </div>
 
-        {error && <p className="text-red-600">{error}</p>}
-        {success && <p className="text-green-600">密碼已成功更新</p>}
+        <div className="ps-err-box">
+          {error && <p className="ps-err mb15">{error}</p>}
+          {success && <p className="ps-err-ok mb15">密碼已成功更新</p>}
+        </div>
 
-        <div className="flex gap-2">
+        
+
+        <div className="fl4 w100 b-btnbox">
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            className="b-btn-s2 b-btn-c4 mr20"
           >
-            送出
+            確認修改
           </button>
           <button
             onClick={() => router.back()}
-            className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+            className="b-btn-s2 b-btn-c1"
           >
             返回
           </button>

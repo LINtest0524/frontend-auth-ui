@@ -311,12 +311,14 @@ a {
   /* hlbr: expression(this.onFocus=this.blur()); for IE */
   text-decoration: none;
   user-select: none;
+  cursor: pointer;
 }
 
 button {
   border: none;
   background-color: transparent;
   user-select: none;
+  cursor: pointer;
 }
 
 html,
@@ -390,6 +392,7 @@ td {
 
 body {
   line-height: 1;
+  color: #676a6c;
 }
 
 @media screen and (-ms-high-contrast: active),(-ms-high-contrast: none){
@@ -454,6 +457,18 @@ body {
   border: 0;
 }
 
+.w10{
+  width:10%;
+}
+
+.w15{
+  width:15%;
+}
+
+.w20{
+  width: 20%;
+}
+
 .w50{
   width: 50%;
 }
@@ -478,6 +493,10 @@ body {
   margin-right: 20px;
 }
 
+.mlr10{
+  margin-right: 5px;
+  margin-left: 5px;
+}
 
 
 .bigbox{
@@ -610,15 +629,63 @@ body {
 
 
 /* 按鈕 */
-.b-btn1{
-  background-color: #18a689;
-  border-color: #18a689;
+.b-btn-s2{
   color: #FFF;
   font-size: 14px;
   padding: 6px 12px;
-  border: 1px solid transparent;
   border-radius: 4px;
 }
+
+.b-btn-s3{
+  color: #FFF;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.b-btn-c1{
+  background-color: #0c8ab6;
+}
+.b-btn-c1:hover{ background-color: #19ace1; }
+
+.b-btn-c2{
+  background-color: #dd933f;
+}
+.b-btn-c2:hover{ background-color: #fdb25e; }
+
+.b-btn-c3{
+  background-color: #ec4758;
+}
+.b-btn-c3:hover{ background-color: #ff717f; }
+
+.b-btn-c4{
+  background-color: #18a689;
+}
+.b-btn-c4:hover{ background-color: #12947a; }
+
+
+
+
+
+
+.b-btnbox{
+  padding-left: calc( 10% + 22px );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -645,6 +712,11 @@ body {
   width: 60px;
   outline: 0;
   cursor: pointer;
+}
+
+.content-tabs button:hover{
+  color: #777;
+  background: #f2f2f2;
 }
 
 .content-tabs .b-username{
@@ -684,9 +756,18 @@ body {
 
 
 
+select{
+  transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
+  background-color: #FFF;
+  background-image: none;
+  border: 1px solid #e5e6e7;
+  height: 34px;
+  padding: 0 12px;
+}
 
-
-
+select:focus {
+    border-color: #1ab394 !important;
+}
 
 
 input{
@@ -697,7 +778,6 @@ input{
   color: inherit;
   display: block;
   padding: 0px 12px;
-  -webkit-transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
   transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
   width: 100%;
   font-size: 14px;
@@ -712,6 +792,15 @@ input::placeholder{
   color: #a6a6c4;
 }
 
+
+
+/* 錯誤提示 */
+
+.ps-err-box{
+  display: flex;
+  padding-left:  calc( 10% + 22px );
+}
+
 .ps-err{
   font-size: 14px;
     border-radius: 3px;
@@ -723,8 +812,143 @@ input::placeholder{
     color: #333;
 }
 
+.ps-err-ok{
+  font-size: 14px;
+    border-radius: 3px;
+    border: #d6e9c6 1px solid;
+    width: fit-content;
+    padding: 6px 20px;
+    display: flex;
+    background-color: #dff0d8;
+    color: #3c763d;
+}
 
 
+
+
+
+
+
+
+/* 後台表格 */
+.b-table-box{
+  border-top: 1px solid #e9e9e9;
+  border-left: 1px solid #e9e9e9;
+  width: 100%;
+}
+
+.b-table-box.admin-table th:last-child{
+  width: 202px;
+}
+
+.b-table-box thead, .b-table-box tr{
+  width: 100%;
+  height: 36px;
+}
+
+.b-table-box thead tr{
+  width: 100%;
+  height: 36px;
+}
+
+.b-table-box thead tr th{
+  border-bottom: 1px solid #DDD;
+  color: #676a6c;
+  font-weight: bold;
+  padding: 8px;
+  font-size: 13px;
+  border-right: 1px solid #e7e7e7;
+  vertical-align: middle;
+}
+
+
+.b-table-box tbody{
+  width: 100%;
+}
+
+.b-table-box tbody tr{
+  width: 100%;
+  height: 36px;
+}
+
+.b-table-box tbody tr td{
+  border-bottom: 1px solid #DDD;
+  color: #676a6c;
+  padding: 8px;
+  font-size: 13px;
+  border-right: 1px solid #e7e7e7;
+  vertical-align: middle;
+}
+
+.b-table-box tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.b-table-box tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+
+
+
+/* 後台 頁碼 */
+.b-data-tables_munber{
+  font-size: 13px;
+}
+
+.tables_munber{
+  background-color: #f4f4f4;
+  border-top: #ddd 1px solid;
+  border-left: #ddd 1px solid;
+  border-bottom: #ddd 1px solid;
+  height: 29px;
+  display: flex;
+}
+
+.tables_munber button{
+  color: #777;
+  font-size: 13px;
+  padding: 4px 10px;
+  background-color: #fff;
+  height: 27px;
+  border-right: #ddd 1px solid;
+}
+
+.tables_munber button:hover{
+  background-color: #f4f4f4;
+}
+
+.tables_munber .pagehover{
+  background-color: #e0e0e0;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* 後台 文字欄位 */
+.b-form-group-1{
+  border-bottom: 1px dashed #dedede;
+  padding: 0 0 25px;
+  margin-bottom: 25px;
+}
+
+.b-form-group-1 label{
+  font-weight: bold;
+  font-size: 14px;
+  width: auto;
+  min-width: 10%;
+  text-align: right;
+  margin-right: 22px;
+  display: flex;
+  justify-content: flex-end;
+}
 
 
 

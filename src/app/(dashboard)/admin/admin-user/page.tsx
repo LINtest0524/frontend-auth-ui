@@ -125,7 +125,7 @@ export default function AdminUserListPage() {
       {canModify && (
           <button
             onClick={() => router.push("/admin/admin-user/new")}
-            className="b-btn1 mb15"
+            className="b-btn-s2 b-btn-c4 mb15"
           >
             新增管理員
           </button>
@@ -134,7 +134,7 @@ export default function AdminUserListPage() {
 
 
       
-      <div className="w100 fo5">
+      <div className="w100 fo5 mb15">
 
         <div className="w50 fl4">
           <label htmlFor="page1">每頁&nbsp;</label>
@@ -142,7 +142,11 @@ export default function AdminUserListPage() {
             type="number"
             id="page1"
             value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
+            onChange={(e) => {
+              const val = Math.max(1, Number(e.target.value)); 
+              setLimit(val);
+            }}
+            min={1}
             className="txtbox1"
           />
           <p>&nbsp;顯示筆數</p>
@@ -160,7 +164,7 @@ export default function AdminUserListPage() {
           />
           <button
             onClick={handleSearch}
-            className="b-btn1"
+            className="b-btn-s2 b-btn-c4"
           >
             查詢
           </button>
@@ -174,50 +178,50 @@ export default function AdminUserListPage() {
       {loading ? (
         <p>載入中...</p>
       ) : (
-        <table className="w-full border-collapse border text-sm">
+        <table className="b-table-box admin-table mb15">
           <thead>
-            <tr className="bg-gray-200 text-center">
-              <th className="border p-2">ID</th>
-              <th className="border p-2">帳號</th>
-              <th className="border p-2">角色</th>
-              <th className="border p-2">狀態</th>
-              <th className="border p-2">上次登入時間</th>
-              <th className="border p-2">上次登入IP</th>
-              <th className="border p-2">創建人</th>
-              {canSeeActions && <th className="border p-2">操作</th>}
+            <tr>
+              <th>ID</th>
+              <th>帳號</th>
+              <th>角色</th>
+              <th>狀態</th>
+              <th>上次登入時間</th>
+              <th>上次登入IP</th>
+              <th>創建人</th>
+              {canSeeActions && <th>操作</th>}
             </tr>
           </thead>
           <tbody>
             {adminUsers.map((admin) => (
-              <tr key={admin.id} className="text-center">
-                <td className="border p-2">{admin.id}</td>
-                <td className="border p-2">{admin.username}</td>
-                <td className="border p-2">{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>
-                <td className="border p-2">{statusMap[admin.status]}</td>
-                <td className="border p-2">{admin.last_login_at ? new Date(admin.last_login_at).toLocaleString() : "-"}</td>
-                <td className="border p-2">{admin.last_login_ip || "-"}</td>
+              <tr key={admin.id} className="">
+                <td>{admin.id}</td>
+                <td>{admin.username}</td>
+                <td>{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>
+                <td>{statusMap[admin.status]}</td>
+                <td>{admin.last_login_at ? new Date(admin.last_login_at).toLocaleString() : "-"}</td>
+                <td>{admin.last_login_ip || "-"}</td>
 
-                <td className="border p-2">{admin.created_by?.username || "-"}</td>
+                <td className="">{admin.created_by?.username || "-"}</td>
 
                 {canSeeActions && (
-                  <td className="border p-2">
+                  <td>
                     {canModify ? (
-                      <div className="flex gap-2 justify-center">
+                      <div>
                         <button
                           onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)}
-                          className="text-blue-600 hover:underline"
+                          className="b-btn-s3 b-btn-c1 mlr10"
                         >編輯</button>
                         <button
                           onClick={() => router.push(`/admin/admin-user/${admin.id}/reset-password`)}
-                          className="text-yellow-600 hover:underline"
+                          className="b-btn-s3 b-btn-c2 mlr10"
                         >重設密碼</button>
                         <button
                           onClick={() => handleDelete(admin.id)}
-                          className="text-red-600 hover:underline"
+                          className="b-btn-s3 b-btn-c3 mlr10"
                         >刪除</button>
                       </div>
                     ) : (
-                      <span className="text-gray-400">僅限代理商與超級管理員</span>
+                      <span>僅限代理商與超級管理員</span>
                     )}
                   </td>
                 )}
@@ -227,39 +231,43 @@ export default function AdminUserListPage() {
         </table>
       )}
 
-      <div className="mt-4 flex justify-center items-center gap-2">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          上一頁
-        </button>
+        <div className="fo5 w100 b-data-tables_munber mb15">
 
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-          <button
-            key={p}
-            onClick={() => setPage(p)}
-            className={`px-3 py-1 rounded border ${
-              page === p ? "bg-blue-600 text-white" : "hover:bg-gray-200"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
+          <p>
+            目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
+          </p>
 
-        <button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          下一頁
-        </button>
+          <div className="tables_munber">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className=""
+            >
+              上一頁
+            </button>
 
-        <p className="text-sm text-gray-500">
-          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
-        </p>
-      </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`px-3 py-1 rounded border ${
+                  page === p ? "pagehover" : "hover:rrrr"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className=""
+            >
+              下一頁
+            </button>
+          </div>
+          
+        </div>
 
       </div>
 
