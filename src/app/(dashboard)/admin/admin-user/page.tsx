@@ -122,55 +122,55 @@ export default function AdminUserListPage() {
 
       <div className="b-ibox-s">
 
-      {canModify && (
-          <button
-            onClick={() => router.push("/admin/admin-user/new")}
-            className="b-btn-s2 b-btn-c4 mb15"
-          >
-            新增管理員
-          </button>
-      )}
+        {canModify && (
+            <button
+              onClick={() => router.push("/admin/admin-user/new")}
+              className="b-btn-s2 b-btn-c4 mb15"
+            >
+              新增管理員
+            </button>
+        )}
 
 
 
       
-      <div className="w100 fo5 mb15">
+        <div className="w100 fo5 mb15">
 
-        <div className="w50 fl4">
-          <label htmlFor="page1">每頁&nbsp;</label>
-          <input
-            type="number"
-            id="page1"
-            value={limit}
-            onChange={(e) => {
-              const val = Math.max(1, Number(e.target.value)); 
-              setLimit(val);
-            }}
-            min={1}
-            className="txtbox1"
-          />
-          <p>&nbsp;顯示筆數</p>
+          <div className="w50 fl4">
+            <label htmlFor="page1">每頁&nbsp;</label>
+            <input
+              type="number"
+              id="page1"
+              value={limit}
+              onChange={(e) => {
+                const val = Math.max(1, Number(e.target.value)); 
+                setLimit(val);
+              }}
+              min={1}
+              className="txtbox1"
+            />
+            <p>&nbsp;顯示筆數</p>
+          </div>
+
+
+
+          <div className="w50 fl6">
+            <input
+              type="text"
+              placeholder="帳號"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="max150 mr20"
+            />
+            <button
+              onClick={handleSearch}
+              className="b-btn-s2 b-btn-c4"
+            >
+              查詢
+            </button>
+          </div>
+
         </div>
-
-
-
-        <div className="w50 fl6">
-          <input
-            type="text"
-            placeholder="帳號"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="max150 mr20"
-          />
-          <button
-            onClick={handleSearch}
-            className="b-btn-s2 b-btn-c4"
-          >
-            查詢
-          </button>
-        </div>
-
-      </div>
 
 
 

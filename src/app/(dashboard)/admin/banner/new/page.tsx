@@ -103,59 +103,88 @@ export default function BannerPage() {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">新增 Banner</h2>
-      <div className="space-y-4">
-        <input
-          name="title"
-          value={form.title}
-          placeholder="標題"
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
+    <div className="b-ibox">
+      <h1>新增 Banner</h1>
 
-        <input
-          type="datetime-local"
-          name="start_time"
-          value={form.start_time}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
-        <input
-          type="datetime-local"
-          name="end_time"
-          value={form.end_time}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        />
 
-        <select
-          name="status"
-          value={form.status}
-          className="border p-2 w-full"
-          onChange={handleChange}
-        >
-          <option value="ACTIVE">啟用</option>
-          <option value="INACTIVE">停用</option>
-        </select>
+      <div className="b-ibox-s">
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="sort">排序（數字越大越前面）</label>
+        <div className="b-form-group-2 w100 fl4 mb25">
+          <label>標題</label>
+          <input
+            name="title"
+            value={form.title}
+            placeholder="標題"
+            onChange={handleChange}
+          />
+        </div>
+
+
+
+        <div className="w50 fd1 mb25">
+          <div className="b-form-group-2 fl4 w100 mb10">
+            <label htmlFor="date-select-10">活動時間</label>
+            <div className="w70 fl4">
+              <input
+                type="datetime-local"
+                id="date-select-10"
+                name="start_time"
+                value={form.start_time}
+                className="date-select"
+                onChange={handleChange}
+              />
+              <span className="dateto">到</span>
+              <input
+                type="datetime-local"
+                name="end_time"
+                value={form.end_time}
+                className="date-select"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+        <div className="b-form-group-2 fl4 w50 mb25">
+          <label htmlFor="status-select-22">狀態</label>
+
+          <select
+            name="status"
+            id="status-select-22"
+            value={form.status}
+            className="w70"
+            onChange={handleChange}
+          >
+            <option value="ACTIVE">啟用</option>
+            <option value="INACTIVE">停用</option>
+          </select>
+        </div>
+
+
+        <div className="b-form-group-2 w100 fl4 mb25">
+          <label htmlFor="sort">排序</label>
           <input
             type="number"
             id="sort"
             name="sort"
             value={form.sort === 0 ? '' : form.sort}
-            placeholder="請輸入排序數字"
+            placeholder="請輸入排序數字 - 數字越大越前面"
             className="border p-2 w-full"
             onChange={handleChange}
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label>桌機圖片</label>
+
+        <div className="b-form-group-2 w50 fl4 mb10">
+          <label htmlFor="img-pc">桌機圖片</label>
           <input
             type="file"
+            id="img-pc"
+            className="pt3"
             ref={desktopInputRef}
             accept="image/jpeg,image/png,image/webp"
             onChange={e => {
@@ -171,19 +200,27 @@ export default function BannerPage() {
               }))
             }}
           />
+        </div>
+
+        <div className="b-form-group-2 w50 fl4 mb25">
+          <label></label>
           {preview.desktop && (
             <img
               src={preview.desktop}
               alt="桌機預覽"
-              className="mt-2 border max-w-[200px] rounded shadow"
+              className="b-banner-img"
             />
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label>手機圖片</label>
+
+
+        <div className="b-form-group-2 w50 fl4 mb10">
+          <label htmlFor="img-m">手機圖片</label>
           <input
             type="file"
+            id="img-m"
+            className="pt3"
             ref={mobileInputRef}
             accept="image/jpeg,image/png,image/webp"
             onChange={e => {
@@ -199,22 +236,29 @@ export default function BannerPage() {
               }))
             }}
           />
+        </div>
+
+        <div className="b-form-group-2 w50 fl4 mb25">
+          <label></label>
           {preview.mobile && (
             <img
               src={preview.mobile}
               alt="手機預覽"
-              className="mt-2 border max-w-[200px] rounded shadow"
+              className="b-banner-img"
             />
           )}
         </div>
+        
+        <div className="fl4 w100 b-btnbox">
+          <button
+            onClick={handleSubmit}
+            className="b-btn-s2 b-btn-c4 mr20"
+          >
+            送出
+          </button>
+        </div>
 
-        <button
-          type="button"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={handleSubmit}
-        >
-          送出
-        </button>
+
       </div>
     </div>
   )

@@ -142,7 +142,7 @@ export default function AdminUserCreatePage() {
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="w100"
+            className="w80"
           >
             {getAvailableRoles().map((r) => (
               <option key={r.value} value={r.value}>

@@ -303,7 +303,8 @@ export default function UserListPage() {
             ) : (
               <button
                 key={p}
-                onClick={() => setPage(p)}
+                onClick={() => setPage(p as number)}
+
                 className={`${
                   page === p ? "pagehover" : ""
                 }`}

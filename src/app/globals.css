@@ -534,6 +534,10 @@ body {
   margin-left: 5px;
 }
 
+.pt3{
+  padding-top: 3px;
+}
+
 
 .bigbox{
   width: 100%;
@@ -873,7 +877,7 @@ input{
   display: block;
   padding: 0px 12px;
   transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
-  width: 100%;
+  width: 80%;
   font-size: 14px;
   height: 34px;
 }
@@ -978,6 +982,7 @@ input::placeholder{
   font-size: 13px;
   border-right: 1px solid #e7e7e7;
   vertical-align: middle;
+  line-height: 22px;
 }
 
 .b-table-box tbody tr:nth-child(odd) {
@@ -1119,3 +1124,9 @@ input::placeholder{
   color: #fff;
 }
 
+
+
+/* 預覽圖大小 */
+.b-banner-img{
+  width: 320px;
+}

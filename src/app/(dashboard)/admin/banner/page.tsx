@@ -74,49 +74,51 @@ export default function BannerListPage() {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Banner 管理列表</h2>
 
-      <div className="overflow-auto">
-        <table className="table-auto w-full border border-gray-300 text-sm">
-          <thead className="bg-gray-100">
+    <div className="b-ibox">
+
+      <h1>Banner 管理列表</h1>
+
+      <div className="b-ibox-s">
+
+
+        <table className="b-table-box admin-table mb15">
+          <thead>
             <tr>
-              <th className="border px-2 py-1">標題</th>
-              <th className="border px-2 py-1">排序</th>
-              <th className="border px-2 py-1">開放時間</th>
-              <th className="border px-2 py-1">圖片(網站)</th>
-              <th className="border px-2 py-1">圖片(手機)</th>
-              <th className="border px-2 py-1">是否顯示</th>
-              <th className="border px-2 py-1">管理</th>
+              <th>標題</th>
+              <th>排序</th>
+              <th>開放時間</th>
+              <th>圖片(網站)</th>
+              <th>圖片(手機)</th>
+              <th>是否顯示</th>
+              <th className="th-last">管理</th>
             </tr>
           </thead>
           <tbody>
             {banners.map((banner) => (
               <tr key={banner.id}>
-                <td className="border px-2 py-1">{banner.title}</td>
-                <td className="border px-2 py-1 text-center">{banner.sort}</td>
-                <td className="border px-2 py-1 whitespace-nowrap">
+                <td>{banner.title}</td>
+                <td>{banner.sort}</td>
+                <td>
                   {formatDateTime(banner.start_time)} ~<br />
                   {formatDateTime(banner.end_time)}
                 </td>
-                <td className="border px-2 py-1 text-center">
+                <td>
                   <button
-                    className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
                     onClick={() => window.open(`${API_BASE}${banner.desktop_image_url}`, '_blank')}
                   >
                     🔍
                   </button>
                 </td>
-                <td className="border px-2 py-1 text-center">
+                <td>
                   <button
-                    className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
                     onClick={() => window.open(`${API_BASE}${banner.mobile_image_url}`, '_blank')}
                   >
                     🔍
                   </button>
                 </td>
 
-                <td className="border px-2 py-1 text-center">
+                <td>
                   <button
                     onClick={async () => {
                       const newStatus = banner.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
@@ -143,8 +145,8 @@ export default function BannerListPage() {
                     }}
                     className={`text-xs px-2 py-0.5 rounded font-bold ${
                       banner.status === 'ACTIVE'
-                        ? 'bg-green-200 text-green-800'
-                        : 'bg-gray-200 text-gray-600'
+                        ? 'b-btn-s3 b-btn-c4'
+                        : 'b-btn-s3 b-btn-c3'
                     }`}
                   >
                     {banner.status === 'ACTIVE' ? 'ON' : 'OFF'}
@@ -156,10 +158,10 @@ export default function BannerListPage() {
                 <td className="border px-2 py-1 text-center">
                   <div className="inline-flex gap-2">
                     <Link href={`/admin/banner/edit/${banner.id}`}>
-                      <button className="text-blue-600 underline text-sm">編輯</button>
+                      <button className="b-btn-s3 b-btn-c1 mlr10">編輯</button>
                     </Link>
                     <button
-                      className="text-red-600 underline text-sm"
+                      className="b-btn-s3 b-btn-c3"
                       onClick={() => handleDelete(banner.id)}
                     >
                       刪除
