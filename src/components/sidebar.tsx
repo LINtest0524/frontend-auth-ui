@@ -97,10 +97,15 @@ export default function Sidebar() {
               toggleMenu("banner");
               setCurrentActive("banner");
             }}
-            className={cn("sidebar-item i-banner", currentActive === "banner" && "active")}
+            className={cn(
+              "sidebar-item i-banner",
+              currentActive === "banner" && "active",
+              activeMenu === "banner" && "expanded"
+            )}
           >
             <span className="icon" />
             BANNER 管理
+            <span className="i-arrow"></span>
           </button>
 
           <div className={cn("sidebar-submenu", activeMenu === "banner" && "open")}>
@@ -130,10 +135,15 @@ export default function Sidebar() {
               toggleMenu("marquee");
               setCurrentActive("marquee");
             }}
-            className={cn("sidebar-item i-marquee", currentActive === "marquee" && "active")}
+            className={cn(
+              "sidebar-item i-marquee", 
+              currentActive === "marquee" && "active",
+              activeMenu === "marquee" && "expanded"
+            )}
           >
             <span className="icon" />
             跑馬燈管理
+            <span className="i-arrow"></span>
           </button>
           <div className={cn("sidebar-submenu", activeMenu === "marquee" && "open")}>
             <Link
@@ -169,10 +179,15 @@ export default function Sidebar() {
               toggleMenu("product");
               setCurrentActive("product");
             }}
-            className={cn("sidebar-item i-plan", currentActive === "product" && "active")}
+            className={cn(
+              "sidebar-item i-plan", 
+              currentActive === "product" && "active",
+              activeMenu === "product" && "expanded"
+            )}
           >
             <span className="icon" />
             產品管理
+            <span className="i-arrow"></span>
           </button>
           <div className={cn("sidebar-submenu", activeMenu === "product" && "open")}>
             <Link
@@ -201,10 +216,15 @@ export default function Sidebar() {
               toggleMenu("audit");
               setCurrentActive("audit");
             }}
-            className={cn("sidebar-item i-log", currentActive === "audit" && "active")}
+            className={cn(
+              "sidebar-item i-log", 
+              currentActive === "audit" && "active",
+              activeMenu === "audit" && "expanded"
+            )}
           >
             <span className="icon" />
             操作紀錄
+            <span className="i-arrow"></span>
           </button>
           <div className={cn("sidebar-submenu", activeMenu === "audit" && "open")}>
             <Link href="/audit-log/admin-user" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/admin-user" && currentActive === null && "active")}>

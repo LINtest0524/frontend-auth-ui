@@ -1,8 +1,7 @@
 .sidebar-box{
     display: flex;
     background: #2f4050;
-    width: 100%;
-    max-width: 220px;
+    min-width: 220px;
 }
 
 .sidebar-box nav {
@@ -40,13 +39,11 @@
 .sidebar-submenu {
   max-height: 0;
   overflow: hidden;
-  opacity: 0;
   transition: all 0.2s ease;
 }
 
 .sidebar-submenu.open {
   max-height: 500px; /* 根據實際情況調整 */
-  opacity: 1;
 }
 
 .sidebar-submenu:not(.open) {
@@ -147,7 +144,23 @@ color: #fff;
 }
 
 
+.sidebar-item .i-arrow{
+  width: 13px;
+  height: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: auto;
+  background-image: url("/icon/i-arrow.svg");
+  transition: transform 0.3s ease;
+}
 
+.sidebar-item.expanded .i-arrow{
+  transform: rotate(90deg);
+  background-image: url("/icon/i-arrow-on.svg");
+}
 
 
 

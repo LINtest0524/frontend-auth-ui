@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import { User } from "@/types/user";
 
 type SortKey = "id" | "created_at" | "last_login_at" | null;
@@ -20,9 +21,8 @@ export default function UserListPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [sortKey, setSortKey] = useState<SortKey>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
+  const [sortKey, setSortKey] = useState<"id" | "created_at" | "last_login_at" | null>("id");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>("asc");
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [blacklist, setBlacklist] = useState("");
@@ -30,9 +30,66 @@ export default function UserListPage() {
   const [createdTo, setCreatedTo] = useState("");
   const [loginFrom, setLoginFrom] = useState("");
   const [loginTo, setLoginTo] = useState("");
-
   const [exportFormat, setExportFormat] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+
+  // 篩選展開
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+
+  const quickSetDate = (type: string, target: "created" | "login") => {
+    const today = dayjs();
+    let fromDate = "";
+    let toDate = "";
+
+    switch (type) {
+      case "today":
+        fromDate = today.format("YYYY-MM-DD");
+        toDate = today.format("YYYY-MM-DD");
+        break;
+      case "yesterday":
+        const y = today.subtract(1, "day");
+        fromDate = y.format("YYYY-MM-DD");
+        toDate = y.format("YYYY-MM-DD");
+        break;
+      case "3days":
+        fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
+        toDate = today.format("YYYY-MM-DD");
+        break;
+      case "thisMonth":
+        fromDate = today.startOf("month").format("YYYY-MM-DD");
+        toDate = today.endOf("month").format("YYYY-MM-DD");
+        break;
+      case "lastMonth":
+        const last = today.subtract(1, "month");
+        fromDate = last.startOf("month").format("YYYY-MM-DD");
+        toDate = last.endOf("month").format("YYYY-MM-DD");
+        break;
+    }
+
+    if (target === "created") {
+      setCreatedFrom(fromDate);
+      setCreatedTo(toDate);
+    } else {
+      setLoginFrom(fromDate);
+      setLoginTo(toDate);
+    }
+  };
+
+
+  const clearFilter = () => {
+    setUsername("");
+    setStatus("");
+    setBlacklist("");
+    setCreatedFrom("");
+    setCreatedTo("");
+    setLoginFrom("");
+    setLoginTo("");
+    setUsers([]);
+    setTotalPages(1);
+    setTotalCount(0);
+    setHasSearched(false);
+  };
 
   const handleExport = (format: "csv" | "xlsx") => {
     const token = localStorage.getItem("token");
@@ -75,10 +132,14 @@ export default function UserListPage() {
       if (username) params.append("username", username);
       if (status) params.append("status", status);
       if (blacklist) params.append("blacklist", blacklist);
-      if (createdFrom) params.append("createdFrom", createdFrom);
-      if (createdTo) params.append("createdTo", createdTo);
-      if (loginFrom) params.append("loginFrom", loginFrom);
-      if (loginTo) params.append("loginTo", loginTo);
+
+      if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
+      if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+
+      if (loginFrom) params.append("loginFrom", loginFrom + " 00:00:00");
+      if (loginTo) params.append("loginTo", loginTo + " 23:59:59");
+
+
       params.append("limit", limit.toString());
       params.append("page", page.toString());
       params.append("excludeUserRole", "false");
@@ -220,111 +281,256 @@ export default function UserListPage() {
     );
   };
 
+
+
+
+
+
+
+
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">👥 使用者列表</h1>
+    <div className="b-bigbox-all w100">
 
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <input type="text" placeholder="帳號" value={username} onChange={(e) => setUsername(e.target.value)} className="border rounded px-3 py-2 w-full" />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border rounded px-3 py-2 w-full">
-          <option value="">狀態（全部）</option>
-          <option value="ACTIVE">啟用</option>
-          <option value="INACTIVE">停用</option>
-          <option value="BANNED">封鎖</option>
-        </select>
-        <select value={blacklist} onChange={(e) => setBlacklist(e.target.value)} className="border rounded px-3 py-2 w-full">
-          <option value="">黑名單（全部）</option>
-          <option value="true">是</option>
-          <option value="false">否</option>
-        </select>
-        <div className="flex gap-2">
-          <input type="date" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="border rounded px-2 py-1 w-full" />
-          <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="border rounded px-2 py-1 w-full" />
-        </div>
-        <div className="flex gap-2">
-          <input type="date" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="border rounded px-2 py-1 w-full" />
-          <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="border rounded px-2 py-1 w-full" />
-        </div>
-        <button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          查詢
-        </button>
-      </div>
 
-      <div className="mb-4 flex justify-between items-center">
-        <div>
-          <label>每頁顯示筆數：</label>
-          <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm">資料匯出：</label>
-          <select
-            value={exportFormat}
-            onChange={(e) => setExportFormat(e.target.value)}
-            className="border px-2 py-1 rounded"
-          >
-            <option value="">選擇格式</option>
-            <option value="csv">CSV 匯出</option>
-            <option value="xlsx">Excel 匯出</option>
-          </select>
+
+
+
+
+      <div className="b-ibox mb30">
+        <h1>會員列表</h1>
+
+        <div className="b-ibox-s">
+
           <button
-            onClick={() => {
-              if (!exportFormat) {
-                alert("請先選擇匯出格式");
-                return;
-              }
-              handleExport(exportFormat as "csv" | "xlsx");
-            }}
-            className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="b-search-btn w100"
           >
-            匯出
+            篩選
+            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
           </button>
+        
+
+
+          {isFilterOpen && (
+            <>
+              <div className="b-search-box fl1 w100 mt15">
+
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="username20">帳號</label>
+                  <input type="text" placeholder="帳號" id="username20" value={username} onChange={(e) => setUsername(e.target.value)} className="w60" />
+                </div>
+
+
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="status-select-1">狀態</label>
+                  <select id="status-select-1" value={status} onChange={(e) => setStatus(e.target.value)} className="w60">
+                    <option value="">狀態（全部）</option>
+                    <option value="ACTIVE">啟用</option>
+                    <option value="INACTIVE">停用</option>
+                    <option value="BANNED">封鎖</option>
+                  </select>
+                </div>
+                
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="status-select-2">黑名單</label>
+                  <select id="status-select-2" value={blacklist} onChange={(e) => setBlacklist(e.target.value)} className="w60">
+                    <option value="">黑名單（全部）</option>
+                    <option value="true">是</option>
+                    <option value="false">否</option>
+                  </select>
+                </div>
+
+                <div className="w50 fd1 mb25">
+
+                  <div className="b-form-group-2 fl4 w100 mb10">
+                    <label htmlFor="date-select-1">註冊時間</label>
+                    <div className="w70 fl4">
+                      <input type="date" id="date-select-1" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="date-select" />
+                      <span className="dateto">到</span>
+                      <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="date-select" />
+                    </div>
+                  </div>
+
+                  <div className="b-form-group-2 w100 fl4">
+                    <label></label>
+                    <div className="b-date-fast fl4 w70">
+                      <button onClick={() => quickSetDate("today", "created")}>今日</button>
+                      <button onClick={() => quickSetDate("yesterday", "created")}>昨日</button>
+                      <button onClick={() => quickSetDate("3days", "created")}>近三日</button>
+                      <button onClick={() => quickSetDate("thisMonth", "created")}>本月</button>
+                      <button onClick={() => quickSetDate("lastMonth", "created")}>上月</button>
+                    </div>
+                  </div>
+
+                </div>
+
+
+                <div className="w50 fd1 mb25">
+                  <div className="b-form-group-2 fl4 w100 mb10">
+                    <label htmlFor="date-select-2">登入時間</label>
+                    <div className="w70 fl4">
+                      <input type="date" id="date-select-2" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="date-select" />
+                      <span className="dateto">到</span>
+                      <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="date-select" />
+                    </div>
+                  </div>
+
+                  <div className="b-form-group-2 w100 fl4">
+                    <label></label>
+                    <div className="b-date-fast fl4 w70">
+                      <button onClick={() => quickSetDate("today", "login")}>今日</button>
+                      <button onClick={() => quickSetDate("yesterday", "login")}>昨日</button>
+                      <button onClick={() => quickSetDate("3days", "login")}>近三日</button>
+                      <button onClick={() => quickSetDate("thisMonth", "login")}>本月</button>
+                      <button onClick={() => quickSetDate("lastMonth", "login")}>上月</button>
+                    </div>
+                  </div>
+
+                </div>
+
+
+
+                <div className="fl4 w100 b-btnbox">
+                  <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
+                  <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
+                </div>
+
+
+              </div>
+              
+            </>
+          )}
+        
         </div>
+      
       </div>
 
-      {loading && <p>載入中...</p>}
-      {!loading && hasSearched && (
-        <>
-          <table className="w-full border-collapse border text-sm">
-            <thead>
-              <tr className="bg-gray-200 text-center">
-                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
-                <th className="border p-2">帳號</th>
-                <th className="border p-2">Email</th>
-                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
-                <th className="border p-2">登入 IP</th>
-                <th className="border p-2">登入平台</th>
-                <th className="border p-2 cursor-pointer" onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
-                <th className="border p-2">狀態</th>
-                <th className="border p-2">黑名單</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="text-center">
-                  <td className="border p-2">{user.id}</td>
-                  <td className="border p-2">{user.username}</td>
-                  <td className="border p-2">{user.email || "-"}</td>
-                  <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                  <td className="border p-2">{user.last_login_ip || "-"}</td>
-                  <td className="border p-2">{user.last_login_platform || "-"}</td>
-                  <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                  <td className="border p-2">
-                    <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
-                      {user.status === "ACTIVE" ? "啟用" : "停用"}
-                    </button>
-                  </td>
-                  <td className="border p-2">
-                    <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
-                      {user.is_blacklisted ? "是" : "否"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {renderPagination()}
-        </>
-      )}
+          
+
+
+
+
+
+
+
+
+      <div className="b-ibox">
+
+        <div className="b-ibox-s">
+
+
+
+
+
+          <div className="w100 fo5 mb15">
+
+            <div className="w50 fl4">
+              <label htmlFor="page11">每頁&nbsp;</label>
+              <input
+                type="number"
+                id="page11"
+                value={limit}
+                onChange={(e) => {
+                  const val = Math.max(1, Number(e.target.value)); 
+                  setLimit(val);
+                }}
+                min={1}
+                className="txtbox1"
+              />
+              <p>&nbsp;顯示筆數</p>
+            </div>
+
+
+
+            <div className="w50 fl6">
+              <label>資料匯出：</label>
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+                className="mr10"
+              >
+                <option value="">選擇格式</option>
+                <option value="csv">CSV 匯出</option>
+                <option value="xlsx">Excel 匯出</option>
+              </select>
+              <button
+                onClick={() => {
+                  if (!exportFormat) {
+                    alert("請先選擇匯出格式");
+                    return;
+                  }
+                  handleExport(exportFormat as "csv" | "xlsx");
+                }}
+                className="b-btn-s2 b-btn-c4"
+              >
+                匯出
+              </button>
+            </div>
+          </div>
+
+
+
+
+
+
+
+
+
+
+          {loading && <p>載入中...</p>}
+          {!loading && hasSearched && (
+            <>
+              <table className="w-full border-collapse border text-sm">
+                <thead>
+                  <tr className="bg-gray-200 text-center">
+                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
+                    <th className="border p-2">帳號</th>
+                    <th className="border p-2">Email</th>
+                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
+                    <th className="border p-2">登入 IP</th>
+                    <th className="border p-2">登入平台</th>
+                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
+                    <th className="border p-2">狀態</th>
+                    <th className="border p-2">黑名單</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="text-center">
+                      <td className="border p-2">{user.id}</td>
+                      <td className="border p-2">{user.username}</td>
+                      <td className="border p-2">{user.email || "-"}</td>
+                      <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                      <td className="border p-2">{user.last_login_ip || "-"}</td>
+                      <td className="border p-2">{user.last_login_platform || "-"}</td>
+                      <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                      <td className="border p-2">
+                        <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
+                          {user.status === "ACTIVE" ? "啟用" : "停用"}
+                        </button>
+                      </td>
+                      <td className="border p-2">
+                        <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
+                          {user.is_blacklisted ? "是" : "否"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {renderPagination()}
+            </>
+          )}
+        
+        </div>
+
+      </div>
     </div>
+
+
+
+
+   
+
   );
 }

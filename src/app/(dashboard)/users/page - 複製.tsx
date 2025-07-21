@@ -1,3 +1,4 @@
+// frontend\src\app\(dashboard)\users\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,19 +13,10 @@ const statusMap: Record<string, string> = {
   BANNED: "封鎖",
 };
 
-
-
 export default function UserListPage() {
-
-  
-  
   const [users, setUsers] = useState<User[]>([]);
   const [limit, setLimit] = useState(20);
-
-
   const [page, setPage] = useState(1);
-
-
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -39,14 +31,12 @@ export default function UserListPage() {
   const [loginFrom, setLoginFrom] = useState("");
   const [loginTo, setLoginTo] = useState("");
 
-  const [exportFormat, setExportFormat] = useState('');
+  const [exportFormat, setExportFormat] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
-
-
-  const handleExport = (format: 'csv' | 'xlsx') => {
+  const handleExport = (format: "csv" | "xlsx") => {
     const token = localStorage.getItem("token");
     const params = new URLSearchParams();
-
     if (username) params.append("username", username);
     if (status) params.append("status", status);
     if (blacklist) params.append("blacklist", blacklist);
@@ -56,14 +46,10 @@ export default function UserListPage() {
     if (loginTo) params.append("loginTo", loginTo);
     params.append("excludeUserRole", "false");
     params.append("format", format);
-
     params.append("token", token || "");
-
     const url = `http://localhost:3001/user/export?${params.toString()}`;
     window.open(url);
   };
-
-
 
   const sortUsers = (data: User[]) => {
     if (!sortKey || !sortDirection) return data;
@@ -81,15 +67,11 @@ export default function UserListPage() {
   };
 
   const fetchUsers = async () => {
-
-    
     if (!Number.isFinite(limit) || !Number.isFinite(page)) return;
-
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const params = new URLSearchParams();
-
       if (username) params.append("username", username);
       if (status) params.append("status", status);
       if (blacklist) params.append("blacklist", blacklist);
@@ -98,18 +80,13 @@ export default function UserListPage() {
       if (loginFrom) params.append("loginFrom", loginFrom);
       if (loginTo) params.append("loginTo", loginTo);
       params.append("limit", limit.toString());
-
       params.append("page", page.toString());
-
       params.append("excludeUserRole", "false");
-
 
       const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
-
- 
 
       setUsers(sortUsers(result.data));
       setTotalPages(result.totalPages);
@@ -122,20 +99,15 @@ export default function UserListPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    if (hasSearched) fetchUsers();
   }, [limit, page]);
-
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, [limit, page, username, status, blacklist, createdFrom, createdTo, loginFrom, loginTo]);
-
-
 
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
   }, [sortKey, sortDirection]);
 
   const handleSearch = () => {
+    setHasSearched(true);
     setPage(1);
     fetchUsers();
   };
@@ -168,7 +140,6 @@ export default function UserListPage() {
   const handleToggleStatus = async (userId: number, currentStatus: string) => {
     const token = localStorage.getItem("token");
     const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-
     try {
       await fetch(`http://localhost:3001/user/${userId}`, {
         method: "PATCH",
@@ -179,8 +150,8 @@ export default function UserListPage() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      setUsers(prev =>
-        prev.map(user =>
+      setUsers((prev) =>
+        prev.map((user) =>
           user.id === userId ? { ...user, status: newStatus } : user
         )
       );
@@ -189,10 +160,8 @@ export default function UserListPage() {
     }
   };
 
-
   const handleToggleBlacklist = async (userId: number, current: boolean) => {
     const token = localStorage.getItem("token");
-
     try {
       await fetch(`http://localhost:3001/user/${userId}`, {
         method: "PATCH",
@@ -203,9 +172,8 @@ export default function UserListPage() {
         body: JSON.stringify({ is_blacklisted: !current }),
       });
 
-      // ✅ 這裡用 setUsers 更新單筆狀態，不整頁 fetch
-      setUsers(prev =>
-        prev.map(user =>
+      setUsers((prev) =>
+        prev.map((user) =>
           user.id === userId ? { ...user, is_blacklisted: !current } : user
         )
       );
@@ -214,29 +182,14 @@ export default function UserListPage() {
     }
   };
 
-
-  const getDeviceType = (ua?: string) => {
-    if (!ua) return "-";
-    return ua.toLowerCase().includes("mobile") ? "手機" : "電腦";
-  };
-
   const renderPagination = () => {
     const pages = [];
-    const maxVisible = 5;
-    const half = Math.floor(maxVisible / 2);
-    let start = Math.max(1, page - half);
-    let end = Math.min(totalPages, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
+    for (let i = 1; i <= totalPages; i++) {
       pages.push(
         <button
           key={i}
           onClick={() => setPage(i)}
-          className={`px-3 py-1 border rounded ${i === page ? "bg-gray-300" : "bg-white"}`}
+          className={`px-3 py-1 rounded border ${page === i ? "bg-blue-600 text-white" : "hover:bg-gray-200"}`}
         >
           {i}
         </button>
@@ -252,19 +205,7 @@ export default function UserListPage() {
         >
           上一頁
         </button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-          <button
-            key={p}
-            onClick={() => setPage(p)}
-            className={`px-3 py-1 rounded border ${
-              page === p ? "bg-blue-600 text-white" : "hover:bg-gray-200"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-
+        {pages}
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={page === totalPages}
@@ -272,7 +213,6 @@ export default function UserListPage() {
         >
           下一頁
         </button>
-
         <p className="text-sm text-gray-500">
           目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
         </p>
@@ -281,8 +221,12 @@ export default function UserListPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">👥 使用者列表</h1>
+    <div className="b-ibox">
+      <h1>使用者列表</h1>
+
+
+
+
 
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <input type="text" placeholder="帳號" value={username} onChange={(e) => setUsername(e.target.value)} className="border rounded px-3 py-2 w-full" />
@@ -311,16 +255,19 @@ export default function UserListPage() {
       </div>
 
 
-      <div className="mb-4 flex  justify-between items-center">
 
+
+
+
+
+
+
+
+      <div className="mb-4 flex justify-between items-center">
         <div>
           <label>每頁顯示筆數：</label>
           <input type="number" value={limit} onChange={(e) => setLimit(Number(e.target.value))} className="border rounded px-2 py-1 w-20" />
-
         </div>
-
-
-
         <div className="flex items-center gap-2">
           <label className="text-sm">資料匯出：</label>
           <select
@@ -335,25 +282,20 @@ export default function UserListPage() {
           <button
             onClick={() => {
               if (!exportFormat) {
-                alert('請先選擇匯出格式');
+                alert("請先選擇匯出格式");
                 return;
               }
-              handleExport(exportFormat as 'csv' | 'xlsx');
+              handleExport(exportFormat as "csv" | "xlsx");
             }}
             className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
           >
             匯出
           </button>
         </div>
-
-
-
-
       </div>
 
-      {loading ? (
-        <p>載入中...</p>
-      ) : (
+      {loading && <p>載入中...</p>}
+      {!loading && hasSearched && (
         <>
           <table className="w-full border-collapse border text-sm">
             <thead>
@@ -377,21 +319,7 @@ export default function UserListPage() {
                   <td className="border p-2">{user.email || "-"}</td>
                   <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">{user.last_login_ip || "-"}</td>
-
-                  <td className="p-2">
-                    {user.last_login_platform ? (
-                      <>
-                        <span className="text-sm text-gray-800">
-                          {user.last_login_platform}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-
-
-
+                  <td className="border p-2">{user.last_login_platform || "-"}</td>
                   <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
                   <td className="border p-2">
                     <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>

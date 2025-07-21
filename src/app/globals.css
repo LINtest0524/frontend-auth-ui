@@ -469,8 +469,24 @@ body {
   width: 20%;
 }
 
+.w33{
+  width: 33%;
+}
+
 .w50{
   width: 50%;
+}
+
+.w60{
+  width: 60%;
+}
+
+.w70{
+  width: 70%;
+}
+
+.w80{
+  width: 80%;
 }
 
 .w100{
@@ -485,8 +501,28 @@ body {
   max-width: 150px;
 }
 
+.mb10{
+  margin-bottom: 10px;
+}
+
 .mb15{
   margin-bottom: 15px;
+}
+
+.mb25{
+  margin-bottom: 25px;
+}
+
+.mb30{
+  margin-bottom: 30px;
+}
+
+.mt15{
+  margin-top: 15px;
+}
+
+.mr10{
+  margin-right: 10px;
 }
 
 .mr20{
@@ -512,6 +548,12 @@ body {
   align-items: center;
 }
 
+.fl1{
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 .fl4{
   display: flex;
   justify-content: flex-start;
@@ -522,6 +564,13 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+}
+
+.fd1{
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
 }
 
 
@@ -580,8 +629,16 @@ body {
 
 
 /* 區塊 */
+.b-bigbox-all{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 .b-ibox{
   width: 100%;
+  min-width: 1000px;
   background-color: #fff;
   display: flex;
   flex-direction: column;
@@ -592,7 +649,7 @@ body {
 
 .b-ibox h1{
   font-size: 24px;
-  font-weight: 100;
+  font-weight: 300;
   border-bottom: #e7eaec 1px solid;
   width: 100%;
   padding: 14px 15px 7px;
@@ -669,13 +726,45 @@ body {
 
 
 .b-btnbox{
-  padding-left: calc( 10% + 22px );
+  padding-left: 132px;
 }
 
+/* 搜尋按鈕 */
+.b-search-btn{
+  color: #31708f;
+  background-color: #d9edf7;
+  border: #bce8f1 1px solid;
+  border-radius: 4px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px 10px 10px 30px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
 
+.b-search-btn .i-arrow{
+  width: 13px;
+  height: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: auto;
+  background-image: url("/icon/i-arrow.svg");
+  filter: invert(33%) sepia(86%) saturate(746%) hue-rotate(185deg) brightness(95%) contrast(92%);
+  transition: transform 0.3s ease;
+}
 
+.b-search-btn .i-arrow.rotate{
+  transform: rotate(90deg);
+}
 
-
+.b-search-box{
+  flex-wrap: wrap;
+}
 
 
 
@@ -934,7 +1023,7 @@ input::placeholder{
 
 /* 後台 文字欄位 */
 .b-form-group-1{
-  border-bottom: 1px dashed #dedede;
+  border-bottom: 1px dashed #f1f1f1;
   padding: 0 0 25px;
   margin-bottom: 25px;
 }
@@ -942,8 +1031,7 @@ input::placeholder{
 .b-form-group-1 label{
   font-weight: bold;
   font-size: 14px;
-  width: auto;
-  min-width: 10%;
+  width: 110px;
   text-align: right;
   margin-right: 22px;
   display: flex;
@@ -951,4 +1039,53 @@ input::placeholder{
 }
 
 
+.b-form-group-2 label{
+  font-weight: bold;
+  font-size: 14px;
+  width: 110px;
+  text-align: right;
+  margin-right: 22px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/* 日期 */
+.dateto{
+  font-size: 13px;
+  background-color: #e5e6e7;
+  height: 34px;
+  padding: 0 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.b-date-fast{
+  border-radius: 4px;
+  overflow: hidden;
+  border: #dadada 1px solid;
+  height: 34px;
+  display: flex;
+}
+
+.date-select{
+  cursor: pointer;
+}
+
+.b-date-fast button{
+  flex: auto;
+  border-right: #dadada 1px solid;
+  height: 34px;
+  transition: all 0.3s ease;
+}
+
+.b-date-fast button:last-child{
+  border-right: #dadada 0px solid;
+}
+
+.b-date-fast button:hover{
+  background-color: #1ab394;
+  color: #fff;
+}
 

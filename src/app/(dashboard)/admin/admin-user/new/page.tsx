@@ -176,17 +176,17 @@ export default function AdminUserCreatePage() {
         </div>
 
 
-        <div className="flex gap-2">
+        <div className="fl4 w100 b-btnbox">
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            className="b-btn-s2 b-btn-c4 mr20"
           >
             建立
           </button>
           <button
             onClick={() => router.back()}
-            className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+            className="b-btn-s2 b-btn-c1"
           >
             返回
           </button>
