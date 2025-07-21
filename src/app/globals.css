@@ -616,6 +616,8 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+  height: 100vh;
+  overflow: auto;
 }
 
 .b-right-bottom-box{
@@ -791,6 +793,9 @@ body {
   justify-content: flex-end;
   align-items: center;
   color: #999;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .content-tabs button{
@@ -926,7 +931,7 @@ input::placeholder{
   width: 100%;
 }
 
-.b-table-box.admin-table th:last-child{
+.b-table-box.admin-table th.th-last{
   width: 202px;
 }
 
@@ -948,6 +953,12 @@ input::placeholder{
   font-size: 13px;
   border-right: 1px solid #e7e7e7;
   vertical-align: middle;
+}
+
+.b-table-box thead tr th span{
+  display: inline-block;
+  margin-left: 5px;
+  user-select: none;
 }
 
 
@@ -977,6 +988,15 @@ input::placeholder{
   background-color: #f5f5f5;
 }
 
+
+/* 表格升降 */
+.i-sort{
+  width: 14px;
+  height: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 
 
@@ -1009,6 +1029,16 @@ input::placeholder{
 
 .tables_munber .pagehover{
   background-color: #e0e0e0;
+}
+
+.tables_munber span{
+  color: #777;
+  font-size: 13px;
+  padding: 4px 10px;
+  background-color: #fff;
+  height: 27px;
+  border-right: #ddd 1px solid;
+  user-select: none;
 }
 
 

@@ -188,12 +188,12 @@ export default function AdminUserListPage() {
               <th>上次登入時間</th>
               <th>上次登入IP</th>
               <th>創建人</th>
-              {canSeeActions && <th>操作</th>}
+              {canSeeActions && <th className="th-last">操作</th>}
             </tr>
           </thead>
           <tbody>
             {adminUsers.map((admin) => (
-              <tr key={admin.id} className="">
+              <tr key={admin.id}>
                 <td>{admin.id}</td>
                 <td>{admin.username}</td>
                 <td>{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>

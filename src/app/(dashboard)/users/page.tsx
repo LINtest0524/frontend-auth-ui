@@ -97,10 +97,12 @@ export default function UserListPage() {
     if (username) params.append("username", username);
     if (status) params.append("status", status);
     if (blacklist) params.append("blacklist", blacklist);
-    if (createdFrom) params.append("createdFrom", createdFrom);
-    if (createdTo) params.append("createdTo", createdTo);
-    if (loginFrom) params.append("loginFrom", loginFrom);
-    if (loginTo) params.append("loginTo", loginTo);
+
+    if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
+    if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+
+    if (loginFrom) params.append("loginFrom", loginFrom + " 00:00:00");
+    if (loginTo) params.append("loginTo", loginTo + " 23:59:59");
     params.append("excludeUserRole", "false");
     params.append("format", format);
     params.append("token", token || "");
@@ -189,14 +191,20 @@ export default function UserListPage() {
   const getArrow = (key: SortKey) => {
     const isActive = sortKey === key;
     const dir = isActive ? sortDirection : null;
+
+    const getIcon = () => {
+      if (dir === "asc") return <img src="/icon/i-sort-2.svg" alt="升冪" className="i-sort" />;
+      if (dir === "desc") return <img src="/icon/i-sort-1.svg" alt="降冪" className="i-sort" />;
+      return <img src="/icon/i-sort-0.svg" alt="未排序" className="i-sort" />;
+    };
+
     return (
-      <span className={`ml-1 text-xs ${isActive ? "text-black" : "text-gray-400"}`}>
-        {dir === "asc" && "↑"}
-        {dir === "desc" && "↓"}
-        {!dir && "⇅"}
+      <span className={`${isActive }`}>
+        {getIcon()}
       </span>
     );
   };
+
 
   const handleToggleStatus = async (userId: number, currentStatus: string) => {
     const token = localStorage.getItem("token");
@@ -245,41 +253,78 @@ export default function UserListPage() {
 
   const renderPagination = () => {
     const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => setPage(i)}
-          className={`px-3 py-1 rounded border ${page === i ? "bg-blue-600 text-white" : "hover:bg-gray-200"}`}
-        >
-          {i}
-        </button>
-      );
+    const maxVisible = 5;
+
+    if (totalPages <= 10) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      const start = Math.max(2, page - 2);
+      const end = Math.min(totalPages - 1, page + 2);
+
+      if (start > 2) {
+        pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages - 1) {
+        pages.push("...");
+      }
+
+      pages.push(totalPages);
     }
 
     return (
-      <div className="mt-4 flex justify-center items-center gap-2">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          上一頁
-        </button>
-        {pages}
-        <button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          下一頁
-        </button>
-        <p className="text-sm text-gray-500">
+      <div className="fo5 w100 b-data-tables_munber mb15">
+        <p>
           目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
         </p>
+
+        <div className="tables_munber">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className=""
+          >
+            上一頁
+          </button>
+
+          {pages.map((p, idx) =>
+            p === "..." ? (
+              <span key={`ellipsis-${idx}`}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`${
+                  page === p ? "pagehover" : ""
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className=""
+          >
+            下一頁
+          </button>
+        </div>
       </div>
     );
   };
+
 
 
 
@@ -419,9 +464,6 @@ export default function UserListPage() {
         <div className="b-ibox-s">
 
 
-
-
-
           <div className="w100 fo5 mb15">
 
             <div className="w50 fl4">
@@ -470,47 +512,41 @@ export default function UserListPage() {
 
 
 
-
-
-
-
-
-
-
           {loading && <p>載入中...</p>}
+
           {!loading && hasSearched && (
             <>
-              <table className="w-full border-collapse border text-sm">
+              <table className="b-table-box admin-table mb15">
                 <thead>
-                  <tr className="bg-gray-200 text-center">
-                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
-                    <th className="border p-2">帳號</th>
-                    <th className="border p-2">Email</th>
-                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
-                    <th className="border p-2">登入 IP</th>
-                    <th className="border p-2">登入平台</th>
-                    <th className="border p-2 cursor-pointer" onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
-                    <th className="border p-2">狀態</th>
-                    <th className="border p-2">黑名單</th>
+                  <tr>
+                    <th onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
+                    <th>帳號</th>
+                    <th>Email</th>
+                    <th onClick={() => toggleSort("created_at")}>註冊時間{getArrow("created_at")}</th>
+                    <th>登入 IP</th>
+                    <th>登入平台</th>
+                    <th onClick={() => toggleSort("last_login_at")}>登入時間{getArrow("last_login_at")}</th>
+                    <th>狀態</th>
+                    <th>黑名單</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id} className="text-center">
-                      <td className="border p-2">{user.id}</td>
-                      <td className="border p-2">{user.username}</td>
-                      <td className="border p-2">{user.email || "-"}</td>
-                      <td className="border p-2">{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                      <td className="border p-2">{user.last_login_ip || "-"}</td>
-                      <td className="border p-2">{user.last_login_platform || "-"}</td>
-                      <td className="border p-2">{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                      <td className="border p-2">
-                        <button onClick={() => handleToggleStatus(user.id, user.status)} className={`px-2 py-1 rounded text-white ${user.status === "ACTIVE" ? "bg-green-600 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-600"}`}>
+                    <tr key={user.id}>
+                      <td>{user.id}</td>
+                      <td>{user.username}</td>
+                      <td>{user.email || "-"}</td>
+                      <td>{user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                      <td>{user.last_login_ip || "-"}</td>
+                      <td>{user.last_login_platform || "-"}</td>
+                      <td>{user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
+                      <td>
+                        <button onClick={() => handleToggleStatus(user.id, user.status)} className={`${user.status === "ACTIVE" ? "b-btn-s3 b-btn-c4" : "b-btn-s3 b-btn-c3"}`}>
                           {user.status === "ACTIVE" ? "啟用" : "停用"}
                         </button>
                       </td>
-                      <td className="border p-2">
-                        <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`px-2 py-1 rounded text-white ${user.is_blacklisted ? "bg-red-600 hover:bg-red-700" : "bg-gray-500 hover:bg-gray-600"}`}>
+                      <td>
+                        <button onClick={() => handleToggleBlacklist(user.id, user.is_blacklisted)} className={`${user.is_blacklisted ? "b-btn-s3 b-btn-c3" : "b-btn-s3 b-btn-c1"}`}>
                           {user.is_blacklisted ? "是" : "否"}
                         </button>
                       </td>
