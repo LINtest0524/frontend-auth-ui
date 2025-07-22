@@ -119,11 +119,12 @@ export default function EditBannerPage() {
             value={form.title}
             placeholder="標題"
             onChange={handleChange}
+            className="w70"
           />
         </div>
 
         <div className="w50 fd1 mb25">
-          <div className="b-form-group-2 fl4 w100 mb10">
+          <div className="b-form-group-2 fl4 w100">
             <label htmlFor="date-select-10">活動時間</label>
             <div className="w70 fl4">
               <input
@@ -131,7 +132,7 @@ export default function EditBannerPage() {
                 id="date-select-10"
                 name="start_time"
                 value={form.start_time}
-                className="date-select"
+                className="date-select flex1"
                 onChange={handleChange}
               />
               <span className="dateto">到</span>
@@ -139,7 +140,7 @@ export default function EditBannerPage() {
                 type="datetime-local"
                 name="end_time"
                 value={form.end_time}
-                className="date-select"
+                className="date-select flex1"
                 onChange={handleChange}
               />
             </div>
@@ -164,7 +165,7 @@ export default function EditBannerPage() {
         </div>
 
 
-        <div className="b-form-group-2 w100 fl4 mb25">
+        <div className="b-form-group-2 w50 fl4 mb25">
           <label htmlFor="sort">排序</label>
           <input
             type="number"
@@ -172,7 +173,7 @@ export default function EditBannerPage() {
             name="sort"
             value={form.sort === 0 ? '' : form.sort}
             placeholder="請輸入排序數字 - 數字越大越前面"
-            className="border p-2 w-full"
+            className="border p-2 w-full w70"
             onChange={handleChange}
           />
         </div>
@@ -181,11 +182,10 @@ export default function EditBannerPage() {
 
         <div className="b-form-group-2 w50 fl4 mb10">
           <label htmlFor="img-pc">桌機圖片</label>
-          <input type="file" accept="image/*" onChange={(e) => setDesktopFile(e.target.files?.[0] || null)} />
+          <input type="file" className="pt3 w70" accept="image/*" onChange={(e) => setDesktopFile(e.target.files?.[0] || null)} />
         </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25">
-          <label></label>
+        <div className="b-form-group-2 w50 fl4 mb25 ml132">
           <img
             src={getImageUrl(form.desktop_image_url)}
             className="b-banner-img"
@@ -196,11 +196,10 @@ export default function EditBannerPage() {
 
         <div className="b-form-group-2 w50 fl4 mb10">
           <label htmlFor="img-pc">手機圖片</label>
-          <input type="file" accept="image/*" onChange={(e) => setMobileFile(e.target.files?.[0] || null)} />
+          <input type="file" className="pt3 w70" accept="image/*" onChange={(e) => setMobileFile(e.target.files?.[0] || null)} />
         </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25">
-          <label></label>
+        <div className="b-form-group-2 w50 fl4 mb25 ml132">
           <img
             src={getImageUrl(form.mobile_image_url)}
             className="b-banner-img"

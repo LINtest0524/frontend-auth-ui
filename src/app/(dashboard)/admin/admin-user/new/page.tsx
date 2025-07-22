@@ -123,6 +123,7 @@ export default function AdminUserCreatePage() {
             name="username"
             value={form.username}
             onChange={handleChange}
+            className="w70"
           />
         </div>
 
@@ -133,6 +134,7 @@ export default function AdminUserCreatePage() {
             type="password"
             value={form.password}
             onChange={handleChange}
+            className="w70"
           />
         </div>
 
@@ -142,7 +144,7 @@ export default function AdminUserCreatePage() {
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="w80"
+            className="w70"
           >
             {getAvailableRoles().map((r) => (
               <option key={r.value} value={r.value}>
@@ -159,7 +161,7 @@ export default function AdminUserCreatePage() {
               name="companyId"
               value={form.companyId || ""}
               onChange={handleChange}
-              className="w100"
+              className="w70"
             >
               <option value="">請選擇公司</option>
               {companies.map((c) => (

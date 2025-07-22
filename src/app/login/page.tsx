@@ -55,7 +55,7 @@ export default function Login() {
                 <input
                   type="text"
                   id="username1"
-                  className="mb15"
+                  className="mb15 w100"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="請輸入帳號"
@@ -65,7 +65,7 @@ export default function Login() {
                 <input
                   type="password"
                   id="userpw"
-                  className="mb15"
+                  className="mb15 w100"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="請輸入密碼"

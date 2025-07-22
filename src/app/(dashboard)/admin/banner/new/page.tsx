@@ -116,6 +116,7 @@ export default function BannerPage() {
             value={form.title}
             placeholder="標題"
             onChange={handleChange}
+            className="w70"
           />
         </div>
 
@@ -130,7 +131,7 @@ export default function BannerPage() {
                 id="date-select-10"
                 name="start_time"
                 value={form.start_time}
-                className="date-select"
+                className="date-select flex1"
                 onChange={handleChange}
               />
               <span className="dateto">到</span>
@@ -138,7 +139,7 @@ export default function BannerPage() {
                 type="datetime-local"
                 name="end_time"
                 value={form.end_time}
-                className="date-select"
+                className="date-select flex1"
                 onChange={handleChange}
               />
             </div>
@@ -165,7 +166,7 @@ export default function BannerPage() {
         </div>
 
 
-        <div className="b-form-group-2 w100 fl4 mb25">
+        <div className="b-form-group-2 w50 fl4 mb25">
           <label htmlFor="sort">排序</label>
           <input
             type="number"
@@ -173,7 +174,7 @@ export default function BannerPage() {
             name="sort"
             value={form.sort === 0 ? '' : form.sort}
             placeholder="請輸入排序數字 - 數字越大越前面"
-            className="border p-2 w-full"
+            className="w70"
             onChange={handleChange}
           />
         </div>
@@ -184,7 +185,7 @@ export default function BannerPage() {
           <input
             type="file"
             id="img-pc"
-            className="pt3"
+            className="pt3 w70"
             ref={desktopInputRef}
             accept="image/jpeg,image/png,image/webp"
             onChange={e => {
@@ -202,8 +203,7 @@ export default function BannerPage() {
           />
         </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25">
-          <label></label>
+        <div className="b-form-group-2 w50 fl4 mb25 ml132">
           {preview.desktop && (
             <img
               src={preview.desktop}
@@ -220,7 +220,7 @@ export default function BannerPage() {
           <input
             type="file"
             id="img-m"
-            className="pt3"
+            className="pt3 w70"
             ref={mobileInputRef}
             accept="image/jpeg,image/png,image/webp"
             onChange={e => {
@@ -238,8 +238,7 @@ export default function BannerPage() {
           />
         </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25">
-          <label></label>
+        <div className="b-form-group-2 w50 fl4 mb25 ml132">
           {preview.mobile && (
             <img
               src={preview.mobile}

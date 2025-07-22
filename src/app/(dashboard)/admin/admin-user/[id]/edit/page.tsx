@@ -97,6 +97,7 @@ export default function AdminUserEditPage() {
             type="email"
             value={form.email}
             onChange={handleChange}
+            className="w70"
           />
         </div>
 
@@ -106,7 +107,7 @@ export default function AdminUserEditPage() {
             name="status"
             value={form.status}
             onChange={handleChange}
-            className="w80"
+            className="w70"
           >
             <option value="ACTIVE">啟用</option>
             <option value="INACTIVE">停用</option>
@@ -121,7 +122,7 @@ export default function AdminUserEditPage() {
               name="role"
               value={form.role}
               onChange={handleChange}
-              className="w80"
+              className="w70"
             >
               <option value="SUPER_ADMIN">超級管理員</option>
               <option value="GLOBAL_ADMIN">全域管理員</option>

@@ -27,10 +27,6 @@ export default function MarqueeListPage() {
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const fetchData = async () => {
-    if (!companyId) {
-      setError("找不到公司 ID，請重新登入");
-      return;
-    }
     if (!token) {
       setError("未登入或 token 遺失，請重新登入");
       return;
@@ -38,7 +34,7 @@ export default function MarqueeListPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/admin/marquee/${companyId}`, {
+      const res = await fetch(`${apiBase}/admin/marquee`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

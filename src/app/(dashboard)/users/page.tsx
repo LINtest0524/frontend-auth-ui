@@ -32,6 +32,7 @@ export default function UserListPage() {
   const [loginTo, setLoginTo] = useState("");
   const [exportFormat, setExportFormat] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+  const [inputLimit, setInputLimit] = useState(limit);
 
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -338,10 +339,6 @@ export default function UserListPage() {
     <div className="b-bigbox-all w100">
 
 
-
-
-
-
       <div className="b-ibox mb30">
         <h1>會員列表</h1>
 
@@ -391,15 +388,14 @@ export default function UserListPage() {
                   <div className="b-form-group-2 fl4 w100 mb10">
                     <label htmlFor="date-select-1">註冊時間</label>
                     <div className="w70 fl4">
-                      <input type="date" id="date-select-1" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="date-select" />
+                      <input type="date" id="date-select-1" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="date-select flex1" />
                       <span className="dateto">到</span>
-                      <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="date-select" />
+                      <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="date-select flex1" />
                     </div>
                   </div>
 
                   <div className="b-form-group-2 w100 fl4">
-                    <label></label>
-                    <div className="b-date-fast fl4 w70">
+                    <div className="b-date-fast fl4 w70 ml132">
                       <button onClick={() => quickSetDate("today", "created")}>今日</button>
                       <button onClick={() => quickSetDate("yesterday", "created")}>昨日</button>
                       <button onClick={() => quickSetDate("3days", "created")}>近三日</button>
@@ -415,15 +411,14 @@ export default function UserListPage() {
                   <div className="b-form-group-2 fl4 w100 mb10">
                     <label htmlFor="date-select-2">登入時間</label>
                     <div className="w70 fl4">
-                      <input type="date" id="date-select-2" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="date-select" />
+                      <input type="date" id="date-select-2" value={loginFrom} onChange={(e) => setLoginFrom(e.target.value)} className="date-select flex1" />
                       <span className="dateto">到</span>
-                      <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="date-select" />
+                      <input type="date" value={loginTo} onChange={(e) => setLoginTo(e.target.value)} className="date-select flex1" />
                     </div>
                   </div>
 
                   <div className="b-form-group-2 w100 fl4">
-                    <label></label>
-                    <div className="b-date-fast fl4 w70">
+                    <div className="b-date-fast fl4 w70 ml132">
                       <button onClick={() => quickSetDate("today", "login")}>今日</button>
                       <button onClick={() => quickSetDate("yesterday", "login")}>昨日</button>
                       <button onClick={() => quickSetDate("3days", "login")}>近三日</button>
@@ -458,65 +453,72 @@ export default function UserListPage() {
 
 
 
+      {loading && <p>載入中...</p>}
+
+      {!loading && hasSearched && (
+        <>
+
+          <div className="b-ibox">
 
 
-      <div className="b-ibox">
+            <div className="b-ibox-s">
 
-        <div className="b-ibox-s">
-
-
-          <div className="w100 fo5 mb15">
-
-            <div className="w50 fl4">
-              <label htmlFor="page11">每頁&nbsp;</label>
-              <input
-                type="number"
-                id="page11"
-                value={limit}
-                onChange={(e) => {
-                  const val = Math.max(1, Number(e.target.value)); 
-                  setLimit(val);
-                }}
-                min={1}
-                className="txtbox1"
-              />
-              <p>&nbsp;顯示筆數</p>
-            </div>
+              <div className="w100 fo5 mb15">
 
 
 
-            <div className="w50 fl6">
-              <label>資料匯出：</label>
-              <select
-                value={exportFormat}
-                onChange={(e) => setExportFormat(e.target.value)}
-                className="mr10"
-              >
-                <option value="">選擇格式</option>
-                <option value="csv">CSV 匯出</option>
-                <option value="xlsx">Excel 匯出</option>
-              </select>
-              <button
-                onClick={() => {
-                  if (!exportFormat) {
-                    alert("請先選擇匯出格式");
-                    return;
-                  }
-                  handleExport(exportFormat as "csv" | "xlsx");
-                }}
-                className="b-btn-s2 b-btn-c4"
-              >
-                匯出
-              </button>
-            </div>
-          </div>
+                <div className="w50 fl4">
+                  <label htmlFor="page11">每頁&nbsp;</label>
+                  <input
+                    type="number"
+                    id="page11"
+                    value={inputLimit}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (!isNaN(val)) setInputLimit(val);
+                    }}
+                    min={1}
+                    className="txtbox1 mr20"
+                  />
+                  <button
+                    onClick={() => {
+                      const validLimit = Math.max(1, inputLimit);
+                      setLimit(validLimit);
+                    }}
+                    className="ml10 b-btn-s2 b-btn-c4"
+                  >
+                    顯示筆數
+                  </button>
+                </div>
 
 
+                <div className="w50 fl6">
+                  <label>資料匯出：</label>
+                  <select
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value)}
+                    className="mr10"
+                  >
+                    <option value="">選擇格式</option>
+                    <option value="csv">CSV 匯出</option>
+                    <option value="xlsx">Excel 匯出</option>
+                  </select>
+                  <button
+                    onClick={() => {
+                      if (!exportFormat) {
+                        alert("請先選擇匯出格式");
+                        return;
+                      }
+                      handleExport(exportFormat as "csv" | "xlsx");
+                    }}
+                    className="b-btn-s2 b-btn-c4"
+                  >
+                    匯出
+                  </button>
+                </div>
+              </div>
 
-          {loading && <p>載入中...</p>}
 
-          {!loading && hasSearched && (
-            <>
               <table className="b-table-box admin-table mb15">
                 <thead>
                   <tr>
@@ -556,18 +558,17 @@ export default function UserListPage() {
                 </tbody>
               </table>
               {renderPagination()}
-            </>
-          )}
         
-        </div>
+            </div>
+          </div>
 
-      </div>
+        </>
+      )}
+
     </div>
 
 
 
-
-   
 
   );
 }

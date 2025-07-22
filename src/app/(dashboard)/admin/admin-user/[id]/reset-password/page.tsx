@@ -59,6 +59,7 @@ export default function AdminUserResetPasswordPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w70"
           />
         </div>
 
@@ -68,6 +69,7 @@ export default function AdminUserResetPasswordPage() {
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
+            className="w70"
           />
         </div>
 

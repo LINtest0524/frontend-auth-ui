@@ -31,6 +31,7 @@ export default function AdminUserListPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const currentUser = useUserStore((state) => state.user);
+  const [inputLimit, setInputLimit] = useState(limit);
 
   const setUser = useUserStore((state) => state.setUser);
 
@@ -137,19 +138,27 @@ export default function AdminUserListPage() {
         <div className="w100 fo5 mb15">
 
           <div className="w50 fl4">
-            <label htmlFor="page1">每頁&nbsp;</label>
+            <label htmlFor="page11">每頁&nbsp;</label>
             <input
               type="number"
-              id="page1"
-              value={limit}
+              id="page11"
+              value={inputLimit}
               onChange={(e) => {
-                const val = Math.max(1, Number(e.target.value)); 
-                setLimit(val);
+                const val = Number(e.target.value);
+                if (!isNaN(val)) setInputLimit(val);
               }}
               min={1}
-              className="txtbox1"
+              className="txtbox1 mr20"
             />
-            <p>&nbsp;顯示筆數</p>
+            <button
+              onClick={() => {
+                const validLimit = Math.max(1, inputLimit);
+                setLimit(validLimit);
+              }}
+              className="ml10 b-btn-s2 b-btn-c4"
+            >
+              顯示筆數
+            </button>
           </div>
 
 
