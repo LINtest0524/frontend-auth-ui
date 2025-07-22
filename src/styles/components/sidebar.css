@@ -30,7 +30,14 @@
 }
 
 /* 這是a標籤用 */
+
+
 .sidebar-item.active, .sidebar-item:hover{
+    background-color: #293846;
+    color: #fff;
+}
+
+.sidebar-item.expanded{
     background-color: #293846;
     color: #fff;
 }

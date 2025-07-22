@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 type MarqueeItem = {
   id: number;
@@ -17,6 +18,7 @@ export default function MarqueeListPage() {
   const [items, setItems] = useState<MarqueeItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -72,44 +74,45 @@ export default function MarqueeListPage() {
   }, []);
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">📋 跑馬燈列表</h1>
-        <Link
-          href="/admin/marquee/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          ➕ 新增內容
-        </Link>
-      </div>
+    <div className="b-ibox">
+   
+      <h1>跑馬燈列表</h1>
+
+      <div className="b-ibox-s">
+
+      
+        <button onClick={() => router.push("/admin/marquee/new")} className="b-btn-s2 b-btn-c4 mb25">
+            新增跑馬燈
+        </button>
+    
 
       {loading ? (
         <p>載入中...</p>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <p className="ps-err mb15">{error}</p>
       ) : (
-        <table className="w-full table-auto border border-gray-300 text-sm">
-          <thead className="bg-gray-100">
+        <table className="b-table-box admin-table mb15">
+          <thead>
             <tr>
-              <th className="border px-3 py-2">標題（後台參考用）</th>
-              <th className="border px-3 py-2">內容（實際顯示）</th>
-              <th className="border px-3 py-2">連結</th>
-              <th className="border px-3 py-2">啟用</th>
-              <th className="border px-3 py-2">建立時間</th>
-              <th className="border px-3 py-2">操作</th>
+              <th>標題（後台參考用）</th>
+              <th>內容（實際顯示）</th>
+              <th>連結</th>
+              <th>啟用</th>
+              <th>建立時間</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="text-center">
-                <td className="border px-3 py-2">{item.title || "-"}</td>
-                <td className="border px-3 py-2">{item.content || "-"}</td>
-                <td className="border px-3 py-2">
+              <tr key={item.id}>
+                <td>{item.title || "-"}</td>
+                <td>{item.content || "-"}</td>
+                <td>
                   {item.link ? (
                     <a
                       href={item.link}
                       target="_blank"
-                      className="text-blue-500 underline"
+                      className="b-btn-s3 b-btn-c2 mlr10"
                     >
                       查看
                     </a>
@@ -117,22 +120,30 @@ export default function MarqueeListPage() {
                     "-"
                   )}
                 </td>
-                <td className="border px-3 py-2">
-                  {item.isActive ? "✅" : "❌"}
+
+                <td>
+                  <span
+                    className={`${
+                      item.isActive ? "b-btn-s3 b-btn-c4 w50px" : "b-btn-s3 b-btn-c3 w50px"
+                    }`}
+                  >
+                    {item.isActive ? "ON" : "OFF"}
+                  </span>
                 </td>
-                <td className="border px-3 py-2">
+
+
+
+                <td>
                   {format(new Date(item.createdAt), "yyyy-MM-dd HH:mm")}
                 </td>
-                <td className="border px-3 py-2">
-                  <Link
-                    href={`/admin/marquee/${item.id}/edit`}
-                    className="text-blue-600 hover:underline mr-3"
-                  >
+                <td className="fl4">
+                  <button onClick={() => router.push(`/admin/marquee/${item.id}/edit`)} className="b-btn-s3 b-btn-c1 mlr10">
                     編輯
-                  </Link>
+                  </button>
+
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:underline"
+                    className="b-btn-s3 b-btn-c3 mlr10"
                   >
                     刪除
                   </button>
@@ -150,5 +161,7 @@ export default function MarqueeListPage() {
         </table>
       )}
     </div>
+    </div>
   );
+  
 }

@@ -234,9 +234,9 @@ export default function AdminUserListPage() {
                   <td>{admin.last_login_ip || "-"}</td>
                   <td>{admin.created_by?.username || "-"}</td>
                   {canSeeActions && (
-                    <td>
+                    <td className="fl4">
                       {canModify ? (
-                        <div>
+                        <>
                           <button onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)} className="b-btn-s3 b-btn-c1 mlr10">
                             編輯
                           </button>
@@ -246,7 +246,7 @@ export default function AdminUserListPage() {
                           <button onClick={() => handleDelete(admin.id)} className="b-btn-s3 b-btn-c3 mlr10">
                             刪除
                           </button>
-                        </div>
+                        </>
                       ) : (
                         <span>僅限代理商與超級管理員</span>
                       )}

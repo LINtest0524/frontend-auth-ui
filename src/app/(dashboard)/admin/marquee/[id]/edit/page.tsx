@@ -81,60 +81,76 @@ export default function EditMarqueePage() {
   }, [id]);
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">✏️ 編輯跑馬燈</h1>
+    <div className="b-ibox">
+
+      <h1>編輯跑馬燈</h1>
 
       {error && <p className="text-red-600 mb-2">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium">標題 *</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className="border px-3 py-2 w-full"
-          />
-        </div>
+      <div className="b-ibox-s">
 
-        <div>
-          <label className="block font-medium">內容</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={3}
-            className="border px-3 py-2 w-full"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="w100">
 
-        <div>
-          <label className="block font-medium">連結網址</label>
-          <input
-            type="url"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            className="border px-3 py-2 w-full"
-          />
-        </div>
+          <div className="b-form-group-1 w100 fl4">
+            <label>標題</label>
+            <input
+              type="text"
+              className="w70"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-          />
-          <label>啟用</label>
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          儲存
-        </button>
-      </form>
+          <div className="b-form-group-1 w100 fl4">
+            <label>內容</label>
+            <textarea
+              className="w70"
+              rows={3}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </div>
+
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>連結網址</label>
+            <input
+              type="url"
+              className="w70"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+            />
+          </div>
+
+
+          <div className="b-form-group-1 w100 fl4">
+            <label htmlFor="active">啟用</label>
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              id="active"
+              className="new-checkbox"
+            />
+          </div>
+
+          <div className="fl4 w100 b-btnbox">
+            <button
+              type="submit"
+              disabled={loading}
+              className="b-btn-s2 b-btn-c4 mr20"
+            >
+              儲存修改
+            </button>
+          </div>
+
+          
+        </form>
+
+
+      </div>
     </div>
   );
 }

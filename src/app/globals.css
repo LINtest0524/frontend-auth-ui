@@ -222,6 +222,10 @@ body {
   border: 0;
 }
 
+.w50px{
+  width: 50px;
+}
+
 .w10{
   width:10%;
 }
@@ -468,6 +472,9 @@ body {
   font-size: 14px;
   padding: 6px 12px;
   border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .b-btn-s3{
@@ -475,6 +482,9 @@ body {
   font-size: 13px;
   padding: 4px 8px;
   border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .b-btn-c1{
@@ -483,7 +493,7 @@ body {
 .b-btn-c1:hover{ background-color: #19ace1; }
 
 .b-btn-c2{
-  background-color: #dd933f;
+  background-color: #ffc107;
 }
 .b-btn-c2:hover{ background-color: #fdb25e; }
 
@@ -659,6 +669,38 @@ input:focus {
 input::placeholder{
   color: #a6a6c4;
 }
+
+
+textarea{
+  background-color: #FFF;
+  background-image: none;
+  border: 1px solid #dddddd;
+  border-radius: 1px;
+  color: inherit;
+  display: block;
+  padding: 5px 12px;
+  transition: border-color .15s ease-in-out 0s, box-shadow .15s ease-in-out 0s;
+  font-size: 14px;
+  height: 50px;
+}
+
+textarea:focus {
+    border-color: #1ab394 !important;
+}
+
+textarea::placeholder{
+  color: #a6a6c4;
+}
+
+
+/* 核取方塊 */
+.new-checkbox{
+  width: 25px;
+  height: 25px;
+  accent-color: #18a689;
+  cursor: pointer;
+}
+
 
 
 
