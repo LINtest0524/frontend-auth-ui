@@ -823,6 +823,27 @@ input::placeholder{
 
 
 
+/* 無資料 */
+.b-no-information{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid #dddddd;
+  border-left: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  margin-top: -15px;
+  padding: 50px 0;
+}
+
+.b-no-information img{
+  width: auto;
+  max-width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 
 

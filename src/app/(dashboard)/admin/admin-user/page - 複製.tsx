@@ -1,3 +1,4 @@
+// frontend/src/app/(dashboard)/admin/admin-user/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,37 +20,49 @@ const statusMap: Record<string, string> = {
   BANNED: "封鎖",
 };
 
+
+
 export default function AdminUserListPage() {
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
+  const [users] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [inputLimit, setInputLimit] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const currentUser = useUserStore((state) => state.user);
+  const [inputLimit, setInputLimit] = useState(limit);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const currentUser = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+
   const router = useRouter();
 
   const fetchAdmins = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      
       const params = new URLSearchParams();
       if (username) params.append("username", username);
       params.append("limit", limit.toString());
       params.append("page", page.toString());
+
       params.append("excludeUserRole", "true");
+      
 
       const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
+        headers: { Authorization: `Bearer ${token}` },
+
+
+      });
       const result = await res.json();
+
       setAdminUsers(result.data);
+
+
       setTotalPages(result.totalPages);
       setTotalCount(result.totalCount);
     } catch (err) {
@@ -64,7 +77,7 @@ export default function AdminUserListPage() {
     const rawUser = localStorage.getItem("user");
     if (token && rawUser) {
       const parsed = JSON.parse(rawUser);
-      setUser(parsed);
+      setUser(parsed); 
     }
   }, []);
 
@@ -72,10 +85,11 @@ export default function AdminUserListPage() {
     if (currentUser) {
       fetchAdmins();
     }
-  }, [limit, page, currentUser]);
+  }, [page, limit, currentUser]);
+
+
 
   const handleSearch = () => {
-    setHasSearched(true);
     setPage(1);
     fetchAdmins();
   };
@@ -96,30 +110,48 @@ export default function AdminUserListPage() {
   };
 
   const canSeeActions =
-    currentUser?.role !== undefined &&
-    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser.role);
+  currentUser?.role !== undefined &&
+  ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser.role);
 
-  const canModify =
-    currentUser?.role === "AGENT_OWNER" ||
-    currentUser?.role === "SUPER_ADMIN" ||
-    currentUser?.role === "GLOBAL_ADMIN";
+
+
+  const canModify = currentUser?.role === "AGENT_OWNER" || currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "GLOBAL_ADMIN";
+
+
+
+
+
+
 
   const renderPagination = () => {
+    
     if (totalPages <= 1 || totalCount === 0) return null;
 
     const pages = [];
+    const maxVisible = 5;
+
     if (totalPages <= 10) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
       pages.push(1);
+
       const start = Math.max(2, page - 2);
       const end = Math.min(totalPages - 1, page + 2);
 
-      if (start > 2) pages.push("...");
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (end < totalPages - 1) pages.push("...");
+      if (start > 2) {
+        pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages - 1) {
+        pages.push("...");
+      }
+
       pages.push(totalPages);
     }
 
@@ -130,25 +162,38 @@ export default function AdminUserListPage() {
         </p>
 
         <div className="tables_munber">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className=""
+          >
             上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>...</span>
+              <span key={`ellipsis-${idx}`}>
+                ...
+              </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setPage(p as number)}
-                className={page === p ? "pagehover" : ""}
+
+                className={`${
+                  page === p ? "pagehover" : ""
+                }`}
               >
                 {p}
               </button>
             )
           )}
 
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className=""
+          >
             下一頁
           </button>
         </div>
@@ -156,19 +201,28 @@ export default function AdminUserListPage() {
     );
   };
 
+
   return (
     <div className="b-ibox">
+
       <h1>管理員列表</h1>
 
       <div className="b-ibox-s">
 
         {canModify && (
-          <button onClick={() => router.push("/admin/admin-user/new")} className="b-btn-s2 b-btn-c4 mb15">
-            新增管理員
-          </button>
+            <button
+              onClick={() => router.push("/admin/admin-user/new")}
+              className="b-btn-s2 b-btn-c4 mb15"
+            >
+              新增管理員
+            </button>
         )}
 
+
+
+      
         <div className="w100 fo5 mb15">
+
           <div className="w50 fl4">
             <label htmlFor="page11">每頁&nbsp;</label>
             <input
@@ -193,6 +247,8 @@ export default function AdminUserListPage() {
             </button>
           </div>
 
+
+
           <div className="w50 fl6">
             <input
               type="text"
@@ -201,72 +257,90 @@ export default function AdminUserListPage() {
               onChange={(e) => setUsername(e.target.value)}
               className="max150 mr20"
             />
-            <button onClick={handleSearch} className="b-btn-s2 b-btn-c4">
+            <button
+              onClick={handleSearch}
+              className="b-btn-s2 b-btn-c4"
+            >
               查詢
             </button>
           </div>
+
         </div>
 
-        {loading ? (
-          <p>載入中...</p>
-        ) : (
-          <table className="b-table-box admin-table mb15">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>帳號</th>
-                <th>角色</th>
-                <th>狀態</th>
-                <th>上次登入時間</th>
-                <th>上次登入IP</th>
-                <th>創建人</th>
-                {canSeeActions && <th className="th-last">操作</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {adminUsers.map((admin) => (
-                <tr key={admin.id}>
-                  <td>{admin.id}</td>
-                  <td>{admin.username}</td>
-                  <td>{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>
-                  <td>{statusMap[admin.status]}</td>
-                  <td>{admin.last_login_at ? new Date(admin.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                  <td>{admin.last_login_ip || "-"}</td>
-                  <td>{admin.created_by?.username || "-"}</td>
-                  {canSeeActions && (
-                    <td>
-                      {canModify ? (
-                        <div>
-                          <button onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)} className="b-btn-s3 b-btn-c1 mlr10">
-                            編輯
-                          </button>
-                          <button onClick={() => router.push(`/admin/admin-user/${admin.id}/reset-password`)} className="b-btn-s3 b-btn-c2 mlr10">
-                            重設密碼
-                          </button>
-                          <button onClick={() => handleDelete(admin.id)} className="b-btn-s3 b-btn-c3 mlr10">
-                            刪除
-                          </button>
-                        </div>
-                      ) : (
-                        <span>僅限代理商與超級管理員</span>
-                      )}
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
 
-        {!loading && hasSearched && adminUsers.length === 0 && (
+
+
+      {loading ? (
+        <p>載入中...</p>
+      ) : (
+        <table className="b-table-box admin-table mb15">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>帳號</th>
+              <th>角色</th>
+              <th>狀態</th>
+              <th>上次登入時間</th>
+              <th>上次登入IP</th>
+              <th>創建人</th>
+              {canSeeActions && <th className="th-last">操作</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {adminUsers.map((admin) => (
+              <tr key={admin.id}>
+                <td>{admin.id}</td>
+                <td>{admin.username}</td>
+                <td>{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>
+                <td>{statusMap[admin.status]}</td>
+                <td>{admin.last_login_at ? new Date(admin.last_login_at).toLocaleString() : "-"}</td>
+                <td>{admin.last_login_ip || "-"}</td>
+
+                <td className="">{admin.created_by?.username || "-"}</td>
+
+                {canSeeActions && (
+                  <td>
+                    {canModify ? (
+                      <div>
+                        <button
+                          onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)}
+                          className="b-btn-s3 b-btn-c1 mlr10"
+                        >編輯</button>
+                        <button
+                          onClick={() => router.push(`/admin/admin-user/${admin.id}/reset-password`)}
+                          className="b-btn-s3 b-btn-c2 mlr10"
+                        >重設密碼</button>
+                        <button
+                          onClick={() => handleDelete(admin.id)}
+                          className="b-btn-s3 b-btn-c3 mlr10"
+                        >刪除</button>
+                      </div>
+                    ) : (
+                      <span>僅限代理商與超級管理員</span>
+                    )}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {!loading && hasSearched && users.length === 0 && (
           <div className="b-no-information w100 fd5">
             <img src="/no-information.webp" alt="無資料" className="mb25" />
             <p>查無資料</p>
           </div>
         )}
 
+
+
         {renderPagination()}
+
+
+
       </div>
+
     </div>
   );
 }

@@ -253,6 +253,9 @@ export default function UserListPage() {
   };
 
   const renderPagination = () => {
+
+    if (totalPages <= 1 || totalCount === 0) return null;
+
     const pages = [];
     const maxVisible = 5;
 
@@ -557,6 +560,18 @@ export default function UserListPage() {
                   ))}
                 </tbody>
               </table>
+              
+
+
+              {!loading && hasSearched && users.length === 0 && (
+                <div className="b-no-information w100 fd5">
+                  <img src="/no-information.webp" alt="無資料" className="mb25" />
+                  <p>查無資料</p>
+                </div>
+              )}
+
+
+
               {renderPagination()}
         
             </div>
