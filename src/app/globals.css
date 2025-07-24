@@ -968,3 +968,60 @@ textarea::placeholder{
 .b-banner-img{
   width: 320px;
 }
+
+
+/* 驗證燈箱 */
+.b-lightbox-1{
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.b-lightbox-1 h2{
+  font-size: 24px;
+  color: #fff;
+}
+
+.b-id-imgbox{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 30px 44px;
+}
+
+.b-id-img{
+  width: 300px;
+  height: 200px;
+  display: flex;
+  margin: 15px;
+  user-select: none;
+}
+
+.b-id-imgbox-X{
+  width: 56px;
+  height: 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #18a689;
+  color: #fff;
+  font-size: 24px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.b-id-imgbox-X:hover{
+  background-color: #1ab394;
+  font-size: 28px;
+  text-shadow: #0c8ab6 0px 2px 0px;
+}

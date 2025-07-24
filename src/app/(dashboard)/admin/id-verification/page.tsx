@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import dayjs from "dayjs";
 import Image from 'next/image'
 import { format } from 'date-fns'
 
@@ -32,48 +33,94 @@ export default function IdVerificationAdminPage() {
   const [createdFrom, setCreatedFrom] = useState("")
   const [createdTo, setCreatedTo] = useState("")
 
-  const fetchRecords = async () => {
-    setLoading(true)
-    try {
-      const token = localStorage.getItem("token")
-      const params = new URLSearchParams()
-      params.append("page", page.toString())
-      params.append("limit", limit.toString())
-      if (username) params.append("username", username)
-      if (type) params.append("type", type)
-      if (status) params.append("status", status)
-      if (createdFrom) params.append("createdFrom", createdFrom + ' 00:00:00')
-      if (createdTo) params.append("createdTo", createdTo + ' 23:59:59')
 
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin`,
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // 篩選展開
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const clearFilter = () => {
+    setUsername("");
+    setStatus("");
+    setCreatedFrom("");
+    setType("");
+    setCreatedTo("");
+    setTotalPages(1);
+    setTotalCount(0);
+    setHasSearched(false);
+  };
+
+
+  const quickSetDate = (type: string, target: "created" | "login") => {
+      const today = dayjs();
+      let fromDate = "";
+      let toDate = "";
+  
+      switch (type) {
+        case "today":
+          fromDate = today.format("YYYY-MM-DD");
+          toDate = today.format("YYYY-MM-DD");
+          break;
+        case "yesterday":
+          const y = today.subtract(1, "day");
+          fromDate = y.format("YYYY-MM-DD");
+          toDate = y.format("YYYY-MM-DD");
+          break;
+        case "3days":
+          fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
+          toDate = today.format("YYYY-MM-DD");
+          break;
+        case "thisMonth":
+          fromDate = today.startOf("month").format("YYYY-MM-DD");
+          toDate = today.endOf("month").format("YYYY-MM-DD");
+          break;
+        case "lastMonth":
+          const last = today.subtract(1, "month");
+          fromDate = last.startOf("month").format("YYYY-MM-DD");
+          toDate = last.endOf("month").format("YYYY-MM-DD");
+          break;
+      }
+  
+      if (target === "created") {
+        setCreatedFrom(fromDate);
+        setCreatedTo(toDate);
+      }
+    };
+
+
+  const fetchRecords = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      params.append("limit", limit.toString());
+      if (username) params.append("username", username);
+      if (type) params.append("type", type);
+      if (status) params.append("status", status);
+      if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
+      if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin?${params.toString()}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          params: {
-            page,
-            limit,
-            username,      // <- ✅ 來自 useState 的帳號搜尋
-            type,          // <- ✅ 類型篩選
-            status,        // <- ✅ 狀態篩選
-            createdFrom,   // <- ✅ 建立起
-            createdTo,     // <- ✅ 建立迄
+            Authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-
-      const data = res.data
-      setRecords(Array.isArray(data.data) ? data.data : [])
-      setTotalPages(data.totalPages || 1)
-      setTotalCount(data.totalCount || 0)
+      const data = await res.json();
+      setRecords(Array.isArray(data.data) ? data.data : []);
+      setTotalPages(data.totalPages || 1);
+      setTotalCount(data.totalCount || 0);
     } catch (err) {
-      console.error('讀取失敗：', err)
+      console.error("讀取失敗：", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
 
   const handleReview = async (
     id: number,
@@ -138,107 +185,217 @@ export default function IdVerificationAdminPage() {
 
 
   const handleSearch = () => {
+    setHasSearched(true);
     setPage(1)  
     fetchRecords()  
   }
 
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">身分驗證審核</h1>
+    <div className="b-bigbox-all w100">
 
-      <div className="mb-4 flex flex-wrap gap-4">
-        <input type="text" placeholder="帳號" value={username} onChange={(e) => setUsername(e.target.value)} className="border px-2 py-1 rounded" />
-        <select value={type} onChange={(e) => setType(e.target.value)} className="border px-2 py-1 rounded">
-          <option value="">全部類型</option>
-          <option value="ID_CARD">身分證驗證</option>
-          <option value="BANK_ACCOUNT">銀行帳戶驗證</option>
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border px-2 py-1 rounded">
-          <option value="">全部狀態</option>
-          <option value="PENDING">未處理</option>
-          <option value="APPROVED">已處理</option>
-          <option value="REJECTED">資料有誤</option>
-        </select>
-        <input type="date" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="border px-2 py-1 rounded" />
-        <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="border px-2 py-1 rounded" />
+      <div className="b-ibox mb30">
 
-        <button
-          onClick={handleSearch}
-          className="bg-blue-600 text-white px-3 py-1 rounded"
-        >
-          查詢
-        </button>
+        <h1>身分驗證審核</h1>
 
-      </div>
+        <div className="b-ibox-s">
 
-      <div className="w-full mb-4">
-        <label htmlFor="limitInput">每頁顯示筆數：</label>
-        <input type="number" id="limitInput" value={inputLimit} onChange={(e) => setInputLimit(Number(e.target.value))} min={1} className="border px-2 py-1 rounded w-20 mx-2" />
-        <button onClick={() => setLimit(Math.max(1, inputLimit))} className="bg-blue-600 text-white px-3 py-1 rounded">顯示筆數</button>
-      </div>
 
-      {loading && <p>載入中...</p>}
-      {!loading && records.length === 0 && <p>目前沒有待審紀錄</p>}
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="b-search-btn w100"
+          >
+            篩選
+            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
+          </button>
 
-      {!loading && records.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border text-sm">
-            <thead>
-              <tr className="bg-gray-200 text-center">
-                <th className="border p-2">ID</th>
-                <th className="border p-2">帳號</th>
-                <th className="border p-2">類型</th>
-                <th className="border p-2">建立時間</th>
-                <th className="border p-2">圖片</th>
-                <th className="border p-2">狀態</th>
-                <th className="border p-2">備註</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((rec) => (
-                <tr key={rec.id} className="text-center bg-white even:bg-gray-50">
-                  <td className="border p-2">{rec.id}</td>
-                  <td className="border p-2">{rec.username}</td>
-                  <td className="border p-2">{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
-                  <td className="border p-2">{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
-                  <td className="border p-2">
-                    <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>🔍 預覽圖片</button>
-                  </td>
-                  <td className="border p-2">
-                    <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', rec.note ?? '')} className="border px-2 py-1 rounded">
-                      <option value="PENDING">未處理</option>
-                      <option value="APPROVED">已處理</option>
-                      <option value="REJECTED">資料有誤</option>
-                    </select>
-                  </td>
-                  <td className="border p-2">
-                    <input defaultValue={rec.note ?? ''} placeholder="備註..." className="border px-2 py-1 rounded w-60" onBlur={(e) => {
-                      if (rec.status !== 'PENDING') handleReview(rec.id, rec.status as 'APPROVED' | 'REJECTED', e.target.value)
-                    }} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+
+          {isFilterOpen && (
+            <>
+
+              <div className="b-search-box fl1 w100 mt15">
+
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="username28">帳號</label>
+                  <input type="text" placeholder="帳號" id="username28" value={username} onChange={(e) => setUsername(e.target.value)} className="w60" />
+                </div>
+
+
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="status-select-28">類型</label>
+                  <select id="status-select-28" value={type} onChange={(e) => setType(e.target.value)} className="w60">
+                    <option value="">全部類型</option>
+                    <option value="ID_CARD">身分證驗證</option>
+                    <option value="BANK_ACCOUNT">銀行帳戶驗證</option>
+                  </select>
+                </div>
+
+                <div className="b-form-group-2 fl4 w33 mb25">
+                  <label htmlFor="status-select-29">狀態</label>
+                  <select id="status-select-29" value={status} onChange={(e) => setStatus(e.target.value)} className="w60">
+                  <option value="">全部狀態</option>
+                  <option value="PENDING">未處理</option>
+                  <option value="APPROVED">已處理</option>
+                  <option value="REJECTED">資料有誤</option>
+                  </select>
+                </div>
+
+
+                <div className="w50 fd1 mb25">
+
+                  <div className="b-form-group-2 fl4 w100 mb10">
+                    <label htmlFor="date-select-29">申請時間</label>
+                    <div className="w70 fl4">
+                      <input type="date" id="date-select-29" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="date-select flex1" />
+                      <span className="dateto">到</span>
+                      <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="date-select flex1" />
+                    </div>
+                  </div>
+
+                  <div className="b-form-group-2 w100 fl4">
+                    <div className="b-date-fast fl4 w70 ml132">
+                      <button onClick={() => quickSetDate("today", "created")}>今日</button>
+                      <button onClick={() => quickSetDate("yesterday", "created")}>昨日</button>
+                      <button onClick={() => quickSetDate("3days", "created")}>近三日</button>
+                      <button onClick={() => quickSetDate("thisMonth", "created")}>本月</button>
+                      <button onClick={() => quickSetDate("lastMonth", "created")}>上月</button>
+                    </div>
+                  </div>
+
+                </div>
+
+
+
+                <div className="fl4 w100 b-btnbox">
+                  <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
+                  <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
+                </div>
+
+
+              </div>
+
+            </>
+          )}
+
         </div>
-      )}
+      </div>
 
-      {!loading && renderPagination()}
 
-      {previewImages && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-2xl">
-            <h2 className="text-lg font-bold mb-4">圖片預覽</h2>
-            <div className="flex space-x-4 mb-4 overflow-x-auto">
-              {previewImages.map((url, i) => (
-                <Image key={i} src={url} alt={`preview-${i}`} width={300} height={400} className="rounded border" />
-              ))}
+
+
+
+
+        {loading && <p>載入中...</p>}
+        {!loading && records.length === 0 && <p>目前沒有待審紀錄</p>}
+
+        {!loading && hasSearched && (
+          <>
+
+
+            <div className="b-ibox">
+
+              <div className="b-ibox-s">
+
+                <div className="w100 fo5 mb15">
+
+
+                  <div className="w50 fl4">
+                    <label htmlFor="page11">每頁&nbsp;</label>
+                    <input
+                      type="number"
+                      id="page11"
+                      value={inputLimit}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (!isNaN(val)) setInputLimit(val);
+                      }}
+                      min={1}
+                      className="txtbox1 mr20"
+                    />
+                    <button
+                      onClick={() => {
+                        const validLimit = Math.max(1, inputLimit);
+                        setLimit(validLimit);
+                      }}
+                      className="ml10 b-btn-s2 b-btn-c4"
+                    >
+                      顯示筆數
+                    </button>
+                  </div>
+                
+                </div>
+
+            
+
+                  {!loading && records.length > 0 && (
+
+
+                      <table className="b-table-box admin-table mb15">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>帳號</th>
+                            <th>類型</th>
+                            <th>申請時間</th>
+                            <th>圖片</th>
+                            <th>狀態</th>
+                            <th>備註</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {records.map((rec) => (
+                            <tr key={rec.id} className="text-center bg-white even:bg-gray-50">
+                              <td>{rec.id}</td>
+                              <td>{rec.username}</td>
+                              <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
+                              <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
+                              <td>
+                                <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>🔍</button>
+                              </td>
+                              <td>
+                                <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', rec.note ?? '')} className="border px-2 py-1 rounded">
+                                  <option value="PENDING">未處理</option>
+                                  <option value="APPROVED">已處理</option>
+                                  <option value="REJECTED">資料有誤</option>
+                                </select>
+                              </td>
+                              <td>
+                                <input defaultValue={rec.note ?? ''} placeholder="備註..." className="border px-2 py-1 rounded w-60" onBlur={(e) => {
+                                  if (rec.status !== 'PENDING') handleReview(rec.id, rec.status as 'APPROVED' | 'REJECTED', e.target.value)
+                                }} />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+             
+                    
+                  )}
+
+            {!loading && renderPagination()}
+
+            {previewImages && (
+ 
+                <div className="b-lightbox-1">
+                  <h2 className="mb15">圖片預覽</h2>
+                  <div className="b-id-imgbox mb25">
+                    {previewImages.map((url, i) => (
+                      <Image key={i} src={url} alt={`preview-${i}`} width={300} height={400} className="b-id-img" />
+                    ))}
+                  </div>
+                  <button onClick={() => setPreviewImages(null)} className="b-id-imgbox-X">X</button>
+                </div>
+      
+            )}
+
             </div>
-            <button onClick={() => setPreviewImages(null)} className="bg-gray-500 text-white px-4 py-2 rounded">關閉</button>
           </div>
-        </div>
+
+        </>
       )}
+
     </div>
+
   )
 }
