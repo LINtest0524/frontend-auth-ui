@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 type Banner = {
   id: number
@@ -18,6 +19,7 @@ const API_BASE = 'http://localhost:3001'
 
 export default function BannerListPage() {
   const [banners, setBanners] = useState<Banner[]>([])
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,16 +107,18 @@ export default function BannerListPage() {
                 </td>
                 <td>
                   <button
-                    onClick={() => window.open(`${API_BASE}${banner.desktop_image_url}`, '_blank')}
+                    className="text-blue-600 underline text-sm"
+                    onClick={() => setPreviewImage(`${API_BASE}${banner.desktop_image_url}`)}
                   >
-                    🔍
+                    🔍 預覽
                   </button>
                 </td>
                 <td>
                   <button
-                    onClick={() => window.open(`${API_BASE}${banner.mobile_image_url}`, '_blank')}
+                    className="text-blue-600 underline text-sm"
+                    onClick={() => setPreviewImage(`${API_BASE}${banner.mobile_image_url}`)}
                   >
-                    🔍
+                    🔍 預覽
                   </button>
                 </td>
 
@@ -173,6 +177,22 @@ export default function BannerListPage() {
           </tbody>
         </table>
       </div>
+
+      {previewImage && (
+        <div className="b-lightbox-1">
+          <h2 className="mb15">圖片預覽</h2>
+          <div className="b-id-imgbox mb25">
+            <Image 
+              src={previewImage} 
+              alt="預覽圖片" 
+              width={400} 
+              height={400} 
+              className="b-id-img object-contain" 
+            />
+          </div>
+          <button onClick={() => setPreviewImage(null)} className="b-id-imgbox-X">X</button>
+        </div>
+      )}
     </div>
   )
 }

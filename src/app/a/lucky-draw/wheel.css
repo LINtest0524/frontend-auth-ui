@@ -1,0 +1,122 @@
+/* 輪盤旋轉動畫 CSS */
+.wheel-container {
+  transition: none;
+}
+
+.luck-relative{
+  position: relative;
+}
+
+/* 基礎旋轉動畫 - 每個獎品位置都有對應的動畫 */
+
+/* 假設有8個獎品的情況，每個獎品佔45度 */
+/* 第0個獎品已經在12點鐘方向，不需要旋轉 */
+@keyframes spin-to-result-0 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1800deg); } /* 5圈 + 0度 */
+}
+
+@keyframes spin-to-result-1 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1755deg); } /* 5圈 - 45度 */
+}
+
+@keyframes spin-to-result-2 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1710deg); } /* 5圈 - 90度 */
+}
+
+@keyframes spin-to-result-3 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1665deg); } /* 5圈 - 135度 */
+}
+
+@keyframes spin-to-result-4 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1620deg); } /* 5圈 - 180度 */
+}
+
+@keyframes spin-to-result-5 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1575deg); } /* 5圈 - 225度 */
+}
+
+@keyframes spin-to-result-6 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1530deg); } /* 5圈 - 270度 */
+}
+
+@keyframes spin-to-result-7 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1485deg); } /* 5圈 - 315度 */
+}
+
+/* 應用動畫類別 */
+.result-0 {
+  animation: spin-to-result-0 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-1 {
+  animation: spin-to-result-1 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-2 {
+  animation: spin-to-result-2 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-3 {
+  animation: spin-to-result-3 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-4 {
+  animation: spin-to-result-4 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-5 {
+  animation: spin-to-result-5 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-6 {
+  animation: spin-to-result-6 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-7 {
+  animation: spin-to-result-7 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* 如果有更多獎品，可以繼續添加 */
+@keyframes spin-to-result-8 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1440deg); } /* 5圈 - 360度 */
+}
+
+@keyframes spin-to-result-9 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1400deg); } /* 5圈 - 400度 */
+}
+
+@keyframes spin-to-result-10 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1360deg); } /* 5圈 - 440度 */
+}
+
+@keyframes spin-to-result-11 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1320deg); } /* 5圈 - 480度 */
+}
+
+.result-8 {
+  animation: spin-to-result-8 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-9 {
+  animation: spin-to-result-9 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-10 {
+  animation: spin-to-result-10 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.result-11 {
+  animation: spin-to-result-11 3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}

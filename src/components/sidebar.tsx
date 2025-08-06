@@ -32,6 +32,7 @@ export default function Sidebar() {
     if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
+    else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
   }, [pathname]);
@@ -208,6 +209,50 @@ export default function Sidebar() {
             )}
           </div>
         </div>
+
+        {/* 輪盤管理 */}
+        <div>
+          <button
+            onClick={() => {
+              toggleMenu("lucky-draw");
+              setCurrentActive("lucky-draw");
+            }}
+            className={cn(
+              "sidebar-item i-plan", 
+              currentActive === "lucky-draw" && "active",
+              activeMenu === "lucky-draw" && "expanded"
+            )}
+          >
+            <span className="icon" />
+            輪盤管理
+            <span className="i-arrow"></span>
+          </button>
+          <div className={cn("sidebar-submenu", activeMenu === "lucky-draw" && "open")}>
+            <Link
+              href="/lucky-draw/prizes"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/lucky-draw/prizes" && currentActive === null && "active")}
+            >
+              轉盤獎項列表
+            </Link>
+            <Link
+              href="/lucky-draw/events"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/lucky-draw/events" && currentActive === null && "active")}
+            >
+              活動管理
+            </Link>
+            <Link
+              href="/lucky-draw/records"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/lucky-draw/records" && currentActive === null && "active")}
+            >
+              抽獎記錄
+            </Link>
+          </div>
+        </div>
+
+        
 
         {/* 操作紀錄 */}
         <div>

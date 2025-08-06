@@ -26,8 +26,14 @@ export default function UserListPage() {
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("");
   const [blacklist, setBlacklist] = useState("");
-  const [createdFrom, setCreatedFrom] = useState("");
-  const [createdTo, setCreatedTo] = useState("");
+  const [createdFrom, setCreatedFrom] = useState(() => {
+    const today = dayjs();
+    return today.subtract(2, "day").format("YYYY-MM-DD");
+  });
+  const [createdTo, setCreatedTo] = useState(() => {
+    const today = dayjs();
+    return today.format("YYYY-MM-DD");
+  });
   const [loginFrom, setLoginFrom] = useState("");
   const [loginTo, setLoginTo] = useState("");
   const [exportFormat, setExportFormat] = useState("");
@@ -169,6 +175,14 @@ export default function UserListPage() {
   useEffect(() => {
     setUsers((prev) => sortUsers(prev));
   }, [sortKey, sortDirection]);
+
+  // 頁面載入時自動搜尋3日內資料
+  useEffect(() => {
+    if (!hasSearched) {
+      setHasSearched(true);
+      fetchUsers();
+    }
+  }, []);
 
   const handleSearch = () => {
     setHasSearched(true);

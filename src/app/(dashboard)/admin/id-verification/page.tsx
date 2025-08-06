@@ -20,6 +20,7 @@ export default function IdVerificationAdminPage() {
   const [records, setRecords] = useState<VerificationRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [previewImages, setPreviewImages] = useState<string[] | null>(null)
+  const [notes, setNotes] = useState<{[key: number]: string}>({})
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
@@ -38,6 +39,17 @@ export default function IdVerificationAdminPage() {
 
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // 初始化時設定最近3天的日期範圍
+  useEffect(() => {
+    const today = dayjs();
+    const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
+    const todayStr = today.format("YYYY-MM-DD");
+    
+    setCreatedFrom(threeDaysAgo);
+    setCreatedTo(todayStr);
+    setHasSearched(true);
+  }, []);
 
   const clearFilter = () => {
     setUsername("");
@@ -114,6 +126,15 @@ export default function IdVerificationAdminPage() {
       setRecords(Array.isArray(data.data) ? data.data : []);
       setTotalPages(data.totalPages || 1);
       setTotalCount(data.totalCount || 0);
+      
+      // 初始化備註狀態
+      const initialNotes: {[key: number]: string} = {};
+      if (Array.isArray(data.data)) {
+        data.data.forEach((rec: VerificationRecord) => {
+          initialNotes[rec.id] = rec.note || '';
+        });
+      }
+      setNotes(initialNotes);
     } catch (err) {
       console.error("讀取失敗：", err);
     } finally {
@@ -147,9 +168,25 @@ export default function IdVerificationAdminPage() {
     }
   }
 
+  const handleNoteChange = (id: number, value: string) => {
+    setNotes(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  }
+
+  const saveNote = async (id: number) => {
+    const record = records.find(r => r.id === id);
+    if (record && record.status !== 'PENDING') {
+      await handleReview(id, record.status as 'APPROVED' | 'REJECTED', notes[id] || '');
+    }
+  }
+
   useEffect(() => {
-    fetchRecords()
-  }, [limit, page])
+    if (hasSearched) {
+      fetchRecords()
+    }
+  }, [limit, page, hasSearched])
 
   const renderPagination = () => {
     if (totalPages <= 1 || totalCount === 0) return null
@@ -287,7 +324,8 @@ export default function IdVerificationAdminPage() {
 
 
         {loading && <p>載入中...</p>}
-        {!loading && records.length === 0 && <p>目前沒有待審紀錄</p>}
+
+        
 
         {!loading && hasSearched && (
           <>
@@ -328,49 +366,62 @@ export default function IdVerificationAdminPage() {
 
             
 
-                  {!loading && records.length > 0 && (
+             
 
 
-                      <table className="b-table-box admin-table mb15">
-                        <thead>
-                          <tr>
-                            <th>ID</th>
-                            <th>帳號</th>
-                            <th>類型</th>
-                            <th>申請時間</th>
-                            <th>圖片</th>
-                            <th>狀態</th>
-                            <th>備註</th>
+                    <table className="b-table-box admin-table mb15">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>帳號</th>
+                          <th>類型</th>
+                          <th>申請時間</th>
+                          <th>圖片</th>
+                          <th>狀態</th>
+                          <th>備註</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {records.map((rec) => (
+                          <tr key={rec.id} className="text-center bg-white even:bg-gray-50">
+                            <td>{rec.id}</td>
+                            <td>{rec.username}</td>
+                            <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
+                            <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
+                            <td>
+                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>🔍</button>
+                            </td>
+                            <td>
+                              <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', notes[rec.id] || '')} className="border px-2 py-1 rounded">
+                                <option value="PENDING">未處理</option>
+                                <option value="APPROVED">已處理</option>
+                                <option value="REJECTED">資料有誤</option>
+                              </select>
+                            </td>
+                            <td>
+                              <input 
+                                value={notes[rec.id] || ''} 
+                                placeholder="備註..." 
+                                className="border px-2 py-1 rounded w-60" 
+                                onChange={(e) => handleNoteChange(rec.id, e.target.value)}
+                                onBlur={() => saveNote(rec.id)}
+                              />
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {records.map((rec) => (
-                            <tr key={rec.id} className="text-center bg-white even:bg-gray-50">
-                              <td>{rec.id}</td>
-                              <td>{rec.username}</td>
-                              <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
-                              <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
-                              <td>
-                                <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>🔍</button>
-                              </td>
-                              <td>
-                                <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', rec.note ?? '')} className="border px-2 py-1 rounded">
-                                  <option value="PENDING">未處理</option>
-                                  <option value="APPROVED">已處理</option>
-                                  <option value="REJECTED">資料有誤</option>
-                                </select>
-                              </td>
-                              <td>
-                                <input defaultValue={rec.note ?? ''} placeholder="備註..." className="border px-2 py-1 rounded w-60" onBlur={(e) => {
-                                  if (rec.status !== 'PENDING') handleReview(rec.id, rec.status as 'APPROVED' | 'REJECTED', e.target.value)
-                                }} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                        ))}
+                      </tbody>
+                    </table>
+
+                      
              
                     
+             
+
+                  {!loading && hasSearched && records.length === 0 && (
+                    <div className="b-no-information w100 fd5">
+                      <img src="/no-information.webp" alt="無資料" className="mb25" />
+                      <p>查無資料</p>
+                    </div>
                   )}
 
             {!loading && renderPagination()}

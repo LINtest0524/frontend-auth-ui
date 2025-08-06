@@ -325,6 +325,13 @@ body {
   align-items: center;
 }
 
+.fo5p{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+
 .fl1{
   display: flex;
   justify-content: flex-start;
@@ -808,6 +815,15 @@ textarea::placeholder{
   background-color: #f5f5f5;
 }
 
+.b-td-center{
+  text-align: center; 
+  vertical-align: middle;
+}
+
+.prizes tr{
+  height: 70px;
+}
+
 
 /* 表格升降 */
 .i-sort{
@@ -1000,7 +1016,7 @@ textarea::placeholder{
 }
 
 .b-id-img{
-  width: 300px;
+  width: auto;
   height: 200px;
   display: flex;
   margin: 15px;
