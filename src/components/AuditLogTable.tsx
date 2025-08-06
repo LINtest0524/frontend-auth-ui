@@ -121,145 +121,204 @@ export default function AuditLogTable({
   };
 
   const renderPagination = () => {
+    if (totalPages <= 1 || totalCount === 0) return null;
+
     const pages = [];
     const maxVisible = 5;
-    const half = Math.floor(maxVisible / 2);
-    let start = Math.max(1, page - half);
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
 
-    for (let i = start; i <= end; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => setPage(i)}
-          className={`px-3 py-1 border rounded ${
-            i === page ? "bg-blue-600 text-white" : "hover:bg-gray-100"
-          }`}
-        >
-          {i}
-        </button>
-      );
+    if (totalPages <= 10) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      const start = Math.max(2, page - 2);
+      const end = Math.min(totalPages - 1, page + 2);
+
+      if (start > 2) {
+        pages.push("...");
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (end < totalPages - 1) {
+        pages.push("...");
+      }
+
+      pages.push(totalPages);
     }
 
     return (
-      <div className="mt-4 flex flex-wrap justify-center items-center gap-2 text-sm">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          上一頁
-        </button>
-        {pages}
-        <button
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-          className="px-3 py-1 rounded border disabled:opacity-50"
-        >
-          下一頁
-        </button>
-        <p className="text-gray-500 ml-4 whitespace-nowrap">
-          第 {page} / {totalPages} 頁（共 {totalCount} 筆）
+      <div className="fo5 w100 b-data-tables_munber mb15">
+        <p>
+          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
         </p>
+
+        <div className="tables_munber">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className=""
+          >
+            上一頁
+          </button>
+
+          {pages.map((p, idx) =>
+            p === "..." ? (
+              <span key={`ellipsis-${idx}`}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p as number)}
+                className={`${
+                  page === p ? "pagehover" : ""
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className=""
+          >
+            下一頁
+          </button>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">{title}</h1>
+    <div className="b-bigbox-all w100">
+      <div className="b-ibox mb30">
+        <h1>{title}</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+        <div className="b-ibox-s">
+          <div className="b-search-box fl1 w100">
+            <div className="b-form-group-2 fl4 w33 mb25">
+              <label>操作關鍵字</label>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="例如：新增、刪除"
+                className="w60"
+              />
+            </div>
 
+            <div className="b-form-group-2 fl4 w33 mb25">
+              <label>使用者帳號</label>
+              <input
+                type="text"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="使用者帳號"
+                className="w60"
+              />
+            </div>
 
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="操作關鍵字（例如：新增、刪除）"
-          className="border rounded px-3 py-2 w-full"
-        />
-        <input
-          type="text"
-          value={userSearch}
-          onChange={(e) => setUserSearch(e.target.value)}
-          placeholder="使用者帳號"
-          className="border rounded px-3 py-2 w-full"
-        />
-        <input
-          type="text"
-          value={ipSearch}
-          onChange={(e) => setIpSearch(e.target.value)}
-          placeholder="IP 位址"
-          className="border rounded px-3 py-2 w-full"
-        />
-        <input
-          type="date"
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-        <input
-          type="date"
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-      </div>
+            <div className="b-form-group-2 fl4 w33 mb25">
+              <label>IP 位址</label>
+              <input
+                type="text"
+                value={ipSearch}
+                onChange={(e) => setIpSearch(e.target.value)}
+                placeholder="IP 位址"
+                className="w60"
+              />
+            </div>
 
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
-        <button onClick={() => quickSetDate("today")} className="px-2 py-1 bg-gray-100 rounded">今日</button>
-        <button onClick={() => quickSetDate("yesterday")} className="px-2 py-1 bg-gray-100 rounded">昨日</button>
-        <button onClick={() => quickSetDate("3days")} className="px-2 py-1 bg-gray-100 rounded">近三日</button>
-        <button onClick={() => quickSetDate("thisMonth")} className="px-2 py-1 bg-gray-100 rounded">本月</button>
-        <button onClick={() => quickSetDate("lastMonth")} className="px-2 py-1 bg-gray-100 rounded">上月</button>
-        <div className="ml-auto flex gap-2">
-          <button onClick={() => { setPage(1); fetchLogs(); }} className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">查詢</button>
-          <button onClick={clearFilter} className="px-4 py-1 bg-gray-300 text-black rounded hover:bg-gray-400">清除</button>
+            <div className="b-form-group-2 fl4 w100 mb10">
+              <label>時間範圍</label>
+              <div className="w70 fl4">
+                <input
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  className="date-select flex1"
+                />
+                <span className="dateto">到</span>
+                <input
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  className="date-select flex1"
+                />
+              </div>
+            </div>
+
+            <div className="b-form-group-2 w100 fl4 mb25">
+              <div className="b-date-fast fl4 w70 ml132">
+                <button onClick={() => quickSetDate("today")}>今日</button>
+                <button onClick={() => quickSetDate("yesterday")}>昨日</button>
+                <button onClick={() => quickSetDate("3days")}>近三日</button>
+                <button onClick={() => quickSetDate("thisMonth")}>本月</button>
+                <button onClick={() => quickSetDate("lastMonth")}>上月</button>
+              </div>
+            </div>
+
+            <div className="fl4 w100 b-btnbox">
+              <button onClick={() => { setPage(1); fetchLogs(); }} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
+              <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
+            </div>
+          </div>
         </div>
       </div>
 
       {loading && <p>載入中...</p>}
-      {error && <p className="text-red-500">錯誤：{error}</p>}
-      {!loading && !error && logs.length === 0 && <p className="text-gray-500">尚無紀錄</p>}
+      {error && <p style={{color: 'red'}}>錯誤：{error}</p>}
+
+      {!loading && !error && logs.length === 0 && (
+        <div className="b-no-information w100 fd5">
+          <img src="/no-information.webp" alt="無資料" className="mb25" />
+          <p>查無資料</p>
+        </div>
+      )}
 
       {!loading && !error && logs.length > 0 && (
-        <>
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-gray-200 text-center">
-                <th className="border p-2">ID</th>
-                <th className="border p-2">使用者</th>
-                <th className="border p-2">IP</th>
-                <th className="border p-2">裝置平台</th>
-                <th className="border p-2">操作內容</th>
-                <th className="border p-2">時間</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log) => (
-                <tr key={log.id} className="text-center">
-                  <td className="border p-2">{log.id}</td>
-                  <td className="border p-2">{log.user?.username || "未知使用者"}</td>
-                  <td className="border p-2">{log.ip}</td>
-                  <td className="border p-2">{log.platform}</td>
-                  <td className="border p-2">{log.action}</td>
-                  <td className="border p-2">
-                    {new Date(log.created_at).toLocaleString("zh-TW", {
-                      timeZone: "Asia/Taipei",
-                      hour12: false,
-                    })}
-                  </td>
+        <div className="b-ibox">
+          <div className="b-ibox-s">
+            <table className="b-table-box admin-table mb15">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>使用者</th>
+                  <th>IP</th>
+                  <th>裝置平台</th>
+                  <th>操作內容</th>
+                  <th>時間</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {logs.map((log) => (
+                  <tr key={log.id}>
+                    <td>{log.id}</td>
+                    <td>{log.user?.username || "未知使用者"}</td>
+                    <td>{log.ip}</td>
+                    <td>{log.platform}</td>
+                    <td>{log.action}</td>
+                    <td>
+                      {new Date(log.created_at).toLocaleString("zh-TW", {
+                        timeZone: "Asia/Taipei",
+                        hour12: false,
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {renderPagination()}
-        </>
+            {renderPagination()}
+          </div>
+        </div>
       )}
     </div>
   );

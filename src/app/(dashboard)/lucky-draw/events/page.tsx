@@ -19,13 +19,6 @@ export default function LuckyDrawEventsPage() {
   const router = useRouter();
   const [events, setEvents] = useState<LuckyDrawEvent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    startTime: "",
-    endTime: "",
-    isActive: false,
-  });
 
   const fetchEvents = async () => {
     try {
@@ -51,37 +44,6 @@ export default function LuckyDrawEventsPage() {
     }
   };
 
-  const handleCreate = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const companyId = user?.companyId || 1;
-
-      const res = await fetch("http://localhost:3001/lucky-draw-events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          companyId,
-        }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "創建失敗");
-      }
-
-      alert("活動創建成功！");
-      setShowCreateForm(false);
-      setFormData({ name: "", startTime: "", endTime: "", isActive: false });
-      fetchEvents();
-    } catch (err: any) {
-      alert("創建失敗：" + err.message);
-    }
-  };
 
   const handleToggleActive = async (id: number) => {
     try {
@@ -135,74 +97,19 @@ export default function LuckyDrawEventsPage() {
     <div className="b-ibox">
       <h1>活動管理</h1>
 
-      <div className="fl4 w100 b-btnbox mb20">
+      <div className="b-ibox-s">
+
+      <div className="fl4 w100 mb15">
         <button 
-          onClick={() => setShowCreateForm(true)}
+          onClick={() => router.push("/lucky-draw/events/new")}
           className="b-btn-s2 b-btn-c4"
         >
           新增活動
         </button>
       </div>
 
-      {/* 創建活動表單 */}
-      {showCreateForm && (
-        <div className="b-lightbox-1">
-          <h2 className="mb15">新增抽獎活動</h2>
-          <div className="b-form-box">
-            <div className="b-form-item">
-              <label>活動名稱：</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="b-input"
-                placeholder="請輸入活動名稱"
-              />
-            </div>
-            <div className="b-form-item">
-              <label>開始時間：</label>
-              <input
-                type="datetime-local"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                className="b-input"
-              />
-            </div>
-            <div className="b-form-item">
-              <label>結束時間：</label>
-              <input
-                type="datetime-local"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                className="b-input"
-              />
-            </div>
-            <div className="b-form-item">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                />
-                立即啟用此活動
-              </label>
-            </div>
-            <div className="b-form-actions">
-              <button onClick={handleCreate} className="b-btn-s2 b-btn-c4 mr10">
-                創建活動
-              </button>
-              <button 
-                onClick={() => setShowCreateForm(false)} 
-                className="b-btn-s2 b-btn-c2"
-              >
-                取消
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      <div className="b-ibox-s">
+      
         {loading && <p>載入中...</p>}
         
         {!loading && (
@@ -219,7 +126,7 @@ export default function LuckyDrawEventsPage() {
             </thead>
             <tbody>
               {events.map((event) => (
-                <tr key={event.id} className="text-center">
+                <tr key={event.id}>
                   <td>{event.name}</td>
                   <td>{formatDateTime(event.startTime)}</td>
                   <td>{formatDateTime(event.endTime)}</td>
@@ -230,30 +137,32 @@ export default function LuckyDrawEventsPage() {
                     </span>
                   </td>
                   <td>
-                    <button 
-                      onClick={() => handleToggleActive(event.id)}
-                      className={`b-btn-s3 mr10 ${event.isActive ? 'b-btn-c2' : 'b-btn-c4'}`}
-                    >
-                      {event.isActive ? '停用' : '啟用'}
-                    </button>
-                    <button 
-                      onClick={() => router.push(`/lucky-draw/prizes?eventId=${event.id}`)}
-                      className="b-btn-s3 b-btn-c1 mr10"
-                    >
-                      管理獎品
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(event.id, event.name)}
-                      className="b-btn-s3 b-btn-c3"
-                    >
-                      刪除
-                    </button>
+                    <div className="fl4">
+                      <button 
+                        onClick={() => handleToggleActive(event.id)}
+                        className={`b-btn-s3 mr10 ${event.isActive ? 'b-btn-c2' : 'b-btn-c4'}`}
+                      >
+                        {event.isActive ? '停用' : '啟用'}
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/lucky-draw/prizes?eventId=${event.id}`)}
+                        className="b-btn-s3 b-btn-c1 mr10"
+                      >
+                        管理獎品
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(event.id, event.name)}
+                        className="b-btn-s3 b-btn-c3"
+                      >
+                        刪除
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {events.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-500">
+                  <td colSpan={6} >
                     暫無活動資料
                   </td>
                 </tr>

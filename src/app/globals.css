@@ -1041,3 +1041,12 @@ textarea::placeholder{
   font-size: 28px;
   text-shadow: #0c8ab6 0px 2px 0px;
 }
+
+
+/* 燈箱 */
+.b-lightbox-con{
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 30px;
+  min-width: 360px;
+}

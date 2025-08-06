@@ -59,7 +59,7 @@ export default function Wheel() {
       companyId = user?.company?.id || user?.companyId || 1;
     }
     
-    console.log('A代理商 - 獲取獎品，使用 companyId:', companyId);
+    console.log('B代理商 - 獲取獎品，使用 companyId:', companyId);
     
     const res = await fetch(`http://localhost:3001/lucky-prize/active-event?companyId=${companyId}`, {
       headers: {
