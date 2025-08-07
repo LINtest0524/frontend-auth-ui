@@ -61,14 +61,14 @@ export default function BannerCarousel({ banners }: Props) {
       autoplay={{ delay: 5000 }}
       loop
       modules={[Pagination, Autoplay]}
-      className="w-full"
+      className="w100 fl5"
     >
       {activeBanners.map((b) => (
         <SwiperSlide key={b.id}>
           <img
             src={getImageUrl(isMobile ? b.mobile_image_url : b.desktop_image_url)}
             alt={b.title}
-            className="w-full object-cover max-h-[400px] rounded"
+            className=""
           />
         </SwiperSlide>
       ))}

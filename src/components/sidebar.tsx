@@ -32,6 +32,7 @@ export default function Sidebar() {
     if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
+    else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
     else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
@@ -252,7 +253,40 @@ export default function Sidebar() {
           </div>
         </div>
 
-        
+        {/* 浮動廣告管理 */}
+        <div>
+          <button
+            onClick={() => {
+              toggleMenu("floating-ad");
+              setCurrentActive("floating-ad");
+            }}
+            className={cn(
+              "sidebar-item i-banner", 
+              currentActive === "floating-ad" && "active",
+              activeMenu === "floating-ad" && "expanded"
+            )}
+          >
+            <span className="icon" />
+            浮動廣告
+            <span className="i-arrow"></span>
+          </button>
+          <div className={cn("sidebar-submenu", activeMenu === "floating-ad" && "open")}>
+            <Link
+              href="/admin/floating-ad"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/admin/floating-ad" && currentActive === null && "active")}
+            >
+              廣告列表
+            </Link>
+            <Link
+              href="/admin/floating-ad/new"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/admin/floating-ad/new" && currentActive === null && "active")}
+            >
+              新增廣告
+            </Link>
+          </div>
+        </div>
 
         {/* 操作紀錄 */}
         <div>

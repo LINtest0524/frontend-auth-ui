@@ -4,6 +4,8 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import '../../src/app/a/styles/index.css';
+
 
 export default function PortalHeaderBar() {
   const { user, setUser } = useUserStore()
@@ -31,20 +33,23 @@ export default function PortalHeaderBar() {
   if (!mounted) return null
 
   return (
-    <div className="w-full bg-gray-100 py-2 px-4 text-sm flex justify-end gap-4 items-center">
-      {!user ? (
-        <>
-          <a href={`/${company}/login`} className="text-blue-600 hover:underline">登入</a>
-          <a href={`/${company}/register`} className="text-blue-600 hover:underline">註冊</a>
-        </>
-      ) : (
-        <>
-          <button onClick={handleGoToMember} className="hover:underline text-gray-700" title="查看會員中心">
-            👤 {user.username}
-          </button>
-          <button onClick={handleLogout} className="text-red-600 hover:underline">登出</button>
-        </>
-      )}
-    </div>
+    <>
+      <div className="header-box fo5">
+          <h1>A首頁</h1>
+        {!user ? (
+          <div className="fl6">
+            <a href={`/${company}/register`} className="f-btn-2">註冊</a>
+            <a href={`/${company}/login`} className="f-btn-1">登入</a>
+          </div>
+        ) : (
+          <div className="fl6">
+            <button onClick={handleGoToMember} className="usernamebox" title="查看會員中心">
+              {user.username}
+            </button>
+            <button onClick={handleLogout} className="f-btn-2">登出</button>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

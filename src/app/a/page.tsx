@@ -7,12 +7,24 @@ import PortalHeaderBar from '@/components/PortalHeaderBar'
 import BannerCarousel from '@/components/BannerCarousel'
 import Marquee from '@/components/Marquee'
 
+type FloatingAd = {
+  id: number
+  title: string
+  link_url: string
+  image_url?: string
+  target_blank: boolean
+  position: string
+  status: string
+  sort: number
+}
+
 export default function AgentAHomePage() {
   const { user } = useUserStore()
   const modules = useEnabledModules()
 
   const [banners, setBanners] = useState<any[]>([])
   const [marquees, setMarquees] = useState<any[]>([])
+  const [floatingAds, setFloatingAds] = useState<FloatingAd[]>([])
 
   const companyCode = 'a'
 
@@ -28,19 +40,27 @@ export default function AgentAHomePage() {
       .then(setBanners)
       .catch(() => setBanners([]))
 
-    // ✅ marquee：根據登入狀態切換 API 與 header
-    const marqueeApi = token
-      ? `${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${companyCode}`
-      : `${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/marquee?company=${companyCode}`
+    // ✅ marquee：登入狀態使用認證端點，登出狀態使用公開端點
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${companyCode}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : [])
+        .then(setMarquees)
+        .catch(() => setMarquees([]))
+    } else {
+      // 登出狀態下使用公開端點
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/marquee?company=${companyCode}`)
+        .then(res => res.ok ? res.json() : [])
+        .then(setMarquees)
+        .catch(() => setMarquees([]))
+    }
 
-    const headers: HeadersInit = token
-      ? { Authorization: `Bearer ${token}` }
-      : {}
-
-    fetch(marqueeApi, { headers })
+    // ✅ 浮動廣告：不需要登入，正常 fetch
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/floating-ads?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
-      .then(setMarquees)
-      .catch(() => setMarquees([]))
+      .then(setFloatingAds)
+      .catch(() => setFloatingAds([]))
   }, [])
 
 
@@ -60,17 +80,57 @@ export default function AgentAHomePage() {
     <>
       <PortalHeaderBar />
 
-      <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-xl font-bold mb-4">A首頁</h1>
+      <div>
+        
 
         {user && (
-          <div className="border rounded p-4 bg-white shadow">
-            <p>這裡可以顯示你要的內容</p>
+          <div>
+            {/* <p>這裡可以顯示你要的內容</p> */}
           </div>
         )}
 
         {renderModule('banner', { banners })}
         {renderModule('marquee', { marquees })}
+
+        {/* 浮動廣告 */}
+        {floatingAds.map((ad, index) => {
+          // 計算同位置的廣告索引
+          const samePositionAds = floatingAds.filter(item => item.position === ad.position)
+          const positionIndex = samePositionAds.findIndex(item => item.id === ad.id)
+          
+          // 根據位置和索引計算偏移
+          const getOffset = () => {
+            const spacing = 90 // 每個廣告間距 90px
+            const offset = positionIndex * spacing
+            
+            if (ad.position.includes('bottom')) {
+              return { bottom: `${50 + offset}px` }
+            } else {
+              return { top: `${150 + offset}px` }
+            }
+          }
+          
+          return (
+            <a
+              key={ad.id}
+              href={ad.link_url}
+              target={ad.target_blank ? '_blank' : '_self'}
+              className={`floating-ad floating-ad-${ad.position}`}
+              title={ad.title}
+              style={getOffset()}
+            >
+              {ad.image_url ? (
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_BASE}${ad.image_url}`}
+                  alt={ad.title}
+                  className="floating-ad-img"
+                />
+              ) : (
+                ad.title
+              )}
+            </a>
+          )
+        })}
       </div>
     </>
   )
