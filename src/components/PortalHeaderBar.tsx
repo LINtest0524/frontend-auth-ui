@@ -15,6 +15,21 @@ export default function PortalHeaderBar() {
 
   useEffect(() => {
     setMounted(true)
+    
+    // 從 localStorage 恢復用戶狀態
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('portalUser')
+      if (savedUser && !user) {
+        try {
+          const parsedUser = JSON.parse(savedUser)
+          setUser(parsedUser)
+        } catch (error) {
+          console.error('解析用戶資料失敗:', error)
+          localStorage.removeItem('portalUser')
+          localStorage.removeItem('portalToken')
+        }
+      }
+    }
   }, [])
 
   const handleLogout = () => {

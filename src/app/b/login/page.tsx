@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import FacebookLoginButton from '@/components/FacebookLoginButton'
 
 
 export default function AgentLoginPage() {
@@ -9,9 +11,30 @@ export default function AgentLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
 
   const setUser = useUserStore((s) => s.setUser)
   const companyCode = 'b'
+
+  // 檢查URL參數中的錯誤訊息
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      switch (errorParam) {
+        case 'facebook_cancelled':
+          setError('Facebook 登入已取消')
+          break
+        case 'facebook_error':
+          setError('Facebook 登入發生錯誤，請稍後再試')
+          break
+        case 'facebook_login_failed':
+          setError('Facebook 登入失敗，請稍後再試')
+          break
+        default:
+          setError('登入發生錯誤')
+      }
+    }
+  }, [searchParams])
 
   const handleLogin = async () => {
     if (!companyCode) {
@@ -79,6 +102,24 @@ export default function AgentLoginPage() {
       >
         {loading ? '登入中...' : '登入'}
       </button>
+
+      {/* Facebook 登入 */}
+      <div className="mt-6 w-64">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">或</span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <div onClick={() => setError('')}>
+            <FacebookLoginButton className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center" />
+          </div>
+        </div>
+      </div>
 
       {error && (
         <p className="text-red-500 mt-4 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
