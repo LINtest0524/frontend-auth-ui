@@ -3,6 +3,7 @@
 interface FacebookLoginButtonProps {
   className?: string
   children?: React.ReactNode
+  companyCode?: string
 }
 
 export default function FacebookLoginButton({ 
@@ -14,12 +15,16 @@ export default function FacebookLoginButton({
       </svg>
       使用 Facebook 登入
     </>
-  )
+  ),
+  companyCode
 }: FacebookLoginButtonProps) {
   const handleFacebookLogin = () => {
-    // 重定向到後端的 Facebook 登入端點
+    // 重定向到後端的 Facebook 登入端點，並傳遞公司代碼
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'
-    window.location.href = `${apiBase}/auth/facebook`
+    const url = companyCode 
+      ? `${apiBase}/auth/facebook?company=${companyCode}`
+      : `${apiBase}/auth/facebook`
+    window.location.href = url
   }
 
   return (

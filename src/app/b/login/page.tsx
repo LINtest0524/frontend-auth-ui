@@ -19,6 +19,8 @@ export default function AgentLoginPage() {
   // 檢查URL參數中的錯誤訊息
   useEffect(() => {
     const errorParam = searchParams.get('error')
+    const messageParam = searchParams.get('message')
+    
     if (errorParam) {
       switch (errorParam) {
         case 'facebook_cancelled':
@@ -29,6 +31,10 @@ export default function AgentLoginPage() {
           break
         case 'facebook_login_failed':
           setError('Facebook 登入失敗，請稍後再試')
+          break
+        case 'facebook_unauthorized':
+          // 使用後端傳來的具體錯誤訊息
+          setError(messageParam ? decodeURIComponent(messageParam) : '帳號權限不足，無法登入')
           break
         default:
           setError('登入發生錯誤')
@@ -116,7 +122,10 @@ export default function AgentLoginPage() {
 
         <div className="mt-6">
           <div onClick={() => setError('')}>
-            <FacebookLoginButton className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center" />
+            <FacebookLoginButton 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
+              companyCode={companyCode}
+            />
           </div>
         </div>
       </div>
