@@ -2,6 +2,7 @@
 
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import axios, { AxiosError } from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
@@ -19,6 +20,18 @@ export default function MemberProfile({
   onGoToBankVerification,
 }: MemberProfileProps) {
   const { user } = useUserStore()
+  const pathname = usePathname()
+  
+  // 從路徑獲取公司代碼
+  const getCompanyCode = () => {
+    const segments = pathname.split('/')
+    return segments[1] // /a/member -> 'a', /b/member -> 'b'
+  }
+  
+  const getToken = () => {
+    const companyCode = getCompanyCode()
+    return localStorage.getItem(`portalToken_${companyCode}`)
+  }
 
   const [statusMap, setStatusMap] = useState<Record<VerifyType, VerifyStatus>>({
     ID_CARD: 'NONE',
@@ -26,7 +39,7 @@ export default function MemberProfile({
   })
 
   const fetchStatus = async (type: VerifyType) => {
-    const token = localStorage.getItem('portalToken')
+    const token = getToken()
     if (!token) return
 
     try {
@@ -46,7 +59,7 @@ export default function MemberProfile({
   }
 
   const handleDelete = async (type: VerifyType) => {
-    const token = localStorage.getItem('portalToken')
+    const token = getToken()
     if (!token) return
     if (!confirm('確定要刪除驗證資料嗎？')) return
 

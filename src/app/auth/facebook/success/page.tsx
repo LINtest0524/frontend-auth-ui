@@ -16,9 +16,15 @@ export default function FacebookSuccessPage() {
       try {
         const user = JSON.parse(decodeURIComponent(userStr))
         
-        // 儲存到 localStorage (使用一致的命名)
-        localStorage.setItem('portalToken', token)
-        localStorage.setItem('portalUser', JSON.stringify(user))
+        // 儲存到 localStorage (使用公司代碼前綴)
+        const targetCompanyCode = companyCode || user.company?.code || 'a'
+        localStorage.setItem(`portalToken_${targetCompanyCode}`, token)
+        localStorage.setItem(`portalUser_${targetCompanyCode}`, JSON.stringify(user))
+        
+        // 如果有enabledModules，也使用公司代碼前綴儲存
+        if (user.enabledModules) {
+          localStorage.setItem(`enabledModules_${targetCompanyCode}`, JSON.stringify(user.enabledModules))
+        }
         
         // 根據用戶角色重定向
         if (user.role === 'SUPER_ADMIN' || user.role === 'GLOBAL_ADMIN' || 
@@ -26,8 +32,6 @@ export default function FacebookSuccessPage() {
           router.push('/dashboard')
         } else {
           // 一般用戶重定向到對應的公司頁面
-          // 優先使用 URL 參數的公司代碼，其次使用用戶資料中的公司代碼
-          const targetCompanyCode = companyCode || user.company?.code || 'a'
           router.push(`/${targetCompanyCode}`)
         }
       } catch (error) {

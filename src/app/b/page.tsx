@@ -30,7 +30,7 @@ export default function AgentAHomePage() {
   const companyCode = 'b' // ✅ 固定 company 為代理商 b
 
   useEffect(() => {
-    const token = localStorage.getItem('portalToken')
+    const token = localStorage.getItem(`portalToken_${companyCode}`)
 
     // ✅ 獲取啟用的模組列表
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/module?company=${companyCode}`)

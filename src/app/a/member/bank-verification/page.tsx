@@ -15,7 +15,7 @@ export default function BankVerificationPage() {
   const fileRef = useRef<HTMLInputElement | null>(null)
   const [previewKey, setPreviewKey] = useState(0)
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken') : null
+  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_a') : null
 
   // ✅ 共用查詢函式
   const fetchStatus = async () => {

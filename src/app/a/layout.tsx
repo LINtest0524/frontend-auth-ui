@@ -11,10 +11,10 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('portalToken')
-    const userData = localStorage.getItem('portalUser')
-
     const currentCompanyCode = pathname.split('/')[1]
+    const token = localStorage.getItem(`portalToken_${currentCompanyCode}`)
+    const userData = localStorage.getItem(`portalUser_${currentCompanyCode}`)
+
     const publicPaths = [`/${currentCompanyCode}`, `/${currentCompanyCode}/login`, `/${currentCompanyCode}/register`]
     const isPublicPage = publicPaths.includes(pathname)
 
@@ -24,33 +24,26 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
         setUser(parsed)
 
         if (parsed.enabledModules) {
-          localStorage.setItem('enabledModules', JSON.stringify(parsed.enabledModules))
+          localStorage.setItem(`enabledModules_${currentCompanyCode}`, JSON.stringify(parsed.enabledModules))
         }
 
-        const userCompanyCode = parsed?.company?.code
-        if (userCompanyCode !== currentCompanyCode) {
-          console.warn('⚠️ 公司代碼不符，強制清除登入資訊與模組設定')
-          localStorage.removeItem('portalUser')
-          localStorage.removeItem('portalToken')
-          localStorage.removeItem('enabledModules')
-          setUser(null)
-          setHydrated(true)
-          return
-        }
+        // 不再需要檢查公司代碼，因為已經用公司代碼作為鍵名前綴
       } catch (err) {
         console.warn('❌ 無法解析登入資料', err)
-        localStorage.clear()
+        localStorage.removeItem(`portalToken_${currentCompanyCode}`)
+        localStorage.removeItem(`portalUser_${currentCompanyCode}`)
+        localStorage.removeItem(`enabledModules_${currentCompanyCode}`)
         router.replace(`/${currentCompanyCode}/login`)
         return
       }
     } else {
       // ✅ 未登入：清除殘留模組資料，然後打 API 抓回正確值
-      localStorage.removeItem('enabledModules')
+      localStorage.removeItem(`enabledModules_${currentCompanyCode}`)
 
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/module?company=${currentCompanyCode}`)
         .then((res) => res.json())
         .then((enabled: string[]) => {
-          localStorage.setItem('enabledModules', JSON.stringify(enabled))
+          localStorage.setItem(`enabledModules_${currentCompanyCode}`, JSON.stringify(enabled))
         })
 
       if (!isPublicPage) {

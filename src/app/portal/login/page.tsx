@@ -28,8 +28,9 @@ export default function PortalLoginPage() {
       }
 
       const data = await res.json()
-      localStorage.setItem('portalToken', data.token)
-      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      const companyCode = data.user.company?.code || 'default'
+      localStorage.setItem(`portalToken_${companyCode}`, data.token)
+      localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
       setUser(data.user)
 
       window.location.href = '/portal'

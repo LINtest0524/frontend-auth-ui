@@ -89,10 +89,11 @@ export default function AgentLoginPage() {
 
       const data = await res.json()
 
-      localStorage.setItem('portalToken', data.token)
-      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      // 使用公司代碼作為鍵名前綴
+      localStorage.setItem(`portalToken_${companyCode}`, data.token)
+      localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
       if (data.user.enabledModules) {
-        localStorage.setItem('enabledModules', JSON.stringify(data.user.enabledModules))
+        localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(data.user.enabledModules))
       }
 
       setUser(data.user)

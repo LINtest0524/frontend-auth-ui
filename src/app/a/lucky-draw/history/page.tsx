@@ -48,7 +48,8 @@ export default function LuckyDrawHistoryPage() {
   const fetchUserAndHistory = async () => {
     try {
       // 取得用戶資料
-      const portalUser = localStorage.getItem('portalUser');
+      const companyCode = window.location.pathname.split('/')[1];
+      const portalUser = localStorage.getItem(`portalUser_${companyCode}`);
       const adminUser = localStorage.getItem('user');
       
       let currentUser: User = {};
@@ -74,7 +75,7 @@ export default function LuckyDrawHistoryPage() {
       }
 
       // 取得抽獎歷史
-      const token = localStorage.getItem('portalToken') || localStorage.getItem('token');
+      const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
       const res = await fetch(`http://localhost:3001/lucky-prize/history/${userId}?companyId=${companyId}`, {
         headers: {
           Authorization: `Bearer ${token}`,

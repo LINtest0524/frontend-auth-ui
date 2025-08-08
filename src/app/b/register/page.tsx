@@ -47,10 +47,10 @@ export default function PortalRegisterPage() {
 
       const data = await res.json()
 
-      localStorage.setItem('portalToken', data.token)
-      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      localStorage.setItem(`portalToken_${company}`, data.token)
+      localStorage.setItem(`portalUser_${company}`, JSON.stringify(data.user))
       if (data.user.enabledModules) {
-        localStorage.setItem('enabledModules', JSON.stringify(data.user.enabledModules))
+        localStorage.setItem(`enabledModules_${company}`, JSON.stringify(data.user.enabledModules))
       }
 
       setUser(data.user)

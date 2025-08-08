@@ -10,8 +10,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('portalToken')
-    const userData = localStorage.getItem('portalUser')
+    // 從路徑獲取公司代碼 /portal/company -> company
+    const segments = pathname.split('/')
+    const companyCode = segments[2] || 'default' // /portal/a -> 'a'
+    
+    const token = localStorage.getItem(`portalToken_${companyCode}`)
+    const userData = localStorage.getItem(`portalUser_${companyCode}`)
 
     if (token && userData) {
       try {
@@ -19,7 +23,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         setUser(parsed)
 
         if (parsed.enabledModules) {
-          localStorage.setItem('enabledModules', JSON.stringify(parsed.enabledModules))
+          localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(parsed.enabledModules))
         }
       } catch (err) {
         console.warn('❌ parse user error', err)

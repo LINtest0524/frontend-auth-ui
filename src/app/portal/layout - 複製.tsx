@@ -15,8 +15,8 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     const company = match?.[1] || 'default'
     const isLoginPage = pathname === `/portal/${company}/login`
 
-    const token = localStorage.getItem('portalToken')
-    const userData = localStorage.getItem('portalUser')
+    const token = localStorage.getItem(`portalToken_${company}`)
+    const userData = localStorage.getItem(`portalUser_${company}`)
 
     if (isLoginPage) {
       // ✅ 登入頁，不處理
@@ -36,7 +36,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
       setUser(parsed)
 
       if (parsed.enabledModules) {
-        localStorage.setItem('enabledModules', JSON.stringify(parsed.enabledModules))
+        localStorage.setItem(`enabledModules_${company}`, JSON.stringify(parsed.enabledModules))
       }
     } catch (e) {
       console.warn('❌ 無法解析 user', e)

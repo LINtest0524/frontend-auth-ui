@@ -32,7 +32,7 @@ export default function AgentAHomePage() {
 
 
   useEffect(() => {
-    const token = localStorage.getItem('portalToken')
+    const token = localStorage.getItem(`portalToken_${companyCode}`)
 
     // ✅ banner：不需要登入，正常 fetch
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${companyCode}`)

@@ -1,13 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function MemberPasswordForm() {
+  const pathname = usePathname()
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  
+  // 從路徑獲取公司代碼
+  const getToken = () => {
+    const segments = pathname.split('/')
+    const companyCode = segments[1] // /a/member -> 'a', /b/member -> 'b'
+    return localStorage.getItem(`portalToken_${companyCode}`)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +39,7 @@ export default function MemberPasswordForm() {
     }
 
     try {
-      const token = localStorage.getItem('portalToken')
+      const token = getToken()
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/change-password`, {
         method: 'POST',

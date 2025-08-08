@@ -32,13 +32,13 @@ export default function PortalLoginPage() {
 
       const data = await res.json()
 
-      localStorage.setItem('portalToken', data.token)
-      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      localStorage.setItem(`portalToken_${companyCode}`, data.token)
+      localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
       setUser(data.user)
 
       // ✅ 這行非常關鍵：寫入 enabledModules
       if (data.user.enabledModules) {
-        localStorage.setItem('enabledModules', JSON.stringify(data.user.enabledModules))
+        localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(data.user.enabledModules))
       }
 
       const targetCompany = data.user.company?.code || 'default'

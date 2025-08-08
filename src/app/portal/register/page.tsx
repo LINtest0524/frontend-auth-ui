@@ -34,8 +34,8 @@ export default function PortalRegisterPage() {
       }
 
       const data = await res.json()
-      localStorage.setItem('portalToken', data.token)
-      localStorage.setItem('portalUser', JSON.stringify(data.user))
+      localStorage.setItem(`portalToken_${companyCode}`, data.token)
+      localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
 
       // ✅ 註冊成功後導向該公司首頁
       window.location.href = `/portal/${companyCode}`

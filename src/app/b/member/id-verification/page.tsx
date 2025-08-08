@@ -20,7 +20,7 @@ export default function IDVerificationPage() {
   const [note, setNote] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_b') : null;
 
   const fetchStatus = async () => {
     if (!token) return;

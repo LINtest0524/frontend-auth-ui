@@ -4,6 +4,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { getUser, getToken, logout } from '@/lib/useAuth'
 import '../../src/app/a/styles/index.css';
 
 
@@ -15,30 +16,29 @@ export default function PortalHeaderBar() {
 
   useEffect(() => {
     setMounted(true)
-    
-    // 從 localStorage 恢復用戶狀態
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('portalUser')
-      if (savedUser && !user) {
+  }, [])
+
+  useEffect(() => {
+    // 從 localStorage 恢復用戶狀態，使用公司代碼
+    if (typeof window !== 'undefined' && company && !user) {
+      const savedUser = getUser(company)
+      if (savedUser) {
         try {
-          const parsedUser = JSON.parse(savedUser)
-          setUser(parsedUser)
+          setUser(savedUser)
         } catch (error) {
           console.error('解析用戶資料失敗:', error)
-          localStorage.removeItem('portalUser')
-          localStorage.removeItem('portalToken')
+          logout(company)
         }
       }
     }
-  }, [])
+  }, [company, user, setUser])
 
   const handleLogout = () => {
-    localStorage.removeItem('portalUser')
-    localStorage.removeItem('portalToken')
-    localStorage.removeItem('enabledModules')
-    setUser(null)
-
-    router.push(`/${company}`) // ✅ 登出後回到首頁
+    if (company) {
+      logout(company)
+      setUser(null)
+      router.push(`/${company}`) // ✅ 登出後回到首頁
+    }
   }
 
   const handleGoToMember = () => {

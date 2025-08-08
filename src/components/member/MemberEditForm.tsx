@@ -2,12 +2,30 @@
 
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
+import { usePathname } from 'next/navigation'
 
 export default function MemberEditForm() {
   const { user, setUser } = useUserStore()
+  const pathname = usePathname()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  
+  // 從路徑獲取公司代碼
+  const getCompanyCode = () => {
+    const segments = pathname.split('/')
+    return segments[1] // /a/member -> 'a', /b/member -> 'b'
+  }
+  
+  const getToken = () => {
+    const companyCode = getCompanyCode()
+    return localStorage.getItem(`portalToken_${companyCode}`)
+  }
+  
+  const updateUserInStorage = (updatedUser: any) => {
+    const companyCode = getCompanyCode()
+    localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(updatedUser))
+  }
 
   useEffect(() => {
     if (user?.email) {
@@ -26,7 +44,7 @@ export default function MemberEditForm() {
     }
 
     try {
-      const token = localStorage.getItem('portalToken')
+      const token = getToken()
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${user?.id}`, {
 
@@ -46,7 +64,7 @@ export default function MemberEditForm() {
       const updated = await res.json()
 
       // 更新 localStorage 與 zustand
-      localStorage.setItem('portalUser', JSON.stringify(updated))
+      updateUserInStorage(updated)
       setUser(updated)
 
       setSuccess('信箱更新成功！')

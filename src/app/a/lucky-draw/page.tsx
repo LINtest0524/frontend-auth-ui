@@ -43,11 +43,13 @@ export default function Wheel() {
   const [winningClass, setWinningClass] = useState('');
 
   const fetchPrizes = async () => {
-    // 前台使用 portalToken，後台使用 token
-    const token = localStorage.getItem('portalToken') || localStorage.getItem('token');
+    // 動態獲取公司代碼
+    const companyCode = window.location.pathname.split('/')[1];
+    // 前台使用 portalToken_[company]，後台使用 token
+    const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
     
     // 獲取當前代理商 ID
-    const portalUser = localStorage.getItem('portalUser');
+    const portalUser = localStorage.getItem(`portalUser_${companyCode}`);
     const adminUser = localStorage.getItem('user');
     let companyId = 1; // 預設值
     
@@ -95,8 +97,9 @@ export default function Wheel() {
 
     try {
       // 前台使用 portalToken 和 portalUser，後台使用 token 和 user
-      const token = localStorage.getItem('portalToken') || localStorage.getItem('token');
-      const portalUser = localStorage.getItem('portalUser');
+      const companyCode = window.location.pathname.split('/')[1];
+      const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
+      const portalUser = localStorage.getItem(`portalUser_${companyCode}`);
       const adminUser = localStorage.getItem('user');
       
       let user: User = {};
