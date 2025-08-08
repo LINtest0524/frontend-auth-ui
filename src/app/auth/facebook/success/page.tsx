@@ -10,6 +10,7 @@ export default function FacebookSuccessPage() {
   useEffect(() => {
     const token = searchParams.get('token')
     const userStr = searchParams.get('user')
+    const companyCode = searchParams.get('company') // 從 URL 參數獲取公司代碼
 
     if (token && userStr) {
       try {
@@ -25,15 +26,20 @@ export default function FacebookSuccessPage() {
           router.push('/dashboard')
         } else {
           // 一般用戶重定向到對應的公司頁面
-          const companyCode = user.company?.code || 'a'
-          router.push(`/${companyCode}`)
+          // 優先使用 URL 參數的公司代碼，其次使用用戶資料中的公司代碼
+          const targetCompanyCode = companyCode || user.company?.code || 'a'
+          router.push(`/${targetCompanyCode}`)
         }
       } catch (error) {
         console.error('解析用戶資料失敗:', error)
-        router.push('/login?error=facebook_login_failed')
+        // 如果有公司代碼，重定向到對應的登入頁面
+        const fallbackCompanyCode = companyCode || 'a'
+        router.push(`/${fallbackCompanyCode}/login?error=facebook_login_failed`)
       }
     } else {
-      router.push('/login?error=facebook_login_failed')
+      // 如果有公司代碼，重定向到對應的登入頁面
+      const fallbackCompanyCode = companyCode || 'a'
+      router.push(`/${fallbackCompanyCode}/login?error=facebook_login_failed`)
     }
   }, [router, searchParams])
 
