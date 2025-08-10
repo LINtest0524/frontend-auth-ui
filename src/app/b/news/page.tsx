@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
+import '@/styles/pages/news.css'
 
 type NewsItem = {
   id: number
@@ -163,23 +164,23 @@ export default function NewsListPageB() {
     <>
       <PortalHeaderBar />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold text-center mb-8">最新消息</h1>
+      <div className="news-container">
+        <h1 className="news-title">最新消息</h1>
         
         {/* 搜尋和篩選 */}
-        <div className="mb-6 bg-white p-4 rounded-lg shadow">
-          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+        <div className="news-search-section">
+          <form onSubmit={handleSearch} className="news-search-form">
             <input
               type="text"
               placeholder="搜尋標題或內容..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="news-search-input"
             />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="news-search-select"
             >
               <option value="">所有分類</option>
               <option value="GENERAL">一般消息</option>
@@ -189,7 +190,7 @@ export default function NewsListPageB() {
             </select>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="news-search-btn"
             >
               搜尋
             </button>
@@ -198,46 +199,44 @@ export default function NewsListPageB() {
 
         {/* 新聞列表 */}
         {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">載入中...</p>
+          <div className="news-loading">
+            <div className="news-loading-spinner"></div>
+            <p className="news-loading-text">載入中...</p>
           </div>
         ) : news.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-600">目前沒有最新消息</p>
+          <div className="news-empty">
+            <p>目前沒有最新消息</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="news-list">
             {news.map((item) => (
               <article
                 key={item.id}
-                className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+                className="news-item"
                 onClick={() => router.push(`/b/news/${item.id}`)}
               >
-                <div className="md:flex">
+                <div className="news-item-content">
                   {item.image_url && (
-                    <div className="md:w-1/3">
-                      <img
-                        src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
-                        alt={item.title}
-                        className="w-full h-48 md:h-full object-cover"
-                      />
-                    </div>
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
+                      alt={item.title}
+                      className="news-item-image"
+                    />
                   )}
-                  <div className={`p-6 ${item.image_url ? 'md:w-2/3' : 'w-full'}`}>
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="news-item-body">
+                    <div className="news-item-badges">
                       {item.is_featured && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">置頂</span>
+                        <span className="news-badge news-badge-featured">置頂</span>
                       )}
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                      <span className="news-badge news-badge-category">
                         {getCategoryName(item.category)}
                       </span>
                     </div>
-                    <h2 className="text-xl font-semibold mb-3 text-gray-900 hover:text-blue-600 transition-colors">
+                    <h2 className="news-item-title">
                       {item.title}
                     </h2>
-                    <p className="text-gray-600 mb-4 line-clamp-3">{item.summary}</p>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
+                    <p className="news-item-summary" style={{ whiteSpace: 'pre-line' }}>{item.summary}</p>
+                    <div className="news-item-meta">
                       <span>📅 {formatDate(item.publish_date)}</span>
                       <span>👁 {item.view_count} 次瀏覽</span>
                     </div>
@@ -249,7 +248,9 @@ export default function NewsListPageB() {
         )}
 
         {/* 分頁 */}
-        {renderPagination()}
+        <div className="news-pagination">
+          {renderPagination()}
+        </div>
       </div>
     </>
   )

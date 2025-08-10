@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
-import { CKEditor } from '@ckeditor/ckeditor5-react'
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+import SunEditor from '@/components/SunEditor'
 
 type NewsDetail = {
   id: number
@@ -87,11 +86,9 @@ export default function EditNewsPage() {
     }))
   }
 
-  // CKEditor change handler
-  const handleEditorChangeStable = useCallback((event: any, editor: any) => {
-    const data = editor.getData()
-    setFormData(prev => ({ ...prev, content: data }))
-  }, [])
+  const handleEditorChange = (content: string) => {
+    setFormData(prev => ({ ...prev, content }))
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -214,59 +211,15 @@ export default function EditNewsPage() {
               內容 (富文本編輯器) *
             </label>
             <div className="border border-gray-300 rounded-md">
-              <CKEditor
-                editor={ClassicEditor}
-                data={formData.content}
-                onChange={handleEditorChangeStable}
-                config={{
-                  toolbar: [
-                    'heading', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', '|',
-                    'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-                    'bulletedList', 'numberedList', '|',
-                    'outdent', 'indent', '|',
-                    'alignment', '|',
-                    'link', 'imageUpload', 'insertTable', '|',
-                    'blockQuote', 'codeBlock', '|',
-                    'undo', 'redo', '|',
-                    'sourceEditing'
-                  ],
-                  heading: {
-                    options: [
-                      { model: 'paragraph', title: '段落', class: 'ck-heading_paragraph' },
-                      { model: 'heading1', view: 'h1', title: '標題 1', class: 'ck-heading_heading1' },
-                      { model: 'heading2', view: 'h2', title: '標題 2', class: 'ck-heading_heading2' },
-                      { model: 'heading3', view: 'h3', title: '標題 3', class: 'ck-heading_heading3' }
-                    ]
-                  },
-                  fontSize: {
-                    options: [9, 11, 13, 'default', 17, 19, 21]
-                  },
-                  fontColor: {
-                    colors: [
-                      { color: 'hsl(0, 0%, 0%)', label: '黑色' },
-                      { color: 'hsl(0, 0%, 30%)', label: '深灰' },
-                      { color: 'hsl(0, 0%, 60%)', label: '淺灰' },
-                      { color: 'hsl(0, 0%, 90%)', label: '白色' },
-                      { color: 'hsl(0, 75%, 60%)', label: '紅色' },
-                      { color: 'hsl(30, 75%, 60%)', label: '橙色' },
-                      { color: 'hsl(60, 75%, 60%)', label: '黃色' },
-                      { color: 'hsl(90, 75%, 60%)', label: '淺綠' },
-                      { color: 'hsl(120, 75%, 60%)', label: '綠色' },
-                      { color: 'hsl(150, 75%, 60%)', label: '青綠' },
-                      { color: 'hsl(180, 75%, 60%)', label: '青色' },
-                      { color: 'hsl(210, 75%, 60%)', label: '淺藍' },
-                      { color: 'hsl(240, 75%, 60%)', label: '藍色' },
-                      { color: 'hsl(270, 75%, 60%)', label: '紫色' }
-                    ]
-                  },
-                  language: 'zh',
-                  placeholder: '請輸入新聞內容...'
-                }}
+              <SunEditor
+                value={formData.content}
+                onChange={handleEditorChange}
+                placeholder="請輸入新聞內容..."
+                height="400px"
               />
             </div>
             <small className="text-gray-500 text-sm mt-1 block">
-              提示：專業級富文本編輯器，支援文字顏色、字體大小、圖片上傳、表格等功能
+              提示：SunEditor 專業級富文本編輯器，支援豐富的格式化功能、圖片上傳、表格、程式碼等
             </small>
           </div>
 
