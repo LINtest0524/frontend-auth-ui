@@ -51,6 +51,8 @@ export default function MemberProfile({
     } catch (err: unknown) {
       const error = err as AxiosError
       if (error.response?.status === 404) {
+        // 404 是正常情況，表示用戶還沒有上傳過驗證資料
+        console.log(`ℹ️ ${type} 驗證資料尚未上傳`)
         setStatusMap((prev) => ({ ...prev, [type]: 'NONE' }))
       } else {
         console.error(`❌ 取得 ${type} 驗證狀態失敗：`, err)

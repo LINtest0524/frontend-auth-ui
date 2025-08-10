@@ -49,11 +49,24 @@ export default function AdminUserListPage() {
       });
 
       const result = await res.json();
-      setAdminUsers(result.data);
-      setTotalPages(result.totalPages);
-      setTotalCount(result.totalCount);
+      console.log('Admin users API response:', result);
+      
+      // 確保 data 是陣列
+      if (result && Array.isArray(result.data)) {
+        setAdminUsers(result.data);
+        setTotalPages(result.totalPages || 1);
+        setTotalCount(result.totalCount || 0);
+      } else {
+        console.error('API 返回的資料格式不正確:', result);
+        setAdminUsers([]);
+        setTotalPages(1);
+        setTotalCount(0);
+      }
     } catch (err) {
       console.error("Fetch failed", err);
+      setAdminUsers([]);
+      setTotalPages(1);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }

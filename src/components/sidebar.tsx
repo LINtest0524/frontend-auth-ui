@@ -31,8 +31,10 @@ export default function Sidebar() {
   useEffect(() => {
     if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
+    else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
+    else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
     else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
@@ -77,20 +79,54 @@ export default function Sidebar() {
           會員管理
         </Link>
 
-        <Link
-          href="/admin/module"
-          onClick={resetMenu}
-          className={cn(
-            "sidebar-item i-modules",
-            pathname?.startsWith("/admin/module") &&
-              !pathname.includes("/marquee") &&
-              currentActive === null &&
-              "active"
-          )}
-        >
-          <span className="icon" />
-          模組設定
-        </Link>
+        {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
+          <Link
+            href="/admin/module"
+            onClick={resetMenu}
+            className={cn(
+              "sidebar-item i-modules",
+              pathname?.startsWith("/admin/module") &&
+                !pathname.includes("/marquee") &&
+                currentActive === null &&
+                "active"
+            )}
+          >
+            <span className="icon" />
+            模組設定
+          </Link>
+        )}
+
+        {/* 網站設定 - 只有超級管理員、全域管理員、代理商老闆可以看到 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("website");
+                setCurrentActive("website");
+              }}
+              className={cn(
+                "sidebar-item i-modules",
+                currentActive === "website" && "active",
+                activeMenu === "website" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              網站設定
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "website" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/menu"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/menu" && currentActive === null && "active")}
+                >
+                  導航管理
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* BANNER 管理 */}
         <div>
@@ -164,6 +200,45 @@ export default function Sidebar() {
             </Link>
           </div>
         </div>
+
+        {/* 最新消息管理 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("news");
+                setCurrentActive("news");
+              }}
+              className={cn(
+                "sidebar-item i-modules", 
+                currentActive === "news" && "active",
+                activeMenu === "news" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              最新消息
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "news" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/news"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/news" && currentActive === null && "active")}
+                >
+                  消息列表
+                </Link>
+                <Link
+                  href="/admin/news/new"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/news/new" && currentActive === null && "active")}
+                >
+                  新增消息
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Link
           href="/admin/id-verification"

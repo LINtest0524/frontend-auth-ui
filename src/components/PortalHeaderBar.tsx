@@ -5,7 +5,9 @@ import { useCompanySlug } from '@/hooks/useCompanySlug'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getUser, getToken, logout } from '@/lib/useAuth'
-import '../../src/app/a/styles/index.css';
+import MenuRenderer from './menu/MenuRenderer'
+import '../../src/app/a/styles/index.css'
+import '../../src/styles/components/menu.css'
 
 
 export default function PortalHeaderBar() {
@@ -13,10 +15,36 @@ export default function PortalHeaderBar() {
   const company = useCompanySlug() // ✅ 這行取得公司代碼
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [companyId, setCompanyId] = useState<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // 取得公司 ID
+  useEffect(() => {
+    const fetchCompanyId = async () => {
+      if (company) {
+        try {
+          // 根據公司代碼取得公司 ID
+          // 這裡假設 'a' 對應 ID 1, 'b' 對應 ID 2，你可以根據實際情況調整
+          const companyMap: { [key: string]: number } = {
+            'a': 1,
+            'b': 2,
+          }
+          
+          const id = companyMap[company]
+          if (id) {
+            setCompanyId(id)
+          }
+        } catch (error) {
+          console.error('取得公司 ID 失敗:', error)
+        }
+      }
+    }
+
+    fetchCompanyId()
+  }, [company])
 
   useEffect(() => {
     // 從 localStorage 恢復用戶狀態，使用公司代碼
@@ -50,7 +78,10 @@ export default function PortalHeaderBar() {
   return (
     <>
       <div className="header-box fo5">
+        <div className="header-left">
           <h1>A首頁</h1>
+          {companyId && <MenuRenderer companyId={companyId} />}
+        </div>
         {!user ? (
           <div className="fl6">
             <a href={`/${company}/register`} className="f-btn-2">註冊</a>

@@ -122,6 +122,13 @@ export default function MarqueeCreatePage() {
             >
               {loading ? "儲存中..." : "儲存送出"}
             </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/marquee")}
+              className="b-btn-s2 b-btn-c1"
+            >
+              取消
+            </button>
           </div>
 
         </form>
