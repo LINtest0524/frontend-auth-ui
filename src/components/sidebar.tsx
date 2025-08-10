@@ -123,6 +123,13 @@ export default function Sidebar() {
                 >
                   導航管理
                 </Link>
+                <Link
+                  href="/admin/logo"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/logo" && currentActive === null && "active")}
+                >
+                  LOGO 管理
+                </Link>
               </div>
             </div>
           </div>
@@ -197,6 +204,13 @@ export default function Sidebar() {
               className={cn("sidebar-subitem", pathname === "/admin/marquee/new" && currentActive === null && "active")}
             >
               新增內容
+            </Link>
+            <Link
+              href="/admin/marquee-tags"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/admin/marquee-tags" && currentActive === null && "active")}
+            >
+              標籤管理
             </Link>
           </div>
         </div>

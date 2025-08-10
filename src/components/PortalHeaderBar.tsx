@@ -16,6 +16,19 @@ export default function PortalHeaderBar() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [companyId, setCompanyId] = useState<number | null>(null)
+  const [logo, setLogo] = useState<any>(null)
+
+  const fetchLogo = async (companyCode: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/logo?company=${companyCode}`)
+      if (response.ok) {
+        const logoData = await response.json()
+        setLogo(logoData)
+      }
+    } catch (error) {
+      console.error('獲取 LOGO 失敗:', error)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -36,6 +49,8 @@ export default function PortalHeaderBar() {
           const id = companyMap[company]
           if (id) {
             setCompanyId(id)
+            // 獲取公司 LOGO
+            fetchLogo(company)
           }
         } catch (error) {
           console.error('取得公司 ID 失敗:', error)
@@ -77,6 +92,31 @@ export default function PortalHeaderBar() {
 
   return (
     <>
+      {/* LOGO 區塊 */}
+      {logo && (
+        <div className="f-logo" style={{
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          zIndex: 1000,
+          backgroundColor: 'white',
+          padding: '8px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e5e7eb'
+        }}>
+          <img
+            src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
+            alt={logo.title}
+            style={{
+              maxWidth: '120px',
+              maxHeight: '60px',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+      )}
+
       <div className="header-box fo5">
         <div className="header-left">
           <h1>A首頁</h1>

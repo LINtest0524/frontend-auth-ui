@@ -12,6 +12,12 @@ type MarqueeItem = {
   link?: string;
   isActive: boolean;
   createdAt: string;
+  tag?: {
+    id: number;
+    name: string;
+    backgroundColor: string;
+    textColor: string;
+  };
 };
 
 export default function MarqueeListPage() {
@@ -96,6 +102,7 @@ export default function MarqueeListPage() {
             <tr>
               <th>標題（後台參考用）</th>
               <th>內容（實際顯示）</th>
+              <th>標籤</th>
               <th>連結</th>
               <th>啟用</th>
               <th>建立時間</th>
@@ -107,6 +114,24 @@ export default function MarqueeListPage() {
               <tr key={item.id}>
                 <td>{item.title || "-"}</td>
                 <td>{item.content || "-"}</td>
+                <td>
+                  {item.tag ? (
+                    <span
+                      style={{
+                        backgroundColor: item.tag.backgroundColor,
+                        color: item.tag.textColor,
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {item.tag.name}
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td>
                   {item.link ? (
                     <a
@@ -152,7 +177,7 @@ export default function MarqueeListPage() {
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="border px-3 py-4 text-center text-gray-500">
+                <td colSpan={7} className="border px-3 py-4 text-center text-gray-500">
                   尚無資料
                 </td>
               </tr>

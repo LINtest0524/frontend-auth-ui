@@ -3,39 +3,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-export default function EditMarqueePage() {
+export default function EditMarqueeTagPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [link, setLink] = useState("");
+  const [name, setName] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("#FF4444");
+  const [textColor, setTextColor] = useState("#FFFFFF");
   const [isActive, setIsActive] = useState(true);
-  const [tagId, setTagId] = useState<number | null>(null);
-  const [tags, setTags] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE;
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  const fetchTags = async () => {
-    if (!token) return;
-    try {
-      const res = await fetch(`${apiBase}/admin/marquee-tags`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTags(data.filter((tag: any) => tag.isActive));
-      }
-    } catch (err) {
-      console.error("載入標籤失敗:", err);
-    }
-  };
 
   const fetchData = async () => {
     if (!token) {
@@ -45,18 +26,17 @@ export default function EditMarqueePage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/admin/marquee/item/${id}`, {
+      const res = await fetch(`${apiBase}/admin/marquee-tags/item/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setTitle(data.title || "");
-      setContent(data.content || "");
-      setLink(data.link || "");
+      setName(data.name || "");
+      setBackgroundColor(data.backgroundColor || "#FF4444");
+      setTextColor(data.textColor || "#FFFFFF");
       setIsActive(data.isActive);
-      setTagId(data.tag?.id || null);
     } catch (err: any) {
       setError("資料載入失敗");
       console.error(err);
@@ -76,18 +56,18 @@ export default function EditMarqueePage() {
     }
 
     try {
-      const res = await fetch(`${apiBase}/admin/marquee/${id}`, {
+      const res = await fetch(`${apiBase}/admin/marquee-tags/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, content, link, isActive, tagId }),
+        body: JSON.stringify({ name, backgroundColor, textColor, isActive }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      router.push("/admin/marquee");
+      router.push("/admin/marquee-tags");
     } catch (err) {
       setError("儲存失敗");
       console.error(err);
@@ -97,88 +77,80 @@ export default function EditMarqueePage() {
   };
 
   useEffect(() => {
-    if (id) {
-      fetchData();
-      fetchTags();
-    }
+    if (id) fetchData();
   }, [id]);
 
   return (
     <div className="b-ibox">
-
-      <h1>編輯跑馬燈</h1>
+      <h1>編輯跑馬燈標籤</h1>
 
       {error && <p className="text-red-600 mb-2">{error}</p>}
 
       <div className="b-ibox-s">
-
         <form onSubmit={handleSubmit} className="w100">
-
           <div className="b-form-group-1 w100 fl4">
-            <label>標題</label>
+            <label>標籤名稱</label>
             <input
               type="text"
               className="w70"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
 
-
           <div className="b-form-group-1 w100 fl4">
-            <label>內容</label>
-            <textarea
-              className="w70"
-              rows={3}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </div>
-
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>連結網址</label>
-            <input
-              type="url"
-              className="w70"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-            />
+            <label>背景顏色</label>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <input
+                type="color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                style={{ width: "50px", height: "40px" }}
+              />
+              <input
+                type="text"
+                className="w30"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="b-form-group-1 w100 fl4">
-            <label>標籤</label>
-            <select
-              className="w70"
-              value={tagId || ""}
-              onChange={(e) => setTagId(e.target.value ? Number(e.target.value) : null)}
+            <label>文字顏色</label>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <input
+                type="color"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+                style={{ width: "50px", height: "40px" }}
+              />
+              <input
+                type="text"
+                className="w30"
+                value={textColor}
+                onChange={(e) => setTextColor(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>預覽</label>
+            <span
+              style={{
+                backgroundColor: backgroundColor,
+                color: textColor,
+                padding: "8px 16px",
+                borderRadius: "4px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                display: "inline-block"
+              }}
             >
-              <option value="">無標籤</option>
-              {tags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-            {tagId && tags.find(t => t.id === tagId) && (
-              <div style={{ marginTop: "8px" }}>
-                <span
-                  style={{
-                    backgroundColor: tags.find(t => t.id === tagId)?.backgroundColor,
-                    color: tags.find(t => t.id === tagId)?.textColor,
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {tags.find(t => t.id === tagId)?.name}
-                </span>
-              </div>
-            )}
+              {name || "標籤預覽"}
+            </span>
           </div>
-
 
           <div className="b-form-group-1 w100 fl4">
             <label htmlFor="active">啟用</label>
@@ -199,12 +171,15 @@ export default function EditMarqueePage() {
             >
               儲存修改
             </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/marquee-tags")}
+              className="b-btn-s2 b-btn-c1"
+            >
+              取消
+            </button>
           </div>
-
-          
         </form>
-
-
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function MarqueeCreatePage() {
@@ -11,6 +11,8 @@ export default function MarqueeCreatePage() {
   const [content, setContent] = useState("");
   const [link, setLink] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [tagId, setTagId] = useState<number | null>(null);
+  const [tags, setTags] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const userJson =
@@ -18,6 +20,23 @@ export default function MarqueeCreatePage() {
   const companyId = userJson ? JSON.parse(userJson)?.company?.id : null;
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const fetchTags = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${apiBase}/admin/marquee-tags`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTags(data.filter((tag: any) => tag.isActive));
+      }
+    } catch (err) {
+      console.error("載入標籤失敗:", err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +59,7 @@ export default function MarqueeCreatePage() {
           link,
           isActive,
           companyId,
+          tagId,
         }),
       });
 
@@ -57,6 +77,10 @@ export default function MarqueeCreatePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
   return (
     <div className="b-ibox">
@@ -98,6 +122,38 @@ export default function MarqueeCreatePage() {
               value={link}
               onChange={(e) => setLink(e.target.value)}
             />
+          </div>
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>標籤</label>
+            <select
+              className="w70"
+              value={tagId || ""}
+              onChange={(e) => setTagId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">無標籤</option>
+              {tags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+            {tagId && tags.find(t => t.id === tagId) && (
+              <div style={{ marginTop: "8px" }}>
+                <span
+                  style={{
+                    backgroundColor: tags.find(t => t.id === tagId)?.backgroundColor,
+                    color: tags.find(t => t.id === tagId)?.textColor,
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {tags.find(t => t.id === tagId)?.name}
+                </span>
+              </div>
+            )}
           </div>
 
 

@@ -8,6 +8,12 @@ type MarqueeItem = {
   content: string
   isActive: boolean
   link?: string
+  tag?: {
+    id: number
+    name: string
+    backgroundColor: string
+    textColor: string
+  }
 }
 
 type Props = {
@@ -46,7 +52,22 @@ export default function Marquee({ marquees = [] }: Props) {
           } as React.CSSProperties}
         >
           {[...marquees, ...marquees].map((item, index) => (
-            <span key={`${item.id}-${index}`} >
+            <span key={`${item.id}-${index}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {item.tag && (
+                <span
+                  style={{
+                    backgroundColor: item.tag.backgroundColor,
+                    color: item.tag.textColor,
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {item.tag.name}
+                </span>
+              )}
               {item.link ? (
                 <a
                   href={item.link}
