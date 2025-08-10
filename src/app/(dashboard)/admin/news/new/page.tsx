@@ -79,6 +79,9 @@ export default function NewNewsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user?.companyId) return
+    
+    // 防止重複提交
+    if (loading) return
 
     setLoading(true)
     try {

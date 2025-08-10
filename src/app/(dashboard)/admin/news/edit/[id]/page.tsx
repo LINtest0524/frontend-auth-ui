@@ -60,7 +60,12 @@ export default function EditNewsPage() {
             category: news.category,
             status: news.status,
             is_featured: news.is_featured,
-            publish_date: new Date(news.publish_date).toISOString().slice(0, 16),
+            publish_date: (() => {
+              const date = new Date(news.publish_date);
+              // 加8小時轉換為台灣時間
+              const taiwanTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+              return taiwanTime.toISOString().slice(0, 16);
+            })(),
           })
         } else {
           alert('無法載入新聞資料')
@@ -124,6 +129,9 @@ export default function EditNewsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // 防止重複提交
+    if (loading) return
 
     setLoading(true)
     try {

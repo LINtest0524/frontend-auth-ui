@@ -50,12 +50,23 @@ export default function NewsListPage() {
       if (search) params.append('search', search)
       if (category) params.append('category', category)
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/news?${params}`)
+      const url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/news?${params}`
+      console.log('🔍 API 請求:', { page, search, category, url })
+      
+      const response = await fetch(url)
       if (response.ok) {
         const data: NewsResponse = await response.json()
+        console.log('📊 API 回應:', { 
+          page: data.page, 
+          totalPages: data.totalPages, 
+          total: data.total, 
+          dataLength: data.data?.length 
+        })
         setNews(data.data)
         setTotalPages(data.totalPages)
-        setCurrentPage(data.page)
+        setCurrentPage(Number(data.page))
+      } else {
+        console.error('API 請求失敗:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Failed to fetch news:', error)
@@ -75,6 +86,13 @@ export default function NewsListPage() {
   }
 
   const handlePageChange = (page: number) => {
+    console.log('🔄 頁面切換:', { 
+      from: currentPage, 
+      to: page, 
+      totalPages,
+      searchTerm,
+      selectedCategory 
+    })
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
