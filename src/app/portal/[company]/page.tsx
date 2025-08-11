@@ -55,7 +55,7 @@ export default function PortalCompanyPage() {
           </>
         ) : (
           <>
-            {/* ✅ 未登入也能看到的公開資訊 */}
+            {/*   未登入也能看到的公開資訊 */}
             <Marquee marquees={marquees} />
             <BannerCarousel banners={banners} />
           </>

@@ -23,14 +23,14 @@ export default function VerificationStatus({ type }: Props) {
         const res = await axios.get(`${API_URL}/api/id-verification/me?type=${type}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        console.log(`✅ ${typeLabel}：`, res.data)
+        console.log(`  ${typeLabel}：`, res.data)
         setStatus(res.data?.status || 'NONE')
       } catch (err: unknown) {
         const error = err as AxiosError
         if (error.response?.status === 404) {
           setStatus('NONE')
         } else {
-          console.error(`❌ 取得 ${typeLabel} 狀態失敗：`, err)
+          console.error(`    取得 ${typeLabel} 狀態失敗：`, err)
         }
       }
     }

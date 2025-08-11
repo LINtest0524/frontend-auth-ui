@@ -92,13 +92,15 @@ export default function AgentLoginPage() {
       // 使用公司代碼作為鍵名前綴
       localStorage.setItem(`portalToken_${companyCode}`, data.token)
       localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
+      // 記錄登入時間，避免立即進行 token 驗證
+      localStorage.setItem(`tokenCreatedTime_${companyCode}`, Date.now().toString())
       if (data.user.enabledModules) {
         localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(data.user.enabledModules))
       }
 
       setUser(data.user)
 
-      // ✅ 動態導回該公司首頁
+      //   動態導回該公司首頁
       window.location.href = `/${companyCode}`
     } catch (err: any) {
       setError(err.message || '登入失敗')
@@ -175,7 +177,7 @@ export default function AgentLoginPage() {
             {/* Google 登入 (預留) */}
             {enabledLoginMethods.includes('GOOGLE') && (
               <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
-                <span className="mr-2">🔍</span>
+                <span className="mr-2">預覽</span>
                 使用 Google 登入 (開發中)
               </button>
             )}

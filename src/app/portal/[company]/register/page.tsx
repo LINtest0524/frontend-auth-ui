@@ -38,7 +38,7 @@ export default function PortalRegisterPage() {
 
       const data = await res.json()
 
-      // ✅ 寫入 localStorage
+      //   寫入 localStorage
       localStorage.setItem(`portalToken_${company}`, data.token)
       localStorage.setItem(`portalUser_${company}`, JSON.stringify(data.user))
       if (data.user.enabledModules) {
@@ -50,7 +50,7 @@ export default function PortalRegisterPage() {
       const targetCompany = data.user.company?.code || 'default'
       router.push(`/portal/${targetCompany}`)
     } catch (err: any) {
-      setMessage(`❌ ${err.message || '發生錯誤'}`)
+      setMessage(`    ${err.message || '發生錯誤'}`)
     } finally {
       setLoading(false)
     }

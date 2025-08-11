@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
+import { verifyTokenOnce } from '@/lib/tokenVerification'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import BannerCarousel from '@/components/BannerCarousel'
 import Marquee from '@/components/Marquee'
@@ -27,24 +28,38 @@ export default function AgentAHomePage() {
   const [enabledModules, setEnabledModules] = useState<string[]>([])
   const [floatingAds, setFloatingAds] = useState<FloatingAd[]>([])
 
-  const companyCode = 'b' // ✅ 固定 company 為代理商 b
+  const companyCode = 'b' //   固定 company 為代理商 b
 
   useEffect(() => {
     const token = localStorage.getItem(`portalToken_${companyCode}`)
+    const userData = localStorage.getItem(`portalUser_${companyCode}`)
 
-    // ✅ 獲取啟用的模組列表
+    // 如果有 token 和用戶資料，驗證 token 並記錄登入紀錄
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData)
+        // 驗證 token 並記錄登入紀錄（防重複調用）
+        verifyTokenOnce(companyCode).catch(error => {
+          console.error('Token 驗證失敗:', error)
+        })
+      } catch (error) {
+        console.error('解析用戶資料失敗:', error)
+      }
+    }
+
+    //   獲取啟用的模組列表
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/module?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setEnabledModules)
       .catch(() => setEnabledModules([]))
 
-    // ✅ banner：不需要登入，正常 fetch
+    //   banner：不需要登入，正常 fetch
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setBanners)
       .catch(() => setBanners([]))
 
-    // ✅ marquee：登入狀態使用認證端點，登出狀態使用公開端點
+    //   marquee：登入狀態使用認證端點，登出狀態使用公開端點
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${companyCode}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -60,7 +75,7 @@ export default function AgentAHomePage() {
         .catch(() => setMarquees([]))
     }
 
-    // ✅ 浮動廣告：不需要登入，正常 fetch
+    //   浮動廣告：不需要登入，正常 fetch
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/floating-ads?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setFloatingAds)
@@ -68,7 +83,7 @@ export default function AgentAHomePage() {
   }, [])
 
   const renderModule = useCallback((key: string, props: any = {}) => {
-    // ✅ 檢查模組是否啟用
+    //   檢查模組是否啟用
     if (!enabledModules.includes(key)) return null
     
     const mod = modules.find((m) => m.key === key)
@@ -90,7 +105,7 @@ export default function AgentAHomePage() {
           </div>
         )}
 
-        {/* ✅ 直接顯示組件，不依賴模組系統 */}
+        {/*   直接顯示組件，不依賴模組系統 */}
         {enabledModules.includes('banner') && (
           <div>
             <h2 className="text-lg font-semibold mb-2">Banner 輪播</h2>

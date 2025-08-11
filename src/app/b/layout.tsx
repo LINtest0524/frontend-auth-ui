@@ -29,7 +29,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
         // 不再需要檢查公司代碼，因為已經用公司代碼作為鍵名前綴
       } catch (err) {
-        console.warn('❌ 無法解析登入資料', err)
+        console.warn('    無法解析登入資料', err)
         localStorage.removeItem(`portalToken_${currentCompanyCode}`)
         localStorage.removeItem(`portalUser_${currentCompanyCode}`)
         localStorage.removeItem(`enabledModules_${currentCompanyCode}`)
@@ -37,7 +37,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
         return
       }
     } else {
-      // ✅ 未登入：清除殘留模組資料，然後打 API 抓回正確值
+      //   未登入：清除殘留模組資料，然後打 API 抓回正確值
       localStorage.removeItem(`enabledModules_${currentCompanyCode}`)
 
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/module/public/module?company=${currentCompanyCode}`)

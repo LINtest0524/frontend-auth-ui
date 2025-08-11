@@ -97,10 +97,10 @@ export default function EditBannerPage() {
 
       if (!res.ok) throw new Error('更新失敗')
 
-      alert('✅ 更新成功')
+      alert('  更新成功')
       router.push('/admin/banner')
     } catch (err: any) {
-      alert(`❌ ${err.message}`)
+      alert(`    ${err.message}`)
     }
   }
 

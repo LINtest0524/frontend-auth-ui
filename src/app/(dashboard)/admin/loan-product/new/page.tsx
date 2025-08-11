@@ -134,7 +134,7 @@ export default function ProductDetailCreatePage() {
 
   try {
 
-    console.log("🚀 payload to send:", payload);
+    console.log(" payload to send:", payload);
 
 
     const res = await fetch("http://localhost:3001/admin/loan-product", {

@@ -26,7 +26,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
           localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(parsed.enabledModules))
         }
       } catch (err) {
-        console.warn('❌ 無法解析 user 資料', err)
+        console.warn('    無法解析 user 資料', err)
       }
     }
 

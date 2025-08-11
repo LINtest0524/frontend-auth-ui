@@ -23,7 +23,7 @@ export default function PortalRegisterPage() {
     }
 
     if (!company) {
-      setMessage('❌ 無法辨識公司代碼')
+      setMessage('    無法辨識公司代碼')
       return
     }
 
@@ -56,9 +56,9 @@ export default function PortalRegisterPage() {
       setUser(data.user)
 
       const targetCompany = data.user.company?.code || company
-      router.push(`/${targetCompany}`) // ✅ 導回無 portal 的路徑
+      router.push(`/${targetCompany}`) //   導回無 portal 的路徑
     } catch (err: any) {
-      setMessage(`❌ ${err.message || '發生錯誤'}`)
+      setMessage(`    ${err.message || '發生錯誤'}`)
     } finally {
       setLoading(false)
     }

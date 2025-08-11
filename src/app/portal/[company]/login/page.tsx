@@ -36,13 +36,13 @@ export default function PortalLoginPage() {
       localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
       setUser(data.user)
 
-      // ✅ 這行非常關鍵：寫入 enabledModules
+      //   這行非常關鍵：寫入 enabledModules
       if (data.user.enabledModules) {
         localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(data.user.enabledModules))
       }
 
       const targetCompany = data.user.company?.code || 'default'
-      console.log('✅ 登入成功，導向:', `/portal/${targetCompany}`)
+      console.log('  登入成功，導向:', `/portal/${targetCompany}`)
       window.location.href = `/portal/${targetCompany}`
     } catch (err: any) {
       setError(err.message || '登入失敗')

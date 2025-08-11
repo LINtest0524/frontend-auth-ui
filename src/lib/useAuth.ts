@@ -15,6 +15,10 @@ export function setToken(token: string, companyCode?: string) {
   if (typeof window === 'undefined') return
   const key = companyCode ? `portalToken_${companyCode}` : 'portalToken'
   localStorage.setItem(key, token)
+  
+  // 記錄 token 創建時間，用於避免立即驗證
+  const timeKey = companyCode ? `tokenCreatedTime_${companyCode}` : 'tokenCreatedTime'
+  localStorage.setItem(timeKey, Date.now().toString())
 }
 
 export function setUser(user: any, companyCode?: string) {

@@ -27,7 +27,7 @@ export function useEnabledModules(): EnabledModule[] {
         }))
       setModules(result)
     } catch (err) {
-      console.warn('❌ 模組格式錯誤:', err)
+      console.warn('    模組格式錯誤:', err)
       setModules([])
     }
   }

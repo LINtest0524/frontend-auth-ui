@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
+import { verifyTokenOnce } from '@/lib/tokenVerification'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import BannerCarousel from '@/components/BannerCarousel'
 import Marquee from '@/components/Marquee'
@@ -45,14 +46,28 @@ export default function AgentAHomePage() {
 
   useEffect(() => {
     const token = localStorage.getItem(`portalToken_${companyCode}`)
+    const userData = localStorage.getItem(`portalUser_${companyCode}`)
 
-    // ✅ banner：不需要登入，正常 fetch
+    // 如果有 token 和用戶資料，驗證 token 並記錄登入紀錄
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData)
+        // 驗證 token 並記錄登入紀錄（防重複調用）
+        verifyTokenOnce(companyCode).catch(error => {
+          console.error('Token 驗證失敗:', error)
+        })
+      } catch (error) {
+        console.error('解析用戶資料失敗:', error)
+      }
+    }
+
+    //   banner：不需要登入，正常 fetch
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/banner?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setBanners)
       .catch(() => setBanners([]))
 
-    // ✅ marquee：登入狀態使用認證端點，登出狀態使用公開端點
+    //   marquee：登入狀態使用認證端點，登出狀態使用公開端點
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/marquee?company=${companyCode}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -68,13 +83,13 @@ export default function AgentAHomePage() {
         .catch(() => setMarquees([]))
     }
 
-    // ✅ 浮動廣告：不需要登入，正常 fetch
+    //   浮動廣告：不需要登入，正常 fetch
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/floating-ads?company=${companyCode}`)
       .then(res => res.ok ? res.json() : [])
       .then(setFloatingAds)
       .catch(() => setFloatingAds([]))
 
-    // ✅ 最新消息：獲取最新4則新聞
+    //   最新消息：獲取最新4則新聞
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/news?company=${companyCode}&page=1&limit=4`)
       .then(res => res.ok ? res.json() : { data: [] })
       .then(data => setLatestNews(data.data || []))

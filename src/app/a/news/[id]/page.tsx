@@ -1,8 +1,7 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
+import NewsDetailClient from './NewsDetailClient'
 import '@/styles/pages/news.css'
 
 type NewsDetail = {
@@ -30,271 +29,101 @@ type NewsResponse = {
   next?: RelatedNews
 }
 
-export default function NewsDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [newsData, setNewsData] = useState<NewsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  
-  const companyCode = 'a'
-  const newsId = params.id
-
-  useEffect(() => {
-    if (!newsId) return
-
-    let isCancelled = false
-
-    const fetchNewsDetail = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE}/portal/news/${newsId}?company=${companyCode}`
-        )
-        
-        if (response.ok && !isCancelled) {
-          const data: NewsResponse = await response.json()
-          setNewsData(data)
-        } else if (!isCancelled) {
-          setError('新聞不存在或已下架')
-        }
-      } catch (error) {
-        if (!isCancelled) {
-          console.error('Failed to fetch news detail:', error)
-          setError('載入失敗，請稍後再試')
-        }
-      } finally {
-        if (!isCancelled) {
-          setLoading(false)
+// 獲取新聞資料的伺服器端函數
+async function getNewsData(newsId: string): Promise<NewsResponse | null> {
+  try {
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api'
+    const response = await fetch(
+      `${apiBase}/portal/news/${newsId}?company=a`,
+      { 
+        cache: 'no-store', // 確保獲取最新資料
+        headers: {
+          'Content-Type': 'application/json',
         }
       }
-    }
-
-    fetchNewsDetail()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [newsId, companyCode])
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const getCategoryName = (category: string) => {
-    const categoryMap: { [key: string]: string } = {
-      'GENERAL': '一般消息',
-      'ANNOUNCEMENT': '重要公告',
-      'PROMOTION': '優惠活動',
-      'UPDATE': '系統更新',
-    }
-    return categoryMap[category] || category
-  }
-
-  const handleShare = (platform: string) => {
-    const url = window.location.href
-    const title = newsData?.news.title || ''
+    )
     
-    switch (platform) {
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
-        break
-      case 'line':
-        window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`, '_blank')
-        break
-      case 'copy':
-        navigator.clipboard.writeText(url).then(() => {
-          alert('連結已複製到剪貼簿')
-        })
-        break
+    if (!response.ok) {
+      return null
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch news data:', error)
+    return null
+  }
+}
+
+// 動態生成 metadata 用於 SEO
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}): Promise<Metadata> {
+  const { id } = await params
+  const newsData = await getNewsData(id)
+  
+  if (!newsData) {
+    return {
+      title: '新聞不存在',
+      description: '您要查看的新聞不存在或已下架',
     }
   }
 
-  if (loading) {
-    return (
-      <>
-        <PortalHeaderBar />
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">載入中...</p>
-          </div>
-        </div>
-      </>
-    )
+  const { news } = newsData
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  
+  return {
+    title: `${news.title} | 代理商公司A`,
+    description: news.summary || news.content.substring(0, 160),
+    keywords: `新聞,${news.category},代理商公司A`,
+    authors: [{ name: '代理商公司A' }],
+    metadataBase: new URL(baseUrl),
+    openGraph: {
+      title: news.title,
+      description: news.summary || news.content.substring(0, 160),
+      url: `${baseUrl}/a/news/${news.id}`,
+      siteName: '代理商公司A',
+      images: news.image_url ? [
+        {
+          url: news.image_url.startsWith('http') ? news.image_url : `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'}${news.image_url}`,
+          width: 1200,
+          height: 630,
+          alt: news.title,
+        }
+      ] : [],
+      locale: 'zh_TW',
+      type: 'article',
+      publishedTime: news.publish_date,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: news.title,
+      description: news.summary || news.content.substring(0, 160),
+      images: news.image_url ? [news.image_url.startsWith('http') ? news.image_url : `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'}${news.image_url}`] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/a/news/${news.id}`,
+    },
   }
+}
 
-  if (error || !newsData) {
-    return (
-      <>
-        <PortalHeaderBar />
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="text-center py-8">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => router.push('/a/news')}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              返回新聞列表
-            </button>
-          </div>
-        </div>
-      </>
-    )
+export default async function NewsDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
+  const newsData = await getNewsData(id)
+  
+  if (!newsData) {
+    notFound()
   }
-
-  const { news, relatedNews, prev, next } = newsData
 
   return (
     <>
       <PortalHeaderBar />
-      
-      <div className="news-detail-container">
-        {/* 麵包屑 */}
-        <nav className="news-breadcrumb">
-          <button
-            onClick={() => router.push('/a')}
-          >
-            首頁
-          </button>
-          <span className="mx-2">/</span>
-          <button
-            onClick={() => router.push('/a/news')}
-          >
-            最新消息
-          </button>
-          <span className="mx-2">/</span>
-          <span>{news.title}</span>
-        </nav>
-
-        {/* 文章內容 */}
-        <article className="news-detail-article">
-          {/* 文章標題區 */}
-          <div className="news-detail-header">
-            <div className="news-item-badges">
-              {news.is_featured && (
-                <span className="news-badge news-badge-featured">置頂</span>
-              )}
-              <span className="news-badge news-badge-category">
-                {getCategoryName(news.category)}
-              </span>
-            </div>
-            <h1 className="news-detail-title">{news.title}</h1>
-            <div className="news-detail-meta">
-              <span>📅 {formatDate(news.publish_date)}</span>
-              <span>👁 {news.view_count} 次瀏覽</span>
-            </div>
-          </div>
-
-          {/* 文章圖片 */}
-          {news.image_url && (
-            <div className="news-detail-image">
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_BASE}${news.image_url}`}
-                alt={news.title}
-              />
-            </div>
-          )}
-
-          {/* 文章內容 */}
-          <div className="news-detail-content">
-            <div className="news-detail-summary">
-              <h2>摘要</h2>
-              <p style={{ whiteSpace: 'pre-line' }}>{news.summary}</p>
-            </div>
-
-            {/* 文章內容 */}
-            <div 
-              className="news-detail-body"
-              dangerouslySetInnerHTML={{ __html: news.content.replace(/\n/g, '<br>') }}
-            />
-          </div>
-
-          {/* 分享按鈕 */}
-          <div className="news-detail-share">
-            <div className="news-detail-share-buttons">
-              <span>分享：</span>
-              <button
-                onClick={() => handleShare('facebook')}
-                className="news-share-btn facebook"
-              >
-                📘 Facebook
-              </button>
-              <button
-                onClick={() => handleShare('line')}
-                className="news-share-btn line"
-              >
-                💬 LINE
-              </button>
-              <button
-                onClick={() => handleShare('copy')}
-                className="news-share-btn copy"
-              >
-                📋 複製連結
-              </button>
-            </div>
-          </div>
-        </article>
-
-        {/* 上一篇/下一篇 */}
-        {(prev || next) && (
-          <div className="news-navigation">
-            {prev && (
-              <button
-                onClick={() => router.push(`/a/news/${prev.id}`)}
-                className="news-nav-btn"
-              >
-                <div className="news-nav-label">上一篇</div>
-                <div className="news-nav-title">{prev.title}</div>
-              </button>
-            )}
-            {next && (
-              <button
-                onClick={() => router.push(`/a/news/${next.id}`)}
-                className="news-nav-btn next"
-              >
-                <div className="news-nav-label">下一篇</div>
-                <div className="news-nav-title">{next.title}</div>
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* 相關文章 */}
-        {relatedNews.length > 0 && (
-          <div className="news-related">
-            <h3 className="news-related-title">相關文章</h3>
-            <div className="news-related-grid">
-              {relatedNews.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => router.push(`/a/news/${item.id}`)}
-                  className="news-related-item"
-                >
-                  <h4 className="news-related-item-title">{item.title}</h4>
-                  <div className="news-related-item-date">{formatDate(item.publish_date)}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 返回按鈕 */}
-        <div className="news-back-btn">
-          <button
-            onClick={() => router.push('/a/news')}
-          >
-            返回新聞列表
-          </button>
-        </div>
-      </div>
+      <NewsDetailClient newsData={newsData} />
     </>
   )
 }

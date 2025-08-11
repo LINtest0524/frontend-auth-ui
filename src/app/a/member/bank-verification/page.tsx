@@ -17,7 +17,7 @@ export default function BankVerificationPage() {
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_a') : null
 
-  // ✅ 共用查詢函式
+  //   共用查詢函式
   const fetchStatus = async () => {
     if (!token) return
 
@@ -33,12 +33,12 @@ export default function BankVerificationPage() {
         if (data.images && Array.isArray(data.images)) {
           setFile(data.images[0] || null)
         } else {
-          console.warn("⚠️ 無法取得圖片資料")
+          console.warn("   無法取得圖片資料")
         }
 
       }
     } catch (err) {
-      console.error('❌ 查詢銀行驗證狀態失敗', err)
+      console.error('    查詢銀行驗證狀態失敗', err)
     }
   }
 
@@ -67,13 +67,13 @@ export default function BankVerificationPage() {
       const msg = res.data.message || '上傳成功，等待審核中'
       alert(msg)
 
-      // ✅ 成功後重新查詢
+      //   成功後重新查詢
       await fetchStatus()
 
       if (fileRef.current) fileRef.current.value = ''
       setPreviewKey(prev => prev + 1)
     } catch (err) {
-      console.error('❌ 上傳失敗', err)
+      console.error('    上傳失敗', err)
       alert('上傳失敗，請稍後再試')
     }
   }
@@ -93,7 +93,7 @@ export default function BankVerificationPage() {
       if (fileRef.current) fileRef.current.value = ''
       alert('資料已清除，請重新上傳')
     } catch (err) {
-      console.error('❌ 清除失敗', err)
+      console.error('    清除失敗', err)
       alert('清除失敗，請稍後再試')
     }
   }
@@ -121,12 +121,12 @@ export default function BankVerificationPage() {
         <p className="text-blue-600 font-semibold mb-4">已送出審核，請耐心等待客服審核</p>
       )}
       {status === 'APPROVED' && (
-        <p className="text-green-600 font-semibold mb-4">✅ 已通過銀行驗證</p>
+        <p className="text-green-600 font-semibold mb-4">  已通過銀行驗證</p>
       )}
       {status === 'REJECTED' && (
         <div className="mb-4">
           <p className="text-red-600 font-semibold">
-            ❌ 驗證未通過：{note || '資料有誤，請重新上傳'}
+                驗證未通過：{note || '資料有誤，請重新上傳'}
           </p>
           <button
             onClick={handleReset}

@@ -4,7 +4,7 @@ export default function BackActionLogPage() {
   return (
     <AuditLogTable
       keyword="Banner"
-      title="📌 後台 Banner 操作紀錄"
+      title="後台 Banner 操作紀錄"
       target="banner"
     />
 

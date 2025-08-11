@@ -355,7 +355,7 @@ export default function ModuleAdminPage() {
                     </div>
 
                     <div className="mb20 p20" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                      <h4 className="mb10">⚠️ 注意事項：</h4>
+                      <h4 className="mb10">   注意事項：</h4>
                       <ul style={{ paddingLeft: '20px', margin: 0 }}>
                         <li>至少需要啟用一種登入方式</li>
                         <li>「帳號密碼登入」是基本登入方式，建議保持啟用</li>

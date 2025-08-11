@@ -56,12 +56,12 @@ export default function FloatingAdCreatePage() {
 
     try {
       const token = localStorage.getItem('token')
-      console.log('🔑 Token:', token ? 'exists' : 'missing')
+      console.log(' Token:', token ? 'exists' : 'missing')
       
       // 先上傳圖片（如果有）
       let imageUrl = ''
       if (image) {
-        console.log('📤 開始上傳圖片...')
+        console.log('開始上傳圖片...')
         const imageFormData = new FormData()
         imageFormData.append('file', image)
 
@@ -73,15 +73,15 @@ export default function FloatingAdCreatePage() {
           body: imageFormData,
         })
 
-        console.log('📤 圖片上傳回應:', uploadResponse.status)
+        console.log(' 圖片上傳回應:', uploadResponse.status)
 
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json()
           imageUrl = uploadData.url
-          console.log('✅ 圖片上傳成功:', imageUrl)
+          console.log('  圖片上傳成功:', imageUrl)
         } else {
           const errorText = await uploadResponse.text()
-          console.error('❌ 圖片上傳失敗:', uploadResponse.status, errorText)
+          console.error('    圖片上傳失敗:', uploadResponse.status, errorText)
           alert(`圖片上傳失敗: ${uploadResponse.status}`)
           setLoading(false)
           return
@@ -104,15 +104,15 @@ export default function FloatingAdCreatePage() {
       })
 
       if (response.ok) {
-        alert('✅ 新增成功')
+        alert('  新增成功')
         window.location.href = '/admin/floating-ad'
       } else {
         const errorData = await response.json()
-        alert(`❌ 新增失敗: ${errorData.message || '未知錯誤'}`)
+        alert(`    新增失敗: ${errorData.message || '未知錯誤'}`)
       }
     } catch (error) {
       console.error('新增錯誤:', error)
-      alert('❌ 新增失敗')
+      alert('    新增失敗')
     } finally {
       setLoading(false)
     }

@@ -26,7 +26,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(parsed.enabledModules))
         }
       } catch (err) {
-        console.warn('❌ parse user error', err)
+        console.warn('    parse user error', err)
       }
     }
 

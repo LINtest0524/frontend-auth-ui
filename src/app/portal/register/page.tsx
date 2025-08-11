@@ -37,7 +37,7 @@ export default function PortalRegisterPage() {
       localStorage.setItem(`portalToken_${companyCode}`, data.token)
       localStorage.setItem(`portalUser_${companyCode}`, JSON.stringify(data.user))
 
-      // ✅ 註冊成功後導向該公司首頁
+      //   註冊成功後導向該公司首頁
       window.location.href = `/portal/${companyCode}`
     } catch (err: any) {
       setError(err.message || '發生錯誤')
@@ -81,7 +81,7 @@ export default function PortalRegisterPage() {
       </button>
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
-      {success && <p className="text-green-600 mt-4">✅ 註冊成功，已自動登入</p>}
+      {success && <p className="text-green-600 mt-4">  註冊成功，已自動登入</p>}
     </div>
   )
 }

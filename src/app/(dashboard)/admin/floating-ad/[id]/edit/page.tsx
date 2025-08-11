@@ -156,15 +156,15 @@ export default function FloatingAdEditPage() {
       })
 
       if (response.ok) {
-        alert('✅ 修改成功')
+        alert('  修改成功')
         window.location.href = '/admin/floating-ad'
       } else {
         const errorData = await response.json()
-        alert(`❌ 修改失敗: ${errorData.message || '未知錯誤'}`)
+        alert(`    修改失敗: ${errorData.message || '未知錯誤'}`)
       }
     } catch (error) {
       console.error('修改錯誤:', error)
-      alert('❌ 修改失敗')
+      alert('    修改失敗')
     } finally {
       setLoading(false)
     }

@@ -26,7 +26,7 @@ export default function LoanProductListPage() {
     if (!confirm("確定要刪除這個產品嗎？")) return;
 
     setDeletingId(id);
-    await Promise.resolve(); // ✅ 強制觸發 re-render，顯示 "刪除中..."
+    await Promise.resolve(); //   強制觸發 re-render，顯示 "刪除中..."
 
     const token = localStorage.getItem("token");
 
@@ -51,7 +51,7 @@ export default function LoanProductListPage() {
 
 
 
-  // ✅ 把 localStorage 的 user 設進 store
+  //   把 localStorage 的 user 設進 store
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (rawUser) {

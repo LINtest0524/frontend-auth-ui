@@ -30,7 +30,7 @@ export default function IDVerificationPage() {
       });
 
       const data = res.data;
-      console.log('✅ 取得驗證資料:', data);
+      console.log('  取得驗證資料:', data);
 
       if (data) {
         setStatus(data.status);
@@ -41,11 +41,11 @@ export default function IDVerificationPage() {
           setBack(data.images[1] || null);
           setSelfie(data.images[2] || null);
         } else {
-          console.warn('⚠️ 沒有 images 資料');
+          console.warn('   沒有 images 資料');
         }
       }
     } catch (err) {
-      console.error('❌ 查詢身份驗證狀態失敗', err);
+      console.error('    查詢身份驗證狀態失敗', err);
     }
   };
 
@@ -74,15 +74,15 @@ export default function IDVerificationPage() {
       });
 
       alert(res.data.message || '已送出審核，請耐心等待客服審核');
-      await fetchStatus(); // ✅ 重抓資料
+      await fetchStatus(); //   重抓資料
 
-      // ✅ 清空 input（圖片已經會從後端資料設回來）
+      //   清空 input（圖片已經會從後端資料設回來）
       if (frontRef.current) frontRef.current.value = '';
       if (backRef.current) backRef.current.value = '';
       if (selfieRef.current) selfieRef.current.value = '';
       setPreviewKey((prev) => prev + 1);
     } catch (err) {
-      console.error('❌ 上傳失敗', err);
+      console.error('    上傳失敗', err);
       alert('上傳失敗，請稍後再試');
     }
   };
@@ -106,7 +106,7 @@ export default function IDVerificationPage() {
 
       alert('資料已清除，請重新上傳');
     } catch (err) {
-      console.error('❌ 清除失敗', err);
+      console.error('    清除失敗', err);
       alert('清除失敗，請稍後再試');
     }
   };
@@ -134,12 +134,12 @@ export default function IDVerificationPage() {
         <p className="text-blue-600 font-semibold mb-4">已送出審核，請耐心等待客服審核</p>
       )}
       {status === 'APPROVED' && (
-        <p className="text-green-600 font-semibold mb-4">✅ 已通過身份驗證</p>
+        <p className="text-green-600 font-semibold mb-4">  已通過身份驗證</p>
       )}
       {status === 'REJECTED' && (
         <div className="mb-4">
           <p className="text-red-600 font-semibold">
-            ❌ 驗證未通過：{note || '資料有誤，請重新上傳'}
+                驗證未通過：{note || '資料有誤，請重新上傳'}
           </p>
           <button
             onClick={handleReset}

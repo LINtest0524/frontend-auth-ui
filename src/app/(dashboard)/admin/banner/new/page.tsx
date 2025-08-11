@@ -43,7 +43,7 @@ export default function BannerPage() {
     })
     const data = await res.json()
 
-    // ✅ 回傳相對路徑就好，不要加 API_BASE
+    //   回傳相對路徑就好，不要加 API_BASE
     return data.url
   }
 
@@ -82,7 +82,7 @@ export default function BannerPage() {
         throw new Error(err || '送出失敗')
       }
 
-      alert('✅ 新增成功！')
+      alert('  新增成功！')
 
       // 清空表單
       setForm({
@@ -98,7 +98,7 @@ export default function BannerPage() {
       if (desktopInputRef.current) desktopInputRef.current.value = ''
       if (mobileInputRef.current) mobileInputRef.current.value = ''
     } catch (err: any) {
-      alert(`❌ 新增失敗：${err.message}`)
+      alert(`    新增失敗：${err.message}`)
     }
   }
 

@@ -389,7 +389,7 @@ export default function IdVerificationAdminPage() {
                             <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
                             <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
                             <td>
-                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>🔍</button>
+                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}></button>
                             </td>
                             <td>
                               <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', notes[rec.id] || '')} className="border px-2 py-1 rounded">

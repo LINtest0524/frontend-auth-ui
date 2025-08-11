@@ -20,6 +20,8 @@ export default function FacebookSuccessPage() {
         const targetCompanyCode = companyCode || user.company?.code || 'a'
         localStorage.setItem(`portalToken_${targetCompanyCode}`, token)
         localStorage.setItem(`portalUser_${targetCompanyCode}`, JSON.stringify(user))
+        // 記錄登入時間，避免立即進行 token 驗證
+        localStorage.setItem(`tokenCreatedTime_${targetCompanyCode}`, Date.now().toString())
         
         // 如果有enabledModules，也使用公司代碼前綴儲存
         if (user.enabledModules) {

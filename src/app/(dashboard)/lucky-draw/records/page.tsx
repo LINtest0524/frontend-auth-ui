@@ -192,8 +192,8 @@ export default function LuckyDrawRecordsPage() {
     setSelectedEventId(null);
     setUsername("");
     setPrizeName("");
-    setCreatedFrom(""); // ✅ 清空日期，不設預設值
-    setCreatedTo(""); // ✅ 清空日期，不設預設值
+    setCreatedFrom(""); //   清空日期，不設預設值
+    setCreatedTo(""); //   清空日期，不設預設值
     setPage(1);
     // 清除後需要手動點擊查詢按鈕
   };

@@ -27,7 +27,7 @@ export function useEnabledModules(): ModuleConfig[] {
 
   const enabled = user?.enabledModules?.length
     ? user.enabledModules
-    : ['banner', 'marquee'] // ✅ 未登入時的預設模組
+    : ['banner', 'marquee'] //   未登入時的預設模組
 
   return Array.from(new Set(enabled))
     .map((key) => configs[key])

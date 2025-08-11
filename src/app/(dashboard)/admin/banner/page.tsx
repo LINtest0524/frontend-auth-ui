@@ -29,7 +29,7 @@ export default function BannerListPage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
-        console.log('🧾 撈到 banners:', data) // ✅ 印出來比對
+        console.log(' 撈到 banners:', data) //   印出來比對
         setBanners(data)
       } catch (err) {
         console.error('載入 Banner 失敗', err)
@@ -55,10 +55,10 @@ export default function BannerListPage() {
 
       // 更新畫面
       setBanners(prev => prev.filter(b => b.id !== id))
-      alert('✅ 刪除成功')
+      alert('  刪除成功')
     } catch (err: any) {
-      console.error('❌ 刪除失敗', err)
-      alert(`❌ 刪除失敗：${err.message}`)
+      console.error('    刪除失敗', err)
+      alert(`    刪除失敗：${err.message}`)
     }
   }
 
@@ -110,7 +110,7 @@ export default function BannerListPage() {
                     className="text-blue-600 underline text-sm"
                     onClick={() => setPreviewImage(`${API_BASE}${banner.desktop_image_url}`)}
                   >
-                    🔍 預覽
+                    預覽
                   </button>
                 </td>
                 <td>
@@ -118,7 +118,7 @@ export default function BannerListPage() {
                     className="text-blue-600 underline text-sm"
                     onClick={() => setPreviewImage(`${API_BASE}${banner.mobile_image_url}`)}
                   >
-                    🔍 預覽
+                    預覽
                   </button>
                 </td>
 
@@ -143,7 +143,7 @@ export default function BannerListPage() {
                           )
                         )
                       } catch (err) {
-                        alert('❌ 無法切換狀態')
+                        alert('    無法切換狀態')
                         console.error(err)
                       }
                     }}

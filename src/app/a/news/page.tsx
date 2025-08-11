@@ -51,12 +51,12 @@ export default function NewsListPage() {
       if (category) params.append('category', category)
       
       const url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/news?${params}`
-      console.log('🔍 API 請求:', { page, search, category, url })
+      console.log('API 請求:', { page, search, category, url })
       
       const response = await fetch(url)
       if (response.ok) {
         const data: NewsResponse = await response.json()
-        console.log('📊 API 回應:', { 
+        console.log(' API 回應:', { 
           page: data.page, 
           totalPages: data.totalPages, 
           total: data.total, 
@@ -86,7 +86,7 @@ export default function NewsListPage() {
   }
 
   const handlePageChange = (page: number) => {
-    console.log('🔄 頁面切換:', { 
+    console.log(' 頁面切換:', { 
       from: currentPage, 
       to: page, 
       totalPages,

@@ -187,7 +187,7 @@ export default function LuckyDrawPrizesPage() {
                            
                               <button onClick={() => setPreviewImage(fullImageUrl)}
                               >
-                                🔍 預覽
+                                 預覽
                               </button>
                             </div>
                           );

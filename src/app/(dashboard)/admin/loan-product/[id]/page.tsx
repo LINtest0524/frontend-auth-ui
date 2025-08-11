@@ -50,7 +50,7 @@ export default function LoanProductDetailPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">🔍 產品詳細資料</h1>
+      <h1 className="text-xl font-bold mb-4"> 產品詳細資料</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Info label="產品編號" value={product.product_code} />

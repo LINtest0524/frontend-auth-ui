@@ -9,7 +9,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['localhost'], // ✅ 允許顯示 http://localhost:* 的圖片
+    domains: ['localhost'], //   允許顯示 http://localhost:* 的圖片
   },
 };
 

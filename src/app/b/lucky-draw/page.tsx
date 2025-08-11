@@ -249,12 +249,12 @@ export default function Wheel() {
   return (
     <div className="flex flex-col items-center p-8 bg-gradient-to-b from-purple-100 to-pink-100 min-h-screen">
       <div className="flex items-center justify-between mb-8 w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-purple-800">🎰 幸運輪盤</h1>
+        <h1 className="text-3xl font-bold text-purple-800">幸運輪盤</h1>
         <Link 
           href="/a/lucky-draw/history"
           className="bg-white text-purple-600 px-4 py-2 rounded-lg border-2 border-purple-600 hover:bg-purple-600 hover:text-white transition-colors"
         >
-          📋 抽獎記錄
+            抽獎記錄
         </Link>
       </div>
       
@@ -422,7 +422,7 @@ export default function Wheel() {
       {showResult && result && (
         <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border-4 border-yellow-400 animate-bounce">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-yellow-600 mb-4">🎉 恭喜中獎！</h2>
+            <h2 className="text-2xl font-bold text-yellow-600 mb-4">恭喜中獎！</h2>
             <img
               src={`http://localhost:3001${result.winningPrize.imageUrl}`}
               alt={result.winningPrize.name}

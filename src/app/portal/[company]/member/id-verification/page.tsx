@@ -13,7 +13,7 @@ export default function IDVerificationPage() {
 
   const token = typeof window !== "undefined" ? localStorage.getItem("portalToken") : null;
 
-  // ✅ 一進來查詢是否上傳過
+  //   一進來查詢是否上傳過
   useEffect(() => {
     const fetchStatus = async () => {
       if (!token) return;
@@ -34,7 +34,7 @@ export default function IDVerificationPage() {
           setSelfie(data.selfieImage ? `${API_URL}/uploads/identity/${data.selfieImage}` : null);
         }
       } catch (err) {
-        console.error("❌ 查詢身份驗證狀態失敗", err);
+        console.error("    查詢身份驗證狀態失敗", err);
       }
     };
 

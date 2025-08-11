@@ -5,6 +5,7 @@ import { useCompanySlug } from '@/hooks/useCompanySlug'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getUser, getToken, logout } from '@/lib/useAuth'
+import { logoutWithRecord } from '@/lib/logout'
 import MenuRenderer from './menu/MenuRenderer'
 import '../../src/app/a/styles/index.css'
 import '../../src/styles/components/menu.css'
@@ -12,7 +13,7 @@ import '../../src/styles/components/menu.css'
 
 export default function PortalHeaderBar() {
   const { user, setUser } = useUserStore()
-  const company = useCompanySlug() // ✅ 這行取得公司代碼
+  const company = useCompanySlug() //   這行取得公司代碼
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [companyId, setCompanyId] = useState<number | null>(null)
@@ -76,16 +77,17 @@ export default function PortalHeaderBar() {
     }
   }, [company, user, setUser])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (company) {
-      logout(company)
+      // 使用新的登出功能，會記錄登出紀錄
+      await logoutWithRecord(company)
       setUser(null)
-      router.push(`/${company}`) // ✅ 登出後回到首頁
+      router.push(`/${company}`) //   登出後回到首頁
     }
   }
 
   const handleGoToMember = () => {
-    router.push(`/${company}/member`) // ✅ 點會員去會員中心
+    router.push(`/${company}/member`) //   點會員去會員中心
   }
 
   if (!mounted) return null

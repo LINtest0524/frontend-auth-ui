@@ -128,7 +128,7 @@ export default function LuckyDrawHistoryPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8">
         <div className="text-red-500 text-center">
-          <p className="text-xl font-semibold mb-2">❌ {error}</p>
+          <p className="text-xl font-semibold mb-2">    {error}</p>
           <Link 
             href="/a/login" 
             className="text-blue-600 hover:text-blue-800 underline"
@@ -147,7 +147,7 @@ export default function LuckyDrawHistoryPage() {
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-purple-800 mb-2">🎰 我的抽獎記錄</h1>
+              <h1 className="text-2xl font-bold text-purple-800 mb-2">我的抽獎記錄</h1>
               <p className="text-gray-600">
                 會員：{user?.username} | 
                 公司：{user?.company?.name || user?.company?.code}
@@ -185,7 +185,7 @@ export default function LuckyDrawHistoryPage() {
         {/* 抽獎記錄列表 */}
         {records.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="text-6xl mb-4">🎲</div>
+            <div className="text-6xl mb-4">抽獎</div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">還沒有抽獎記錄</h3>
             <p className="text-gray-500 mb-4">快去試試手氣吧！</p>
             <Link 
@@ -221,7 +221,7 @@ export default function LuckyDrawHistoryPage() {
                     {/* 獎品資訊 */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800">
-                        🎉 {record.prizeName || record.prize?.name}
+                        {record.prizeName || record.prize?.name}
                       </h3>
                       <p className="text-sm text-gray-500">
                         中獎機率：{record.prize?.probability}%

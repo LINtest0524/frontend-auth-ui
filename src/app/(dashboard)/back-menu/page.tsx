@@ -134,9 +134,9 @@ export default function BackMenuPage() {
             <Button
               className="ml-4"
               variant="outline"
-              onClick={() => console.log('💾 儲存結果：', desktopMenus)}
+              onClick={() => console.log('  儲存結果：', desktopMenus)}
             >
-              💾 儲存設定
+                儲存設定
             </Button>
           </div>
         </TabsContent>
@@ -161,9 +161,9 @@ export default function BackMenuPage() {
             <Button
               className="ml-4"
               variant="outline"
-              onClick={() => console.log('💾 儲存結果：', mobileMenus)}
+              onClick={() => console.log('  儲存結果：', mobileMenus)}
             >
-              💾 儲存設定
+                儲存設定
             </Button>
           </div>
         </TabsContent>

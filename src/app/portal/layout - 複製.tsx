@@ -19,13 +19,13 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     const userData = localStorage.getItem(`portalUser_${company}`)
 
     if (isLoginPage) {
-      // ✅ 登入頁，不處理
+      //   登入頁，不處理
       setHydrated(true)
       return
     }
 
     if (!token || !userData) {
-      // ✅ 沒登入：導回該公司登入頁
+      //   沒登入：導回該公司登入頁
       logout()
       router.push(`/portal/${company}/login`)
       return
@@ -39,7 +39,7 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
         localStorage.setItem(`enabledModules_${company}`, JSON.stringify(parsed.enabledModules))
       }
     } catch (e) {
-      console.warn('❌ 無法解析 user', e)
+      console.warn('    無法解析 user', e)
       logout()
       router.push(`/portal/${company}/login`)
       return
