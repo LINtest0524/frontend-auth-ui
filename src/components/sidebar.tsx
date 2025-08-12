@@ -32,6 +32,8 @@ export default function Sidebar() {
     if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
+    else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
+    else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
@@ -253,6 +255,50 @@ export default function Sidebar() {
             </div>
           </div>
         )}
+
+        {/* 文章管理 */}
+        <div>
+            <button
+              onClick={() => {
+                toggleMenu("articles");
+                setCurrentActive("articles");
+              }}
+              className={cn(
+                "sidebar-item i-modules", 
+                currentActive === "articles" && "active",
+                activeMenu === "articles" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              文章管理
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "articles" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/article-categories"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/article-categories" && currentActive === null && "active")}
+                >
+                  文章分類
+                </Link>
+                <Link
+                  href="/admin/articles"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/articles" && currentActive === null && "active")}
+                >
+                  文章列表
+                </Link>
+                <Link
+                  href="/admin/articles/new"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/articles/new" && currentActive === null && "active")}
+                >
+                  新增文章
+                </Link>
+              </div>
+            </div>
+          </div>
 
         <Link
           href="/admin/id-verification"

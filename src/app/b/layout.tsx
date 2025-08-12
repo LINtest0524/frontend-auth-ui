@@ -15,8 +15,19 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
     const token = localStorage.getItem(`portalToken_${currentCompanyCode}`)
     const userData = localStorage.getItem(`portalUser_${currentCompanyCode}`)
 
-    const publicPaths = [`/${currentCompanyCode}`, `/${currentCompanyCode}/login`, `/${currentCompanyCode}/register`]
-    const isPublicPage = publicPaths.includes(pathname)
+    const publicPaths = [
+      `/${currentCompanyCode}`, 
+      `/${currentCompanyCode}/login`, 
+      `/${currentCompanyCode}/register`,
+      `/${currentCompanyCode}/news`,
+      `/${currentCompanyCode}/articles`
+    ]
+    
+    // 檢查是否為新聞相關頁面（包含新聞詳細頁面）
+    const isNewsPage = pathname.startsWith(`/${currentCompanyCode}/news`)
+    // 檢查是否為文章相關頁面（包含文章詳細頁面）
+    const isArticlePage = pathname.startsWith(`/${currentCompanyCode}/articles`)
+    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage
 
     if (token && userData) {
       try {

@@ -200,264 +200,148 @@ export default function MenuManagePage() {
 
   // 渲染選單項目
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
-    const indent = level * 20
+    const indent = '　'.repeat(level) // 使用全形空格來表示層級
+    const rows = []
     
-    return (
-      <div key={item.id} className="menu-item-row" style={{ paddingLeft: `${indent}px` }}>
-        <div className="menu-item-content">
-          <div className="menu-info">
-            <span className="menu-title">{item.title}</span>
-            {item.url && <span className="menu-url">({item.url})</span>}
-            <span className={`menu-status ${item.status}`}>
-              {item.status === 'active' ? '啟用' : '停用'}
-            </span>
-            <span className="menu-device">{item.device_type}</span>
-            <span className="menu-sort">排序: {item.sort_order}</span>
-          </div>
-          
-          <div className="menu-actions">
-            <button
-              onClick={() => router.push(`/admin/menu/edit/${item.id}`)}
-              className="btn-edit"
-            >
-              編輯
-            </button>
-            <button
-              onClick={() => handleToggleStatus(item.id, item.status)}
-              className={`btn-toggle ${item.status}`}
-            >
-              {item.status === 'active' ? '停用' : '啟用'}
-            </button>
-            <button
-              onClick={() => handleDelete(item.id)}
-              className="btn-delete"
-            >
-              刪除
-            </button>
-          </div>
-        </div>
-        
-        {/* 遞歸渲染子選單 */}
-        {item.children && item.children.map(child => renderMenuItem(child, level + 1))}
-      </div>
+    // 主項目行
+    rows.push(
+      <tr key={item.id}>
+        <td>{indent}{item.title}</td>
+        <td>{item.url || '-'}</td>
+        <td>
+          <span className={item.status === 'active' ? 'status-active' : 'status-inactive'}>
+            {item.status === 'active' ? '啟用' : '停用'}
+          </span>
+        </td>
+        <td>{item.device_type}</td>
+        <td>{item.sort_order}</td>
+        <td>第 {level + 1} 層</td>
+        <td className="fl4">
+          <button
+            onClick={() => router.push(`/admin/menu/edit/${item.id}`)}
+            className="b-btn-s3 b-btn-c1 mlr10"
+          >
+            編輯
+          </button>
+          <button
+            onClick={() => handleToggleStatus(item.id, item.status)}
+            className={`b-btn-s3 ${item.status === 'active' ? 'b-btn-c2' : 'b-btn-c4'} mlr10`}
+          >
+            {item.status === 'active' ? '停用' : '啟用'}
+          </button>
+          <button
+            onClick={() => handleDelete(item.id)}
+            className="b-btn-s3 b-btn-c3 mlr10"
+          >
+            刪除
+          </button>
+        </td>
+      </tr>
     )
+    
+    // 遞歸渲染子選單
+    if (item.children && item.children.length > 0) {
+      item.children.forEach(child => {
+        rows.push(...renderMenuItem(child, level + 1))
+      })
+    }
+    
+    return rows
   }
 
   if (loading || selectedCompany === null) {
-    return <div className="loading">載入中...</div>
+    return <div className="b-ibox"><p>載入中...</p></div>
   }
 
   return (
-    <div className="menu-manage-page">
-      <div className="page-header">
-        <h1>選單管理</h1>
-        
-        <div className="header-controls">
-          {/* 只有超級管理員和全域管理員可以選擇公司 */}
-          {canSelectCompany && (
-            <select
-              value={selectedCompany}
-              onChange={(e) => setSelectedCompany(Number(e.target.value))}
-              className="company-select"
+    <div className="b-ibox">
+      <h1>選單管理</h1>
+      
+      <div className="b-ibox-s">
+        <div className="w100 fo5 mb15">
+          <div className="w50 fl4">
+            {/* 只有超級管理員和全域管理員可以選擇公司 */}
+            {canSelectCompany && (
+              <>
+                <label htmlFor="companySelect">管理公司&nbsp;</label>
+                <select
+                  id="companySelect"
+                  value={selectedCompany}
+                  onChange={(e) => setSelectedCompany(Number(e.target.value))}
+                  className="txtbox1 mr20"
+                >
+                  <option value={1}>公司 A</option>
+                  <option value={2}>公司 B</option>
+                </select>
+              </>
+            )}
+            
+            {/* 代理商老闆顯示自己的公司名稱 */}
+            {role === "AGENT_OWNER" && (
+              <span className="mr20">
+                管理公司：{currentUser?.company?.name || `公司 ${userCompanyId}`}
+              </span>
+            )}
+          </div>
+          
+          <div className="w50 fl6">
+            <button
+              onClick={() => router.push('/admin/menu/new')}
+              className="b-btn-s2 b-btn-c4"
             >
-              <option value={1}>公司 A</option>
-              <option value={2}>公司 B</option>
-            </select>
-          )}
-          
-          {/* 代理商老闆顯示自己的公司名稱 */}
-          {role === "AGENT_OWNER" && (
-            <div className="current-company">
-              管理公司：{currentUser?.company?.name || `公司 ${userCompanyId}`}
-            </div>
-          )}
-          
-          <button
-            onClick={() => router.push('/admin/menu/new')}
-            className="btn-primary"
-          >
-            新增選單
-          </button>
+              新增選單
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="menu-list">
         {menus.length === 0 ? (
-          <div className="empty-state">
+          <div className="b-no-information w100 fd5">
+            <img src="/no-information.webp" alt="無資料" className="mb25" />
             <p>尚未建立任何選單</p>
             <button
               onClick={() => router.push('/admin/menu/new')}
-              className="btn-primary"
+              className="b-btn-s2 b-btn-c4 mt15"
             >
               建立第一個選單
             </button>
           </div>
         ) : (
-          <div className="menu-items">
-            {buildMenuTree(menus).map(item => renderMenuItem(item))}
-          </div>
+          <table className="b-table-box admin-table mb15">
+            <thead>
+              <tr>
+                <th>選單標題</th>
+                <th>連結</th>
+                <th>狀態</th>
+                <th>裝置類型</th>
+                <th>排序</th>
+                <th>層級</th>
+                <th className="th-last">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {buildMenuTree(menus).map(item => renderMenuItem(item)).flat()}
+            </tbody>
+          </table>
         )}
       </div>
-
+      
       <style jsx>{`
-        .menu-manage-page {
-          padding: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .page-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 2rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid #e9ecef;
-        }
-
-        .header-controls {
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-        }
-
-        .company-select {
-          padding: 0.5rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: white;
-        }
-
-        .current-company {
-          padding: 0.5rem 1rem;
-          background: #f8f9fa;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
-          color: #495057;
-          font-weight: 500;
-        }
-
-        .menu-item-row {
-          border: 1px solid #e9ecef;
-          border-radius: 6px;
-          margin-bottom: 0.5rem;
-          background: white;
-        }
-
-        .menu-item-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem;
-        }
-
-        .menu-info {
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-          flex: 1;
-        }
-
-        .menu-title {
-          font-weight: 600;
-          color: #333;
-        }
-
-        .menu-url {
-          color: #666;
-          font-size: 0.9rem;
-        }
-
-        .menu-status {
-          padding: 0.25rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.8rem;
-          font-weight: 500;
-        }
-
-        .menu-status.active {
+        .status-active {
           background: #d4edda;
           color: #155724;
-        }
-
-        .menu-status.inactive {
-          background: #f8d7da;
-          color: #721c24;
-        }
-
-        .menu-device {
-          background: #e9ecef;
           padding: 0.25rem 0.5rem;
           border-radius: 4px;
           font-size: 0.8rem;
+          font-weight: 500;
         }
 
-        .menu-sort {
-          color: #666;
-          font-size: 0.9rem;
-        }
-
-        .menu-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .btn-edit, .btn-toggle, .btn-delete, .btn-primary {
-          padding: 0.5rem 1rem;
-          border: none;
+        .status-inactive {
+          background: #f8d7da;
+          color: #721c24;
+          padding: 0.25rem 0.5rem;
           border-radius: 4px;
-          cursor: pointer;
-          font-size: 0.9rem;
-          transition: background-color 0.2s;
-        }
-
-        .btn-edit {
-          background: #007bff;
-          color: white;
-        }
-
-        .btn-edit:hover {
-          background: #0056b3;
-        }
-
-        .btn-toggle.active {
-          background: #ffc107;
-          color: #212529;
-        }
-
-        .btn-toggle.inactive {
-          background: #28a745;
-          color: white;
-        }
-
-        .btn-delete {
-          background: #dc3545;
-          color: white;
-        }
-
-        .btn-delete:hover {
-          background: #c82333;
-        }
-
-        .btn-primary {
-          background: #28a745;
-          color: white;
-        }
-
-        .btn-primary:hover {
-          background: #218838;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 3rem;
-          color: #666;
-        }
-
-        .loading {
-          text-align: center;
-          padding: 2rem;
-          color: #666;
+          font-size: 0.8rem;
+          font-weight: 500;
         }
       `}</style>
     </div>
