@@ -15,7 +15,13 @@ export default function GlobalNotificationProvider() {
                      pathname?.startsWith('/users/') ||
                      pathname?.startsWith('/lucky-draw/') ||
                      pathname === '/back-menu' ||
-                     pathname?.startsWith('/back-menu/')
+                     pathname?.startsWith('/back-menu/') ||
+                     // 新增更多後台路由判斷
+                     pathname?.includes('/admin/') ||
+                     pathname?.includes('/dashboard/') ||
+                     pathname?.includes('/audit-log/') ||
+                     pathname?.includes('/users/') ||
+                     pathname?.includes('/lucky-draw/')
 
   // 排除登入頁面和前台頁面
   const isLoginPage = pathname === '/login'
