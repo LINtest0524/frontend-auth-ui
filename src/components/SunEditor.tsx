@@ -10,7 +10,7 @@ const SunEditorReact = dynamic(
     ssr: false,
     loading: () => <div>載入編輯器中...</div>
   }
-)
+) as any
 
 // 導入 SunEditor 樣式
 import 'suneditor/dist/css/suneditor.min.css'

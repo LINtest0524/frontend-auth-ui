@@ -200,22 +200,53 @@ export default function EditArticlePage() {
             // 正確處理提交時間
             console.log('用戶輸入的時間:', formData.publish_date);
             
-            // 用戶輸入的是台灣時間，需要轉換為 UTC 時間給伺服器
-            // 創建一個 Date 物件，但指定為台灣時區
-            const [datePart, timePart] = formData.publish_date.split('T');
-            const [year, month, day] = datePart.split('-');
-            const [hour, minute] = timePart.split(':');
+            // 檢查是否有輸入發布時間
+            if (!formData.publish_date || formData.publish_date.trim() === '') {
+              console.log('沒有輸入發布時間，使用當前時間');
+              return new Date().toISOString();
+            }
             
-            // 創建台灣時間的 Date 物件
-            const taiwanDate = new Date();
-            taiwanDate.setFullYear(parseInt(year), parseInt(month) - 1, parseInt(day));
-            taiwanDate.setHours(parseInt(hour), parseInt(minute), 0, 0);
+            // 檢查時間格式是否正確 (應該包含 'T' 分隔符)
+            if (!formData.publish_date.includes('T')) {
+              console.log('時間格式不正確，使用當前時間');
+              return new Date().toISOString();
+            }
             
-            // 轉換為 UTC 時間 (台灣時間 - 8小時)
-            const utcTime = new Date(taiwanDate.getTime() - 8 * 60 * 60 * 1000);
-            console.log('轉換後的 UTC 時間:', utcTime.toISOString());
-            
-            return utcTime.toISOString();
+            try {
+              // 用戶輸入的是台灣時間，需要轉換為 UTC 時間給伺服器
+              // 創建一個 Date 物件，但指定為台灣時區
+              const [datePart, timePart] = formData.publish_date.split('T');
+              
+              // 檢查是否有時間部分
+              if (!datePart || !timePart) {
+                console.log('日期或時間部分缺失，使用當前時間');
+                return new Date().toISOString();
+              }
+              
+              const [year, month, day] = datePart.split('-');
+              const [hour, minute] = timePart.split(':');
+              
+              // 檢查所有部分是否存在
+              if (!year || !month || !day || !hour || !minute) {
+                console.log('日期時間格式不完整，使用當前時間');
+                return new Date().toISOString();
+              }
+              
+              // 創建台灣時間的 Date 物件
+              const taiwanDate = new Date();
+              taiwanDate.setFullYear(parseInt(year), parseInt(month) - 1, parseInt(day));
+              taiwanDate.setHours(parseInt(hour), parseInt(minute), 0, 0);
+              
+              // 轉換為 UTC 時間 (台灣時間 - 8小時)
+              const utcTime = new Date(taiwanDate.getTime() - 8 * 60 * 60 * 1000);
+              console.log('轉換後的 UTC 時間:', utcTime.toISOString());
+              
+              return utcTime.toISOString();
+            } catch (error) {
+              console.error('時間轉換錯誤:', error);
+              console.log('使用當前時間作為備用');
+              return new Date().toISOString();
+            }
           })(),
         }),
       })
