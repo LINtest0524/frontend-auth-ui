@@ -36,6 +36,7 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
+    else if (pathname?.startsWith("/admin/popup-announcement")) setActiveMenu("popup-announcement");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
     else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
@@ -419,6 +420,41 @@ export default function Sidebar() {
               className={cn("sidebar-subitem", pathname === "/admin/floating-ad/new" && currentActive === null && "active")}
             >
               新增廣告
+            </Link>
+          </div>
+        </div>
+
+        {/* 彈窗公告管理 */}
+        <div>
+          <button
+            onClick={() => {
+              toggleMenu("popup-announcement");
+              setCurrentActive("popup-announcement");
+            }}
+            className={cn(
+              "sidebar-item i-banner", 
+              currentActive === "popup-announcement" && "active",
+              activeMenu === "popup-announcement" && "expanded"
+            )}
+          >
+            <span className="icon" />
+            彈窗公告
+            <span className="i-arrow"></span>
+          </button>
+          <div className={cn("sidebar-submenu", activeMenu === "popup-announcement" && "open")}>
+            <Link
+              href="/admin/popup-announcement"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/admin/popup-announcement" && currentActive === null && "active")}
+            >
+              公告列表
+            </Link>
+            <Link
+              href="/admin/popup-announcement/new"
+              onClick={resetMenu}
+              className={cn("sidebar-subitem", pathname === "/admin/popup-announcement/new" && currentActive === null && "active")}
+            >
+              新增公告
             </Link>
           </div>
         </div>

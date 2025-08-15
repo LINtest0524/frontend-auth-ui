@@ -59,9 +59,8 @@ export default function DashboardLayout({
           {children}
         </div>
 
-
-
       </div>
+
 
     </div>
   )

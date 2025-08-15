@@ -3,17 +3,28 @@
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter } from 'next/navigation'
+import FloatingAds from '@/components/FloatingAds'
+import PopupAnnouncement from '@/components/PopupAnnouncement'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
-  const { setUser } = useUserStore()
+  const { setUser, user } = useUserStore()
   const pathname = usePathname()
   const router = useRouter()
   const [hydrated, setHydrated] = useState(false)
+  const [sessionId, setSessionId] = useState<string>('')
 
   useEffect(() => {
     const currentCompanyCode = pathname.split('/')[1]
     const token = localStorage.getItem(`portalToken_${currentCompanyCode}`)
     const userData = localStorage.getItem(`portalUser_${currentCompanyCode}`)
+    
+    // 生成或獲取 sessionId
+    let currentSessionId = localStorage.getItem(`sessionId_${currentCompanyCode}`)
+    if (!currentSessionId) {
+      currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      localStorage.setItem(`sessionId_${currentCompanyCode}`, currentSessionId)
+    }
+    setSessionId(currentSessionId)
 
     const publicPaths = [
       `/${currentCompanyCode}`, 
@@ -68,5 +79,11 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
   if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
 
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <FloatingAds companyCode="b" />
+      <PopupAnnouncement companyCode="b" />
+    </>
+  )
 }

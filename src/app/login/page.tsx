@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 // import { Input } from '@/components/ui/input'
 // import { Button } from '@/components/ui/button'
@@ -14,6 +14,41 @@ export default function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('audioEnabled') === 'true'
+    }
+    return false
+  })
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // 啟用音效功能
+  const enableAudio = async () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/sounds/verification.mp3')
+      audioRef.current.preload = 'auto'
+    }
+
+    if (!audioEnabled) {
+      try {
+        console.log('嘗試啟用音效...')
+        // 嘗試播放靜音音效來啟用音頻上下文
+        audioRef.current.volume = 0
+        await audioRef.current.play()
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.volume = 0.5
+        
+        setAudioEnabled(true)
+        localStorage.setItem('audioEnabled', 'true')
+        console.log('音效已靜默啟用')
+        
+        // 不播放測試音效，只是靜默啟用
+      } catch (err) {
+        console.log('音效啟用失敗:', err)
+      }
+    }
+  }
 
   const handleLogin = async () => {
     setError('')
@@ -43,6 +78,25 @@ export default function Login() {
     e.preventDefault()
     handleLogin()
   }
+
+  // 添加點擊事件監聽器來啟用音效（和後台一樣的機制）
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      enableAudio()
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+    }
+
+    if (!audioEnabled) {
+      document.addEventListener('click', handleUserInteraction)
+      document.addEventListener('keydown', handleUserInteraction)
+    }
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+    }
+  }, [audioEnabled])
 
   return (
     <div className="bigbox">
@@ -77,6 +131,7 @@ export default function Login() {
               <button className="btn-primary w100" type="submit">
                 登入
               </button>
+
             </form>
 
       </div>

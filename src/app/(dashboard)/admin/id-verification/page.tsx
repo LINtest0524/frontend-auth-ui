@@ -12,7 +12,7 @@ interface VerificationRecord {
   type: 'ID_CARD' | 'BANK_ACCOUNT'
   createdAt: string
   images: string[]
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED'
   note: string | null
 }
 
@@ -145,7 +145,7 @@ export default function IdVerificationAdminPage() {
 
   const handleReview = async (
     id: number,
-    status: 'APPROVED' | 'REJECTED',
+    status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED',
     note: string
   ) => {
     try {
@@ -177,8 +177,8 @@ export default function IdVerificationAdminPage() {
 
   const saveNote = async (id: number) => {
     const record = records.find(r => r.id === id);
-    if (record && record.status !== 'PENDING') {
-      await handleReview(id, record.status as 'APPROVED' | 'REJECTED', notes[id] || '');
+    if (record) {
+      await handleReview(id, record.status as 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED', notes[id] || '');
     }
   }
 
@@ -273,7 +273,8 @@ export default function IdVerificationAdminPage() {
                   <select id="status-select-29" value={status} onChange={(e) => setStatus(e.target.value)} className="w60">
                   <option value="">全部狀態</option>
                   <option value="PENDING">未處理</option>
-                  <option value="APPROVED">已處理</option>
+                  <option value="PROCESSING">待處理</option>
+                  <option value="APPROVED">已通過</option>
                   <option value="REJECTED">資料有誤</option>
                   </select>
                 </div>
@@ -389,12 +390,13 @@ export default function IdVerificationAdminPage() {
                             <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
                             <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
                             <td>
-                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}></button>
+                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>預覽</button>
                             </td>
                             <td>
-                              <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'APPROVED' | 'REJECTED', notes[rec.id] || '')} className="border px-2 py-1 rounded">
+                              <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED', notes[rec.id] || '')} className="border px-2 py-1 rounded">
                                 <option value="PENDING">未處理</option>
-                                <option value="APPROVED">已處理</option>
+                                <option value="PROCESSING">待處理</option>
+                                <option value="APPROVED">已通過</option>
                                 <option value="REJECTED">資料有誤</option>
                               </select>
                             </td>

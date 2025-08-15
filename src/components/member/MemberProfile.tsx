@@ -8,7 +8,7 @@ import axios, { AxiosError } from 'axios'
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
 
 type VerifyType = 'ID_CARD' | 'BANK_ACCOUNT'
-type VerifyStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'NONE'
+type VerifyStatus = 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED' | 'NONE'
 
 interface MemberProfileProps {
   onGoToIdVerification?: () => void
@@ -100,6 +100,9 @@ export default function MemberProfile({
           </button>
         )}
         {status === 'PENDING' && (
+          <span className="text-yellow-600 ml-2">等待驗證中</span>
+        )}
+        {status === 'PROCESSING' && (
           <span className="text-yellow-600 ml-2">等待驗證中</span>
         )}
         {status === 'APPROVED' && (
