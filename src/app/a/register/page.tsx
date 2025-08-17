@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import { useCartStore } from '@/hooks/use-cart-store-new'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
+import './register.css'
 
 export default function PortalRegisterPage() {
   const company = useCompanySlug()
@@ -55,6 +57,9 @@ export default function PortalRegisterPage() {
 
       setUser(data.user)
 
+      // 刷新購物車以切換到用戶專屬購物車
+      useCartStore.getState().refreshCart()
+
       const targetCompany = data.user.company?.code || company
       router.push(`/${targetCompany}`) //   導回無 portal 的路徑
     } catch (err: any) {
@@ -65,40 +70,86 @@ export default function PortalRegisterPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded bg-white shadow">
-      <h1 className="text-2xl font-bold mb-4">註冊頁面</h1>
+    <div className="register-container">
+      <div className="register-card">
+        {/* 頁面標題 */}
+        <div className="register-header">
+          <h1 className="register-title">會員註冊</h1>
+          <p className="register-subtitle">加入我們，享受更好的購物體驗</p>
+        </div>
 
-      <input
-        type="text"
-        placeholder="帳號"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="w-full mb-3 px-4 py-2 border rounded"
-      />
-      <input
-        type="password"
-        placeholder="密碼"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full mb-3 px-4 py-2 border rounded"
-      />
-      <input
-        type="email"
-        placeholder="信箱（選填）"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full mb-4 px-4 py-2 border rounded"
-      />
+        {/* 註冊表單 */}
+        <div className="register-form">
+          <div className="input-group">
+            <label className="input-label">
+              帳號 <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="請輸入您的帳號"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="input-field"
+              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+            <div className="input-hint">帳號將作為您的登入識別</div>
+          </div>
+          
+          <div className="input-group">
+            <label className="input-label">
+              密碼 <span className="required">*</span>
+            </label>
+            <input
+              type="password"
+              placeholder="請輸入您的密碼"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+            <div className="input-hint">密碼長度至少6個字元</div>
+          </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? '註冊中...' : '註冊'}
-      </button>
+          <div className="input-group">
+            <label className="input-label">電子信箱</label>
+            <input
+              type="email"
+              placeholder="請輸入您的電子信箱（選填）"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+            <div className="input-hint">用於接收重要通知和優惠資訊</div>
+          </div>
 
-      {message && <p className="mt-4 text-sm text-center">{message}</p>}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="register-button"
+          >
+            {loading ? '註冊中...' : '立即註冊'}
+          </button>
+        </div>
+
+        {/* 訊息顯示 */}
+        {message && (
+          <div className={message.includes('成功') ? 'success-message' : 'error-message'}>
+            {message}
+          </div>
+        )}
+
+        {/* 底部連結 */}
+        <div className="register-footer">
+          <a href={`/${company}/login`} className="footer-link">
+            已有帳戶？立即登入
+          </a>
+          <span style={{ margin: '0 1rem', color: '#e2e8f0' }}>|</span>
+          <a href={`/${company}`} className="footer-link">
+            返回首頁
+          </a>
+        </div>
+      </div>
     </div>
   )
 }

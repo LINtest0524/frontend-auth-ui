@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/ProductCard'
+import { useCartStore } from '@/hooks/use-cart-store-new'
+import PortalHeaderBar from '@/components/PortalHeaderBar'
+import '@/styles/pages/products.css'
 
 interface Product {
   id: number
@@ -28,6 +31,33 @@ export default function ProductsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const companyCode = 'a'
+  
+  // 購物車狀態
+  const { addItem, getTotalItems } = useCartStore()
+  const totalItems = getTotalItems()
+  
+  // 處理加入購物車
+  const handleAddToCart = (product: Product) => {
+    console.log('Adding product to cart:', product)
+    
+    addItem({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      price: product.price,
+      original_price: product.original_price,
+      thumbnail: product.thumbnail,
+      category: product.category
+    })
+    
+    // 檢查加入後的狀態
+    setTimeout(() => {
+      console.log('Cart state after adding:', useCartStore.getState())
+    }, 100)
+    
+    // 可以加入成功提示
+    alert(`${product.name} 已加入購物車！`)
+  }
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -127,24 +157,40 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <PortalHeaderBar />
+      <div className="products-page">
+        <div className="products-container">
         {/* 頁面標題 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">產品中心</h1>
-          <p className="text-gray-600">探索我們的優質產品</p>
+        <div className="products-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+            <div>
+              <h1 className="products-title">產品中心</h1>
+              <p className="products-subtitle">探索我們的優質產品，發現生活的美好</p>
+            </div>
+            
+            {/* 購物車狀態 */}
+            <div className="cart-status" onClick={() => router.push('/a/cart')} style={{ cursor: 'pointer' }}>
+              <div className="cart-icon">🛒</div>
+              <div className="cart-info">
+                <h3>我的購物車</h3>
+                <div className="cart-count">{totalItems} 件商品</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 搜尋和篩選 */}
-        <div className="mb-8 bg-white rounded-lg shadow p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="filters-section">
+          <div className="filters-grid">
             {/* 搜尋框 */}
-            <div className="flex-1">
+            <div className="search-group">
+              <label className="search-label">搜尋產品</label>
               <input
                 type="text"
-                placeholder="搜尋產品..."
+                placeholder="輸入產品名稱或關鍵字..."
                 defaultValue={searchTerm || ''}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="search-input"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleSearch((e.target as HTMLInputElement).value)
@@ -154,11 +200,12 @@ export default function ProductsPage() {
             </div>
             
             {/* 分類篩選 */}
-            <div className="md:w-48">
+            <div className="search-group">
+              <label className="search-label">產品分類</label>
               <select
                 value={categoryId || ''}
                 onChange={(e) => handleCategoryFilter(e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="category-select"
               >
                 <option value="">所有分類</option>
                 {categories.map((category) => (
@@ -168,74 +215,102 @@ export default function ProductsPage() {
                 ))}
               </select>
             </div>
+
+            {/* 操作按鈕 */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  const searchInput = document.querySelector('.search-input') as HTMLInputElement
+                  handleSearch(searchInput?.value || '')
+                }}
+                className="search-button"
+              >
+                🔍 搜尋
+              </button>
+              <button
+                onClick={() => {
+                  const searchInput = document.querySelector('.search-input') as HTMLInputElement
+                  if (searchInput) searchInput.value = ''
+                  updateURL({ search: null, category: null })
+                }}
+                className="clear-button"
+              >
+                ✨ 清除
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 產品網格 */}
+        {/* 產品列表 */}
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
           </div>
         ) : products.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div className="products-grid">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   companySlug={companyCode}
+                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>
 
             {/* 分頁 */}
             {totalPages > 1 && (
-              <div className="flex justify-center">
-                <div className="flex space-x-2">
+              <div className="pagination">
+                <div className="pagination-container">
                   {/* 上一頁 */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage <= 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="pagination-button"
                   >
-                    上一頁
+                    ← 上一頁
                   </button>
                   
                   {/* 頁碼 */}
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-4 py-2 border rounded-lg ${
-                        pageNum === currentPage
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum = currentPage - 2 + i
+                    if (pageNum < 1) pageNum = i + 1
+                    if (pageNum > totalPages) pageNum = totalPages - 4 + i
+                    if (pageNum < 1 || pageNum > totalPages) return null
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
                   
                   {/* 下一頁 */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage >= totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="pagination-button"
                   >
-                    下一頁
+                    下一頁 →
                   </button>
                 </div>
               </div>
             )}
           </>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">暫無產品</h3>
-            <p className="text-gray-500">目前沒有符合條件的產品</p>
+          <div className="empty-state">
+            <div className="empty-icon">🔍</div>
+            <h3 className="empty-title">找不到相關產品</h3>
+            <p className="empty-description">試試調整搜尋條件或瀏覽其他分類</p>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

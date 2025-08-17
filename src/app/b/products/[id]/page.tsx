@@ -12,6 +12,8 @@ interface Product {
   original_price?: number
   short_description?: string
   description?: string
+  specifications_description?: string
+  shipping_description?: string
   thumbnail?: string
   images?: string[]
   is_featured: boolean
@@ -21,6 +23,7 @@ interface Product {
     name: string
   }
   specifications?: Record<string, any>
+  tags?: string[]
   created_at: string
   updated_at: string
 }
@@ -254,17 +257,35 @@ export default function ProductDetailPage() {
           )}
 
           {/* 規格資訊 */}
-          {product.specifications && Object.keys(product.specifications).length > 0 && (
+          {(product.specifications_description || (product.specifications && Object.keys(product.specifications).length > 0)) && (
             <div className="border-t border-gray-200 p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">產品規格</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <div key={key} className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="font-medium text-gray-700">{key}:</span>
-                    <span className="text-gray-600">{String(value)}</span>
+              
+              {/* 顯示富文本規格說明 */}
+              {product.specifications_description && (
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium text-gray-800 mb-3">規格說明</h4>
+                  <div 
+                    className="prose max-w-none text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: product.specifications_description }}
+                  />
+                </div>
+              )}
+              
+              {/* 顯示結構化規格表格 */}
+              {product.specifications && Object.keys(product.specifications).length > 0 && (
+                <div>
+                  <h4 className="text-lg font-medium text-gray-800 mb-3">規格參數</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(product.specifications).map(([key, value]) => (
+                      <div key={key} className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="font-medium text-gray-700">{key}:</span>
+                        <span className="text-gray-600">{String(value)}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

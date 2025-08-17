@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/ProductCard'
+import { useCartStore } from '@/hooks/use-cart-store'
 
 interface Product {
   id: number
@@ -28,6 +29,25 @@ export default function ProductsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const companyCode = 'b'
+  
+  // 購物車狀態
+  const { addItem, totalItems } = useCartStore()
+  
+  // 處理加入購物車
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      price: product.price,
+      original_price: product.original_price,
+      thumbnail: product.thumbnail,
+      category: product.category
+    })
+    
+    // 可以加入成功提示
+    alert(`${product.name} 已加入購物車！`)
+  }
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -130,9 +150,22 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* 頁面標題 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">產品中心</h1>
-          <p className="text-gray-600">探索我們的優質產品</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">產品中心</h1>
+            <p className="text-gray-600">探索我們的優質產品</p>
+          </div>
+          
+          {/* 購物車狀態 */}
+          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
+            <div className="text-2xl">🛒</div>
+            <div>
+              <div className="text-sm text-gray-600">購物車</div>
+              <div className="font-bold text-orange-600">
+                {totalItems} 件商品
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 搜尋和篩選 */}
@@ -184,6 +217,7 @@ export default function ProductsPage() {
                   key={product.id}
                   product={product}
                   companySlug={companyCode}
+                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>

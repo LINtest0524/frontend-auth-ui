@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import '@/styles/components/product-card.css';
 
 interface Product {
   id: number;
@@ -24,10 +25,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, companySlug, onAddToCart }: ProductCardProps) {
   const router = useRouter();
 
-  const hasDiscount = product.original_price && product.original_price > product.price;
-  const discountPercent = hasDiscount 
-    ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100)
-    : 0;
+  const hasDiscount = product.original_price && Number(product.original_price) > Number(product.price);
 
   const handleCardClick = () => {
     router.push(`/${companySlug}/products/${product.id}`);
@@ -41,45 +39,27 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
   };
 
   return (
-    <div
-      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer group"
-      onClick={handleCardClick}
-    >
+    <div className="product-card" onClick={handleCardClick}>
       {/* 商品圖片 */}
-      <div className="relative overflow-hidden">
+      <div className="product-image-container">
         {product.thumbnail ? (
           <img
             src={`${process.env.NEXT_PUBLIC_API_BASE}${product.thumbnail}`}
             alt={product.name}
-            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
+            className="product-image"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
-            <span className="text-4xl">📦</span>
+          <div className="product-placeholder">
+            📦
           </div>
         )}
         
-        {/* 標籤 */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {product.is_featured && (
-            <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
-              精選
-            </span>
-          )}
-          
-          {hasDiscount && (
-            <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
-              -{discountPercent}%
-            </span>
-          )}
-        </div>
-
-        {/* 快速加入購物車按鈕 */}
+        {/* 懸停購物車按鈕 */}
         {onAddToCart && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 bg-orange-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-orange-600"
-            title="加入購物車"
+            className="add-to-cart-btn"
+            title="快速加入購物車"
           >
             🛒
           </button>
@@ -87,41 +67,40 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
       </div>
       
       {/* 商品資訊 */}
-      <div className="p-4">
-        <h3 className="font-medium text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+      <div className="product-content">
+        <h3 className="product-title">
           {product.name}
         </h3>
         
         {product.short_description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          <p className="product-description">
             {product.short_description}
           </p>
         )}
         
-        {/* 價格 */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-red-600">
-              ${product.price}
+        {/* 價格區域 */}
+        <div className="product-price-section">
+          <div className="product-price-container">
+            <span className="product-price">
+              ${Number(product.price).toFixed(0)}
             </span>
             {hasDiscount && (
-              <span className="text-sm text-gray-500 line-through">
-                ${product.original_price}
+              <span className="product-original-price">
+                ${Number(product.original_price).toFixed(0)}
               </span>
             )}
           </div>
-        </div>
-        
-        {/* 分類和SKU */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          {product.category && (
-            <span className="bg-gray-100 px-2 py-1 rounded">
-              {product.category.name}
-            </span>
+          
+          {/* 購物車按鈕 */}
+          {onAddToCart && (
+            <button
+              onClick={handleAddToCart}
+              className="product-cart-button"
+            >
+              <span>🛒</span>
+              加入購物車
+            </button>
           )}
-          <span className="font-mono">
-            {product.sku}
-          </span>
         </div>
       </div>
     </div>

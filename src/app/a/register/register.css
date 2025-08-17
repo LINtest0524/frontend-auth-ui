@@ -1,0 +1,370 @@
+/* 註冊頁面樣式 - 參考登入頁面設計 */
+
+/* 全局容器 */
+.register-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 主註冊卡片 */
+.register-card {
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 頁面標題 */
+.register-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.register-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* 表單區域 */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 輸入框組 */
+.input-group {
+  position: relative;
+}
+
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8fafc;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
+}
+
+/* 必填標記 */
+.required {
+  color: #dc2626;
+  margin-left: 0.25rem;
+}
+
+/* 註冊按鈕 */
+.register-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.register-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.register-button:active {
+  transform: translateY(0);
+}
+
+.register-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.register-button:hover::before {
+  left: 100%;
+}
+
+/* 成功訊息 */
+.success-message {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.success-message::before {
+  content: '✅';
+  font-size: 1.1rem;
+}
+
+/* 錯誤訊息 */
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: '⚠️';
+  font-size: 1.1rem;
+}
+
+/* 底部連結 */
+.register-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.footer-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #5a67d8;
+}
+
+/* 密碼強度指示器 */
+.password-strength {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.strength-bar {
+  height: 3px;
+  flex: 1;
+  background: #e2e8f0;
+  border-radius: 2px;
+  transition: background-color 0.3s;
+}
+
+.strength-bar.weak {
+  background: #dc2626;
+}
+
+.strength-bar.medium {
+  background: #f59e0b;
+}
+
+.strength-bar.strong {
+  background: #10b981;
+}
+
+.strength-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+/* 輸入提示 */
+.input-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+  .register-container {
+    padding: 1rem;
+  }
+  
+  .register-card {
+    padding: 2rem 1.5rem;
+    border-radius: 1rem;
+  }
+  
+  .register-title {
+    font-size: 1.75rem;
+  }
+  
+  .input-field {
+    padding: 0.875rem 1rem;
+  }
+  
+  .register-button {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+/* 動畫效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* 表單驗證樣式 */
+.input-field.valid {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.input-field.invalid {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.validation-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+}
+
+.validation-icon.valid {
+  color: #10b981;
+}
+
+.validation-icon.invalid {
+  color: #dc2626;
+}
+
+/* 載入狀態 */
+.loading-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 特殊效果 */
+.register-card:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* 輸入框圖標 */
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.input-field.with-icon {
+  padding-left: 3rem;
+}

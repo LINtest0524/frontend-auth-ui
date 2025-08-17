@@ -1,5 +1,6 @@
 // 登出功能
 import { logout as clearAuth } from './useAuth'
+import { useCartStore } from '@/hooks/use-cart-store-new'
 
 export async function logoutWithRecord(companyCode: string): Promise<boolean> {
   const token = localStorage.getItem(`portalToken_${companyCode}`)
@@ -36,6 +37,9 @@ export async function logoutWithRecord(companyCode: string): Promise<boolean> {
     // 清除 token 創建時間和其他相關資料
     localStorage.removeItem(`tokenCreatedTime_${companyCode}`)
     localStorage.removeItem(`enabledModules_${companyCode}`)
+    
+    // 刷新購物車以切換到訪客模式
+    useCartStore.getState().refreshCart()
   }
 
   return true

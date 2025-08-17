@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import { useCartStore } from '@/hooks/use-cart-store-new'
 import FacebookLoginButton from '@/components/FacebookLoginButton'
+import './login.css'
 
 
 export default function AgentLoginPage() {
@@ -100,6 +102,9 @@ export default function AgentLoginPage() {
 
       setUser(data.user)
 
+      // 刷新購物車以切換到用戶專屬購物車
+      useCartStore.getState().refreshCart()
+
       //   動態導回該公司首頁
       window.location.href = `/${companyCode}`
     } catch (err: any) {
@@ -111,100 +116,123 @@ export default function AgentLoginPage() {
 
   if (loginMethodsLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6">
-        <p>載入中...</p>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p className="loading-text">載入中...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
-      <h1 className="text-xl font-bold mb-4">會員登入</h1>
+    <div className="login-container">
+      <div className="login-card">
+        {/* 頁面標題 */}
+        <div className="login-header">
+          <h1 className="login-title">會員登入</h1>
+          <p className="login-subtitle">歡迎回來！請登入您的帳戶以繼續購物</p>
+        </div>
 
-      {/* 帳號密碼登入 */}
-      {enabledLoginMethods.includes('USERNAME_PASSWORD') && (
-        <>
-          <input
-            type="text"
-            placeholder="帳號"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="border rounded px-4 py-2 mb-2 w-64"
-          />
-          <input
-            type="password"
-            placeholder="密碼"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border rounded px-4 py-2 mb-4 w-64"
-          />
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? '登入中...' : '登入'}
-          </button>
-        </>
-      )}
-
-      {/* 第三方登入選項 */}
-      {(enabledLoginMethods.includes('FACEBOOK') || enabledLoginMethods.includes('GOOGLE') || enabledLoginMethods.includes('LINE')) && (
-        <div className="mt-6 w-64">
-          {enabledLoginMethods.includes('USERNAME_PASSWORD') && (
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">或</span>
-              </div>
+        {/* 帳號密碼登入 */}
+        {enabledLoginMethods.includes('USERNAME_PASSWORD') && (
+          <div className="login-form">
+            <div className="input-group">
+              <label className="input-label">帳號</label>
+              <input
+                type="text"
+                placeholder="請輸入您的帳號"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="input-field"
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              />
             </div>
-          )}
+            
+            <div className="input-group">
+              <label className="input-label">密碼</label>
+              <input
+                type="password"
+                placeholder="請輸入您的密碼"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              />
+            </div>
 
-          <div className="mt-6 space-y-3">
-            {/* Facebook 登入 */}
-            {enabledLoginMethods.includes('FACEBOOK') && (
-              <div onClick={() => setError('')}>
-                <FacebookLoginButton 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
-                  companyCode={companyCode}
-                />
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="login-button"
+            >
+              {loading ? '登入中...' : '立即登入'}
+            </button>
+          </div>
+        )}
+
+        {/* 第三方登入選項 */}
+        {(enabledLoginMethods.includes('FACEBOOK') || enabledLoginMethods.includes('GOOGLE') || enabledLoginMethods.includes('LINE')) && (
+          <>
+            {enabledLoginMethods.includes('USERNAME_PASSWORD') && (
+              <div className="divider">
+                <span className="divider-text">或使用其他方式登入</span>
               </div>
             )}
 
-            {/* Google 登入 (預留) */}
-            {enabledLoginMethods.includes('GOOGLE') && (
-              <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
-                <span className="mr-2">預覽</span>
-                使用 Google 登入 (開發中)
-              </button>
-            )}
+            <div className="social-login">
+              {/* Facebook 登入 */}
+              {enabledLoginMethods.includes('FACEBOOK') && (
+                <div onClick={() => setError('')}>
+                  <FacebookLoginButton 
+                    className="social-button facebook"
+                    companyCode={companyCode}
+                  />
+                </div>
+              )}
 
-            {/* LINE 登入 (預留) */}
-            {enabledLoginMethods.includes('LINE') && (
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
-                <span className="mr-2">💬</span>
-                使用 LINE 登入 (開發中)
-              </button>
-            )}
+              {/* Google 登入 (預留) */}
+              {enabledLoginMethods.includes('GOOGLE') && (
+                <button className="social-button google">
+                  <span>🔍</span>
+                  使用 Google 登入 (開發中)
+                </button>
+              )}
+
+              {/* LINE 登入 (預留) */}
+              {enabledLoginMethods.includes('LINE') && (
+                <button className="social-button line">
+                  <span>💬</span>
+                  使用 LINE 登入 (開發中)
+                </button>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* 如果沒有啟用任何登入方式 */}
+        {enabledLoginMethods.length === 0 && (
+          <div className="warning-message">
+            目前沒有可用的登入方式，請聯絡管理員。
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 如果沒有啟用任何登入方式 */}
-      {enabledLoginMethods.length === 0 && (
-        <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded">
-          <p className="text-yellow-800">目前沒有可用的登入方式，請聯絡管理員。</p>
-        </div>
-      )}
+        {/* 錯誤訊息 */}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
 
-      {error && (
-        <p className="text-red-500 mt-4 bg-red-100 border border-red-300 px-3 py-2 rounded shadow-sm">
-          {error}
-        </p>
-      )}
+        {/* 底部連結 */}
+        <div className="login-footer">
+          <a href={`/${companyCode}/register`} className="footer-link">
+            還沒有帳戶？立即註冊
+          </a>
+          <span style={{ margin: '0 1rem', color: '#e2e8f0' }}>|</span>
+          <a href={`/${companyCode}`} className="footer-link">
+            返回首頁
+          </a>
+        </div>
+      </div>
     </div>
   )
 }

@@ -694,3 +694,136 @@
     white-space: nowrap;
   }
 }
+
+/* 標籤樣式 */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tag-featured {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #8b5a00;
+  border: 1px solid #ffd700;
+}
+
+.tag-in-stock {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: white;
+  border: 1px solid #10b981;
+}
+
+.tag-free-shipping {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: white;
+  border: 1px solid #3b82f6;
+}
+
+.tag-custom {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  color: white;
+  border: 1px solid #8b5cf6;
+}
+
+/* 購物車圖標樣式 */
+.cart-icon-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.cart-icon-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #374151;
+  transition: all 0.3s ease;
+}
+
+.cart-icon-link:hover {
+  color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.cart-icon {
+  position: relative;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.cart-icon:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+.cart-text {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 響應式設計 - 手機版調整購物車圖標 */
+@media (max-width: 768px) {
+  .cart-icon-container {
+    top: 15px;
+    right: 15px;
+  }
+  
+  .cart-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .cart-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    top: -6px;
+    right: -6px;
+  }
+  
+  .cart-text {
+    font-size: 10px;
+  }
+}

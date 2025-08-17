@@ -10,6 +10,8 @@ type Product = {
   sku: string
   description?: string
   short_description?: string
+  specifications_description?: string
+  shipping_description?: string
   price: number
   original_price?: number
   stock_quantity: number
@@ -167,9 +169,33 @@ export default function ViewProductPage() {
           {product.description && (
             <div className="b-form-group-1 w100 fl4">
               <label>詳細描述</label>
-              <div className="w70 pt10" style={{whiteSpace: "pre-wrap", lineHeight: "1.5"}}>
-                {product.description}
-              </div>
+              <div 
+                className="w70 pt10" 
+                style={{lineHeight: "1.5"}}
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            </div>
+          )}
+
+          {product.specifications_description && (
+            <div className="b-form-group-1 w100 fl4">
+              <label>規格說明</label>
+              <div 
+                className="w70 pt10" 
+                style={{lineHeight: "1.5"}}
+                dangerouslySetInnerHTML={{ __html: product.specifications_description }}
+              />
+            </div>
+          )}
+
+          {product.shipping_description && (
+            <div className="b-form-group-1 w100 fl4">
+              <label>配送說明</label>
+              <div 
+                className="w70 pt10" 
+                style={{lineHeight: "1.5"}}
+                dangerouslySetInnerHTML={{ __html: product.shipping_description }}
+              />
             </div>
           )}
 

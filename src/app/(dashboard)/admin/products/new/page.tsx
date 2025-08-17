@@ -32,8 +32,6 @@ export default function NewProductPage() {
     stock_quantity: '0',
     min_stock: '0',
     category_id: '',
-    weight: '',
-    dimensions: '',
     tags: '',
     status: 'ACTIVE',
     is_featured: false,
@@ -42,6 +40,9 @@ export default function NewProductPage() {
 
   const [images, setImages] = useState<string[]>([])
   const [thumbnail, setThumbnail] = useState('')
+  const [specifications, setSpecifications] = useState<{key: string, value: string}[]>([
+    { key: '', value: '' }
+  ])
 
   useEffect(() => {
     // 從 localStorage 獲取用戶資訊
@@ -85,6 +86,24 @@ export default function NewProductPage() {
 
   const handleShippingDescriptionChange = (content: string) => {
     setFormData(prev => ({ ...prev, shipping_description: content }))
+  }
+
+  const handleSpecificationChange = (index: number, field: 'key' | 'value', value: string) => {
+    setSpecifications(prev => {
+      const newSpecs = [...prev]
+      newSpecs[index][field] = value
+      return newSpecs
+    })
+  }
+
+  const addSpecification = () => {
+    setSpecifications(prev => [...prev, { key: '', value: '' }])
+  }
+
+  const removeSpecification = (index: number) => {
+    if (specifications.length > 1) {
+      setSpecifications(prev => prev.filter((_, i) => i !== index))
+    }
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,6 +172,14 @@ export default function NewProductPage() {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
+      // 處理規格
+      const specificationsObj = specifications
+        .filter(spec => spec.key.trim() && spec.value.trim())
+        .reduce((acc, spec) => {
+          acc[spec.key.trim()] = spec.value.trim()
+          return acc
+        }, {} as Record<string, string>)
+
       const submitData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -160,7 +187,7 @@ export default function NewProductPage() {
         stock_quantity: parseInt(formData.stock_quantity),
         min_stock: parseInt(formData.min_stock),
         category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
-        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : undefined,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
         images: images.length > 0 ? images : undefined,
         thumbnail: thumbnail || undefined,
@@ -449,29 +476,60 @@ export default function NewProductPage() {
           )}
 
           <div className="b-form-group-1 w100 fl4">
-            <label>重量 (公斤)</label>
-            <input
-              type="number"
-              name="weight"
-              className="w70"
-              value={formData.weight}
-              onChange={handleInputChange}
-              placeholder="請輸入商品重量"
-              min="0"
-              step="0.01"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>尺寸 (長x寬x高)</label>
-            <input
-              type="text"
-              name="dimensions"
-              className="w70"
-              value={formData.dimensions}
-              onChange={handleInputChange}
-              placeholder="例：30x20x10"
-            />
+            <label>商品規格</label>
+            <div style={{ width: '70%' }}>
+              {specifications.map((spec, index) => (
+                <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="規格名稱 (例：重量、顏色、尺寸)"
+                    value={spec.key}
+                    onChange={(e) => handleSpecificationChange(index, 'key', e.target.value)}
+                    style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="規格值 (例：1.5kg、紅色、30x20x10cm)"
+                    value={spec.value}
+                    onChange={(e) => handleSpecificationChange(index, 'value', e.target.value)}
+                    style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSpecification(index)}
+                    disabled={specifications.length === 1}
+                    style={{
+                      padding: '8px 12px',
+                      background: specifications.length === 1 ? '#ccc' : '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: specifications.length === 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    刪除
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addSpecification}
+                style={{
+                  padding: '8px 16px',
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginTop: '5px'
+                }}
+              >
+                + 新增規格
+              </button>
+              <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                提示：可以新增多個規格項目，例如重量、顏色、尺寸等。空白的規格項目不會被儲存。
+              </small>
+            </div>
           </div>
 
           <div className="b-form-group-1 w100 fl4">

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useCartStore } from '@/hooks/use-cart-store-new'
+import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './product-detail.css'
 
 interface Product {
@@ -24,6 +26,7 @@ interface Product {
     name: string
   }
   specifications?: Record<string, any>
+  tags?: string[]
   created_at: string
   updated_at: string
 }
@@ -34,11 +37,34 @@ export default function ProductDetailPage() {
   const productId = params.id as string
   const companyCode = 'a'
   
+  // 購物車狀態
+  const { addItem, getTotalItems } = useCartStore()
+  const totalItems = getTotalItems()
+  
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
+
+  // 處理加入購物車
+  const handleAddToCart = () => {
+    if (!product) return
+    
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        price: product.price,
+        original_price: product.original_price,
+        thumbnail: product.thumbnail,
+        category: product.category
+      })
+    }
+    
+    alert(`已將 ${quantity} 件 ${product.name} 加入購物車！`)
+  }
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -105,7 +131,22 @@ export default function ProductDetailPage() {
     : []
 
   return (
-    <div className="product-detail-container">
+    <>
+      <PortalHeaderBar />
+      <div className="product-detail-container">
+        {/* 購物車圖標 */}
+      <div className="cart-icon-container">
+        <a href="/a/cart" className="cart-icon-link">
+          <div className="cart-icon">
+            🛒
+            {totalItems > 0 && (
+              <span className="cart-badge">{totalItems}</span>
+            )}
+          </div>
+          <span className="cart-text">購物車</span>
+        </a>
+      </div>
+
       {/* 麵包屑導航 */}
       <div className="breadcrumb-container">
         <div className="breadcrumb-wrapper">
@@ -217,9 +258,12 @@ export default function ProductDetailPage() {
               {product.short_description && (
                 <div className="features-section">
                   <h3 className="features-title">🌟 商品特色</h3>
-                  <p className="features-text">
-                    {product.short_description}
-                  </p>
+                  <div 
+                    className="features-text"
+                    dangerouslySetInnerHTML={{ 
+                      __html: product.short_description.replace(/\n/g, '<br>') 
+                    }}
+                  />
                 </div>
               )}
 
@@ -230,14 +274,14 @@ export default function ProductDetailPage() {
                     ⭐ 精選商品
                   </span>
                 )}
-                {product.stock_quantity !== undefined && product.stock_quantity > 0 && (
-                  <span className="tag tag-in-stock">
-                    ✅ 現貨供應
+
+
+                {/* 用戶自定義標籤 */}
+                {product.tags && product.tags.length > 0 && product.tags.map((tag, index) => (
+                  <span key={index} className="tag tag-custom">
+                    🏷️ {tag}
                   </span>
-                )}
-                <span className="tag tag-free-shipping">
-                  🚚 免運費
-                </span>
+                ))}
               </div>
 
               {/* 庫存狀態 */}
@@ -303,37 +347,16 @@ export default function ProductDetailPage() {
                   <button 
                     className="btn btn-primary"
                     disabled={product.stock_quantity === 0}
+                    onClick={handleAddToCart}
                   >
-                    🛒 立即購買
-                  </button>
-                  <button 
-                    className="btn btn-secondary"
-                    disabled={product.stock_quantity === 0}
-                  >
-                    加入購物車
+                    🛒 加入購物車
                   </button>
                   <button className="btn btn-tertiary">
                     ❤️ 加入收藏
                   </button>
                 </div>
 
-                {/* 安全保證 */}
-                <div className="security-section">
-                  <div className="security-list">
-                    <div className="security-item">
-                      <span>🔒</span>
-                      <span>SSL 安全加密</span>
-                    </div>
-                    <div className="security-item">
-                      <span>🚚</span>
-                      <span>7天鑑賞期</span>
-                    </div>
-                    <div className="security-item">
-                      <span>💳</span>
-                      <span>多種付款方式</span>
-                    </div>
-                  </div>
-                </div>
+
             </div>
           </div>
         </div>
@@ -379,13 +402,23 @@ export default function ProductDetailPage() {
             {activeTab === 'specifications' && (
               <div>
                 <h3 className="tab-title">商品規格</h3>
-                {product.specifications_description ? (
-                  <div 
-                    className="tab-text"
-                    dangerouslySetInnerHTML={{ __html: product.specifications_description }}
-                  />
-                ) : product.specifications && Object.keys(product.specifications).length > 0 ? (
+                
+                {/* 顯示富文本規格說明 */}
+                {product.specifications_description && (
                   <div>
+                    <h4 style={{ marginBottom: '15px', color: '#333', fontSize: '16px' }}>規格說明</h4>
+                    <div 
+                      className="tab-text"
+                      dangerouslySetInnerHTML={{ __html: product.specifications_description }}
+                      style={{ marginBottom: '25px' }}
+                    />
+                  </div>
+                )}
+                
+                {/* 顯示結構化規格表格 */}
+                {product.specifications && Object.keys(product.specifications).length > 0 && (
+                  <div>
+                    <h4 style={{ marginBottom: '15px', color: '#333', fontSize: '16px' }}>規格參數</h4>
                     <table className="specs-table">
                       <tbody>
                         {Object.entries(product.specifications).map(([key, value], index) => (
@@ -401,7 +434,10 @@ export default function ProductDetailPage() {
                       </tbody>
                     </table>
                   </div>
-                ) : (
+                )}
+                
+                {/* 如果兩者都沒有，顯示空狀態 */}
+                {!product.specifications_description && (!product.specifications || Object.keys(product.specifications).length === 0) && (
                   <p className="tab-empty">暫無規格資訊</p>
                 )}
               </div>
@@ -424,5 +460,6 @@ export default function ProductDetailPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }
