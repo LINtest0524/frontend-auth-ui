@@ -52,7 +52,7 @@ export default function PopupAnnouncement({ companyCode }: PopupAnnouncementProp
     }
 
     // 只在首頁顯示彈窗公告
-    const isHomePage = pathname === `/${companyCode}` || pathname === `/portal/${companyCode}` || pathname === `/portal/${companyCode}/home`
+    const isHomePage = pathname === `/${companyCode}`
     
     if (!isHomePage) {
       return

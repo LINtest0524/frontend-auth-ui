@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 export function useCompanySlug(): string | null {
   const params = useParams()
 
-  // 優先檢查是否有 company 參數（用於 /portal/[company] 路由）
+  // 優先檢查是否有 company 參數（用於 /[company] 路由）
   if (typeof params === 'object' && 'company' in params) {
     return params.company as string
   }

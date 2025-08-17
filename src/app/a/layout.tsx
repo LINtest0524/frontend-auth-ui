@@ -31,14 +31,17 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
       `/${currentCompanyCode}/login`, 
       `/${currentCompanyCode}/register`,
       `/${currentCompanyCode}/news`,
-      `/${currentCompanyCode}/articles`
+      `/${currentCompanyCode}/articles`,
+      `/${currentCompanyCode}/products`
     ]
     
     // 檢查是否為新聞相關頁面（包含新聞詳細頁面）
     const isNewsPage = pathname.startsWith(`/${currentCompanyCode}/news`)
     // 檢查是否為文章相關頁面（包含文章詳細頁面）
     const isArticlePage = pathname.startsWith(`/${currentCompanyCode}/articles`)
-    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage
+    // 檢查是否為產品相關頁面（包含產品詳細頁面）
+    const isProductPage = pathname.startsWith(`/${currentCompanyCode}/products`)
+    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage
 
     if (token && userData) {
       try {

@@ -34,7 +34,9 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
-    else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("product");
+    else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("loan-product");
+    else if (pathname?.startsWith("/admin/products")) setActiveMenu("products");
+    else if (pathname?.startsWith("/admin/product-categories")) setActiveMenu("products");
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
     else if (pathname?.startsWith("/admin/popup-announcement")) setActiveMenu("popup-announcement");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
@@ -314,20 +316,20 @@ export default function Sidebar() {
         <div>
           <button
             onClick={() => {
-              toggleMenu("product");
-              setCurrentActive("product");
+              toggleMenu("loan-product");
+              setCurrentActive("loan-product");
             }}
             className={cn(
               "sidebar-item i-plan", 
-              currentActive === "product" && "active",
-              activeMenu === "product" && "expanded"
+              currentActive === "loan-product" && "active",
+              activeMenu === "loan-product" && "expanded"
             )}
           >
             <span className="icon" />
             產品管理
             <span className="i-arrow"></span>
           </button>
-          <div className={cn("sidebar-submenu", activeMenu === "product" && "open")}>
+          <div className={cn("sidebar-submenu", activeMenu === "loan-product" && "open")}>
             <Link
               href="/admin/loan-product"
               onClick={resetMenu}
@@ -346,6 +348,52 @@ export default function Sidebar() {
             )}
           </div>
         </div>
+
+        {/* 商品管理 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("products");
+                setCurrentActive("products");
+              }}
+              className={cn(
+                "sidebar-item i-modules", 
+                currentActive === "products" && "active",
+                activeMenu === "products" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              商品管理
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "products" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/product-categories"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/product-categories" && currentActive === null && "active")}
+                >
+                  商品分類
+                </Link>
+                <Link
+                  href="/admin/products"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/products" && currentActive === null && "active")}
+                >
+                  商品列表
+                </Link>
+                <Link
+                  href="/admin/products/new"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/products/new" && currentActive === null && "active")}
+                >
+                  新增商品
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 輪盤管理 */}
         <div>
