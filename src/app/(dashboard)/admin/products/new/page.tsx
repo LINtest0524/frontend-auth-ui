@@ -43,6 +43,12 @@ export default function NewProductPage() {
   const [specifications, setSpecifications] = useState<{key: string, value: string}[]>([
     { key: '', value: '' }
   ])
+  
+  const [shippingRules, setShippingRules] = useState<{method: string, base_fee: string, free_shipping_threshold: string}[]>([
+    { method: '', base_fee: '', free_shipping_threshold: '' }
+  ])
+  
+  // 移除商品變體相關狀態，改用基本規格方式
 
   useEffect(() => {
     // 從 localStorage 獲取用戶資訊
@@ -106,6 +112,24 @@ export default function NewProductPage() {
     }
   }
 
+  const handleShippingRuleChange = (index: number, field: 'method' | 'base_fee' | 'free_shipping_threshold', value: string) => {
+    setShippingRules(prev => {
+      const newRules = [...prev]
+      newRules[index][field] = value
+      return newRules
+    })
+  }
+
+  const addShippingRule = () => {
+    setShippingRules(prev => [...prev, { method: '', base_fee: '', free_shipping_threshold: '' }])
+  }
+
+  const removeShippingRule = (index: number) => {
+    if (shippingRules.length > 1) {
+      setShippingRules(prev => prev.filter((_, i) => i !== index))
+    }
+  }
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -151,6 +175,9 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🚀 表單提交開始')
+    console.log('📋 當前 specifications 狀態:', specifications)
+    
     if (!companyId) {
       alert('無法獲取公司資訊')
       return
@@ -161,6 +188,7 @@ export default function NewProductPage() {
       return
     }
 
+    console.log('✅ 基本驗證通過，開始處理資料')
     setLoading(true)
 
     try {
@@ -172,13 +200,22 @@ export default function NewProductPage() {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      // 處理規格
-      const specificationsObj = specifications
+      // 處理規格 - 保持陣列格式，允許重複的規格名稱
+      const specificationsArray = specifications
         .filter(spec => spec.key.trim() && spec.value.trim())
-        .reduce((acc, spec) => {
-          acc[spec.key.trim()] = spec.value.trim()
-          return acc
-        }, {} as Record<string, string>)
+        .map(spec => ({
+          key: spec.key.trim(),
+          value: spec.value.trim()
+        }))
+
+      // 處理運費規則
+      const shippingRulesArray = shippingRules
+        .filter(rule => rule.method.trim() && rule.base_fee.trim() && rule.free_shipping_threshold.trim())
+        .map(rule => ({
+          method: rule.method.trim(),
+          base_fee: parseFloat(rule.base_fee),
+          free_shipping_threshold: parseFloat(rule.free_shipping_threshold)
+        }))
 
       const submitData = {
         ...formData,
@@ -187,11 +224,19 @@ export default function NewProductPage() {
         stock_quantity: parseInt(formData.stock_quantity),
         min_stock: parseInt(formData.min_stock),
         category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
-        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : undefined,
+        specifications: specificationsArray.length > 0 ? specificationsArray : undefined,
+        shipping_rules: shippingRulesArray.length > 0 ? shippingRulesArray : undefined,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
         images: images.length > 0 ? images : undefined,
         thumbnail: thumbnail || undefined,
       }
+
+      // Debug: 檢查規格資料
+      console.log('🔍 規格資料檢查:')
+      console.log('原始 specifications:', specifications)
+      console.log('過濾後 specificationsArray:', specificationsArray)
+      console.log('最終 submitData.specifications:', submitData.specifications)
+      console.log('完整 submitData:', JSON.stringify(submitData, null, 2))
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/product`, {
         method: 'POST',
@@ -216,6 +261,8 @@ export default function NewProductPage() {
       setLoading(false)
     }
   }
+
+  // 移除所有變體相關函數，改用基本規格方式
 
   return (
     <>
@@ -381,6 +428,7 @@ export default function NewProductPage() {
             />
           </div>
 
+
           <div className="b-form-group-1 w100 fl4">
             <label>庫存數量</label>
             <input
@@ -478,18 +526,21 @@ export default function NewProductPage() {
           <div className="b-form-group-1 w100 fl4">
             <label>商品規格</label>
             <div style={{ width: '70%' }}>
+              
+              {/* 基本規格設定 */}
+              <h4 style={{ marginBottom: '10px', color: '#333' }}>基本規格資訊</h4>
               {specifications.map((spec, index) => (
                 <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
                   <input
                     type="text"
-                    placeholder="規格名稱 (例：重量、顏色、尺寸)"
+                    placeholder="規格名稱 (例：重量、材質、保固)"
                     value={spec.key}
                     onChange={(e) => handleSpecificationChange(index, 'key', e.target.value)}
                     style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                   />
                   <input
                     type="text"
-                    placeholder="規格值 (例：1.5kg、紅色、30x20x10cm)"
+                    placeholder="規格值 (例：1.5kg、ABS塑料、一年保固)"
                     value={spec.value}
                     onChange={(e) => handleSpecificationChange(index, 'value', e.target.value)}
                     style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
@@ -527,7 +578,95 @@ export default function NewProductPage() {
                 + 新增規格
               </button>
               <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                提示：可以新增多個規格項目，例如重量、顏色、尺寸等。空白的規格項目不會被儲存。
+                提示：設定商品規格選項，用戶在前台購買時可以選擇不同規格後加入購物車。例如：顏色-黑色、尺寸-10公分等。空白的規格項目不會被儲存。
+              </small>
+            </div>
+          </div>
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>運費管理</label>
+            <div style={{ width: '70%' }}>
+              <h4 style={{ marginBottom: '10px', color: '#333' }}>配送方式與運費設定</h4>
+              {shippingRules.map((rule, index) => (
+                <div key={index} style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: '2fr 1fr 1fr auto', 
+                  gap: '10px', 
+                  marginBottom: '10px', 
+                  alignItems: 'center',
+                  padding: '10px',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '6px',
+                  background: '#f8f9fa'
+                }}>
+                  <input
+                    type="text"
+                    placeholder="配送方式 (例：7-11超商取貨、宅配)"
+                    value={rule.method}
+                    onChange={(e) => handleShippingRuleChange(index, 'method', e.target.value)}
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '12px', color: '#666' }}>運費</span>
+                    <input
+                      type="number"
+                      placeholder="60"
+                      value={rule.base_fee}
+                      onChange={(e) => handleShippingRuleChange(index, 'base_fee', e.target.value)}
+                      style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', width: '80px' }}
+                      min="0"
+                      step="1"
+                    />
+                    <span style={{ fontSize: '12px', color: '#666' }}>元</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '12px', color: '#666' }}>滿</span>
+                    <input
+                      type="number"
+                      placeholder="399"
+                      value={rule.free_shipping_threshold}
+                      onChange={(e) => handleShippingRuleChange(index, 'free_shipping_threshold', e.target.value)}
+                      style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', width: '80px' }}
+                      min="0"
+                      step="1"
+                    />
+                    <span style={{ fontSize: '12px', color: '#666' }}>元免運</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeShippingRule(index)}
+                    disabled={shippingRules.length === 1}
+                    style={{
+                      padding: '8px 12px',
+                      background: shippingRules.length === 1 ? '#ccc' : '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: shippingRules.length === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    刪除
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addShippingRule}
+                style={{
+                  padding: '8px 16px',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginTop: '5px'
+                }}
+              >
+                + 新增配送方式
+              </button>
+              <small style={{ color: '#666', display: 'block', marginTop: '10px' }}>
+                提示：設定不同配送方式的運費和免運門檻。例如：7-11超商取貨運費60元，滿399元免運；宅配運費210元，滿999元免運。空白的運費規則不會被儲存。
               </small>
             </div>
           </div>

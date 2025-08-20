@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useCartStore } from '@/hooks/use-cart-store'
 
 interface Product {
   id: number
@@ -34,10 +35,42 @@ export default function ProductDetailPage() {
   const productId = params.id as string
   const companyCode = 'b'
   
+  // 購物車狀態
+  const { addItem, getItemQuantity } = useCartStore()
+  
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+
+  // 處理加入購物車
+  const handleAddToCart = () => {
+    if (!product) return
+    
+    // 檢查庫存是否足夠
+    const currentCartQuantity = getItemQuantity(product.id)
+    const totalQuantity = currentCartQuantity + quantity
+    
+    if (totalQuantity > (product.stock_quantity || 0)) {
+      alert(`庫存不足！目前庫存：${product.stock_quantity} 件，購物車中已有：${currentCartQuantity} 件`)
+      return
+    }
+    
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        price: product.price,
+        original_price: product.original_price,
+        thumbnail: product.thumbnail,
+        stock_quantity: product.stock_quantity,
+        category: product.category
+      })
+    }
+    
+    alert(`已將 ${quantity} 件 ${product.name} 加入購物車！`)
+  }
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -213,13 +246,38 @@ export default function ProductDetailPage() {
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       className="px-3 py-2 hover:bg-gray-100"
+                      disabled={quantity <= 1}
                     >
                       -
                     </button>
-                    <span className="px-4 py-2 border-x border-gray-300">{quantity}</span>
+                    <input
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => {
+                        const newQuantity = parseInt(e.target.value) || 1
+                        const maxQuantity = product.stock_quantity || 999
+                        if (newQuantity > maxQuantity) {
+                          alert(`庫存不足！目前庫存：${product.stock_quantity} 件`)
+                          return
+                        }
+                        setQuantity(Math.max(1, newQuantity))
+                      }}
+                      className="px-4 py-2 border-x border-gray-300 text-center w-16"
+                      min="1"
+                      max={product.stock_quantity || 999}
+                    />
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
+                      onClick={() => {
+                        const newQuantity = quantity + 1
+                        const maxQuantity = product.stock_quantity || 999
+                        if (newQuantity > maxQuantity) {
+                          alert(`庫存不足！目前庫存：${product.stock_quantity} 件`)
+                          return
+                        }
+                        setQuantity(newQuantity)
+                      }}
                       className="px-3 py-2 hover:bg-gray-100"
+                      disabled={quantity >= (product.stock_quantity || 999)}
                     >
                       +
                     </button>
@@ -230,7 +288,11 @@ export default function ProductDetailPage() {
                   <button className="flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg hover:bg-orange-600 font-medium">
                     立即購買
                   </button>
-                  <button className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 font-medium">
+                  <button 
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 font-medium"
+                    disabled={!product.stock_quantity || product.stock_quantity <= 0}
+                  >
                     加入購物車
                   </button>
                 </div>

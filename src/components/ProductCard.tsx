@@ -54,16 +54,7 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
           </div>
         )}
         
-        {/* 懸停購物車按鈕 */}
-        {onAddToCart && (
-          <button
-            onClick={handleAddToCart}
-            className="add-to-cart-btn"
-            title="快速加入購物車"
-          >
-            🛒
-          </button>
-        )}
+        {/* 移除懸停購物車按鈕，因為商品需要先選擇規格 */}
       </div>
       
       {/* 商品資訊 */}

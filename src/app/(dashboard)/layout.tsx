@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
+import VerificationNotificationSimple from '@/components/VerificationNotificationSimple'
 
 export default function DashboardLayout({
   children,
@@ -117,6 +118,8 @@ export default function DashboardLayout({
 
       </div>
 
+      {/* 驗證通知組件 */}
+      <VerificationNotificationSimple />
 
     </div>
   )

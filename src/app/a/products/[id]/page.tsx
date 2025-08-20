@@ -25,7 +25,12 @@ interface Product {
     id: number
     name: string
   }
-  specifications?: Record<string, any>
+  specifications?: Array<{key: string, value: string}> | Record<string, any>
+  shipping_rules?: Array<{
+    method: string
+    base_fee: number
+    free_shipping_threshold: number
+  }>
   tags?: string[]
   created_at: string
   updated_at: string
@@ -46,24 +51,81 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({})
+
+  // 處理規格資料，將陣列格式轉換為分組格式
+  const getSpecificationOptions = () => {
+    if (!product?.specifications) return {}
+    
+    if (Array.isArray(product.specifications)) {
+      // 新格式：陣列格式
+      const grouped: Record<string, string[]> = {}
+      product.specifications.forEach(spec => {
+        if (!grouped[spec.key]) {
+          grouped[spec.key] = []
+        }
+        if (!grouped[spec.key].includes(spec.value)) {
+          grouped[spec.key].push(spec.value)
+        }
+      })
+      return grouped
+    } else {
+      // 舊格式：物件格式
+      const grouped: Record<string, string[]> = {}
+      Object.entries(product.specifications).forEach(([key, value]) => {
+        grouped[key] = [String(value)]
+      })
+      return grouped
+    }
+  }
 
   // 處理加入購物車
   const handleAddToCart = () => {
     if (!product) return
     
+    // 檢查是否有規格需要選擇
+    const specOptions = getSpecificationOptions()
+    const specKeys = Object.keys(specOptions)
+    
+    // 如果有規格選項，檢查是否都已選擇
+    if (specKeys.length > 0) {
+      const missingSpecs = specKeys.filter(key => !selectedSpecs[key])
+      if (missingSpecs.length > 0) {
+        alert(`請選擇 ${missingSpecs.join('、')} 規格`)
+        return
+      }
+    }
+    
+    // 檢查庫存是否足夠
+    const currentCartQuantity = useCartStore.getState().getItemQuantity(product.id)
+    const totalQuantity = currentCartQuantity + quantity
+    
+    if (totalQuantity > (product.stock_quantity || 0)) {
+      alert(`庫存不足！目前庫存：${product.stock_quantity} 件，購物車中已有：${currentCartQuantity} 件`)
+      return
+    }
+    
+    // 建立商品名稱（包含規格）
+    const specText = Object.entries(selectedSpecs)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(' ')
+    const productName = specText ? `${product.name} (${specText})` : product.name
+    
     for (let i = 0; i < quantity; i++) {
       addItem({
         id: product.id,
-        name: product.name,
+        name: productName,
         sku: product.sku,
         price: product.price,
         original_price: product.original_price,
         thumbnail: product.thumbnail,
-        category: product.category
+        stock_quantity: product.stock_quantity,
+        category: product.category,
+        selectedSpecs: selectedSpecs
       })
     }
     
-    alert(`已將 ${quantity} 件 ${product.name} 加入購物車！`)
+    alert(`已將 ${quantity} 件 ${productName} 加入購物車！`)
   }
 
   useEffect(() => {
@@ -168,7 +230,7 @@ export default function ProductDetailPage() {
 
       <div className="main-container">
         {/* 主要產品資訊區域 */}
-        <div className="product-card">
+        <div className="product-card-1">
           <div className="product-grid">
             {/* 產品圖片區域 - 左側 */}
             <div className="image-section">
@@ -284,17 +346,23 @@ export default function ProductDetailPage() {
                 ))}
               </div>
 
-              {/* 庫存狀態 */}
-              {product.stock_quantity !== undefined && (
-                <div className="stock-status">
-                  <span className="stock-label">庫存狀態:</span>
-                  {product.stock_quantity > 0 ? (
-                    <span className="stock-available">
-                      現貨 {product.stock_quantity} 件
-                    </span>
-                  ) : (
-                    <span className="stock-unavailable">暫時缺貨</span>
-                  )}
+              {/* 運費規則 */}
+              {product.shipping_rules && product.shipping_rules.length > 0 && (
+                <div className="shipping-rules">
+                  <span className="shipping-label">運費規則:</span>
+                  <div className="shipping-rules-list">
+                    {product.shipping_rules.map((rule, index) => (
+                      <div key={index} className="shipping-rule-item">
+                        <div className="shipping-method">
+                          <span className="method-name">{rule.method}</span>
+                        </div>
+                        <div className="shipping-fee-info">
+                          <span className="base-fee">運費 NT$ {rule.base_fee}</span>
+                          <span className="free-threshold">滿 NT$ {rule.free_shipping_threshold.toLocaleString()} 免運</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -302,6 +370,40 @@ export default function ProductDetailPage() {
             {/* 購買區域 - 右側 */}
             <div className="purchase-section">
               <h3 className="purchase-title">立即購買</h3>
+                
+                {/* 商品規格選擇 */}
+                {(() => {
+                  const specOptions = getSpecificationOptions()
+                  const specKeys = Object.keys(specOptions)
+                  
+                  if (specKeys.length > 0) {
+                    return (
+                      <div className="specs-selection-section">
+                        <h4 className="specs-title">選擇規格</h4>
+                        {specKeys.map(specKey => (
+                          <div key={specKey} className="spec-group">
+                            <label className="spec-label">{specKey}</label>
+                            <div className="spec-options">
+                              {specOptions[specKey].map(option => (
+                                <button
+                                  key={option}
+                                  onClick={() => setSelectedSpecs(prev => ({
+                                    ...prev,
+                                    [specKey]: option
+                                  }))}
+                                  className={`spec-option ${selectedSpecs[specKey] === option ? 'selected' : ''}`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
                 
                 {/* 數量選擇 */}
                 <div className="quantity-section">
@@ -319,13 +421,22 @@ export default function ProductDetailPage() {
                     <input
                       type="number"
                       value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={(e) => {
+                        const newQuantity = Math.max(1, parseInt(e.target.value) || 1)
+                        const maxQuantity = product.stock_quantity || 1
+                        setQuantity(Math.min(newQuantity, maxQuantity))
+                      }}
                       className="quantity-input"
                       min="1"
+                      max={product.stock_quantity || 1}
                     />
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
+                      onClick={() => {
+                        const maxQuantity = product.stock_quantity || 1
+                        setQuantity(Math.min(quantity + 1, maxQuantity))
+                      }}
                       className="quantity-button"
+                      disabled={quantity >= (product.stock_quantity || 1)}
                     >
                       +
                     </button>
@@ -346,7 +457,7 @@ export default function ProductDetailPage() {
                 <div className="button-group">
                   <button 
                     className="btn btn-primary"
-                    disabled={product.stock_quantity === 0}
+                    disabled={product.stock_quantity === 0 || quantity > (product.stock_quantity || 0)}
                     onClick={handleAddToCart}
                   >
                     🛒 加入購物車
@@ -401,44 +512,16 @@ export default function ProductDetailPage() {
 
             {activeTab === 'specifications' && (
               <div>
-                <h3 className="tab-title">商品規格</h3>
+                <h3 className="tab-title">規格說明</h3>
                 
                 {/* 顯示富文本規格說明 */}
-                {product.specifications_description && (
-                  <div>
-                    <h4 style={{ marginBottom: '15px', color: '#333', fontSize: '16px' }}>規格說明</h4>
-                    <div 
-                      className="tab-text"
-                      dangerouslySetInnerHTML={{ __html: product.specifications_description }}
-                      style={{ marginBottom: '25px' }}
-                    />
-                  </div>
-                )}
-                
-                {/* 顯示結構化規格表格 */}
-                {product.specifications && Object.keys(product.specifications).length > 0 && (
-                  <div>
-                    <h4 style={{ marginBottom: '15px', color: '#333', fontSize: '16px' }}>規格參數</h4>
-                    <table className="specs-table">
-                      <tbody>
-                        {Object.entries(product.specifications).map(([key, value], index) => (
-                          <tr key={key}>
-                            <td className="spec-key">
-                              {key}
-                            </td>
-                            <td className="spec-value">
-                              {String(value)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                
-                {/* 如果兩者都沒有，顯示空狀態 */}
-                {!product.specifications_description && (!product.specifications || Object.keys(product.specifications).length === 0) && (
-                  <p className="tab-empty">暫無規格資訊</p>
+                {product.specifications_description ? (
+                  <div 
+                    className="tab-text"
+                    dangerouslySetInnerHTML={{ __html: product.specifications_description }}
+                  />
+                ) : (
+                  <p className="tab-empty">暫無規格說明</p>
                 )}
               </div>
             )}

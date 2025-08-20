@@ -1,7 +1,7 @@
 'use client'
 
-import { useCartStore } from '@/hooks/use-cart-store-new'
-import { useEffect } from 'react'
+import { useCartStore, ShippingMethod } from '@/hooks/use-cart-store-new'
+import { useEffect, useState } from 'react'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './cart.css'
 
@@ -12,11 +12,94 @@ export default function CartPage() {
     getTotalPrice,
     updateQuantity, 
     removeItem, 
-    clearCart 
+    clearCart,
+    selectedShipping,
+    shippingMethods,
+    setSelectedShipping,
+    setShippingMethods,
+    getShippingFee
   } = useCartStore()
 
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice()
+
+  // 運送方式狀態
+  const [loadingShipping, setLoadingShipping] = useState(true)
+
+  const shippingFee = getShippingFee()
+  const finalTotal = totalPrice + shippingFee
+
+  // 獲取運送方式
+  const fetchShippingMethods = async () => {
+    try {
+      const companySlug = window.location.pathname.split('/')[1] // 從 URL 獲取公司代碼
+      const response = await fetch(`/api/portal/${companySlug}/shipping/methods?company=${companySlug}`)
+      
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data) {
+          setShippingMethods(result.data)
+        } else {
+          console.error('獲取運送方式失敗:', result.message)
+          // 使用預設運送方式作為備用
+          setShippingMethods([
+            {
+              id: 'store_pickup',
+              name: '7-11超商取貨',
+              fee: 60,
+              freeThreshold: 399,
+              description: '3-5個工作天到店'
+            },
+            {
+              id: 'home_delivery',
+              name: '宅配',
+              fee: 210,
+              freeThreshold: 999,
+              description: '1-3個工作天送達'
+            }
+          ])
+        }
+      } else {
+        console.error('獲取運送方式失敗')
+        // 使用預設運送方式作為備用
+        setShippingMethods([
+          {
+            id: 'store_pickup',
+            name: '7-11超商取貨',
+            fee: 60,
+            freeThreshold: 399,
+            description: '3-5個工作天到店'
+          }
+        ])
+      }
+    } catch (error) {
+      console.error('獲取運送方式失敗:', error)
+      // 使用預設運送方式作為備用
+      setShippingMethods([
+        {
+          id: 'store_pickup',
+          name: '7-11超商取貨',
+          fee: 60,
+          freeThreshold: 399,
+          description: '3-5個工作天到店'
+        }
+      ])
+    } finally {
+      setLoadingShipping(false)
+    }
+  }
+
+  // 初始化獲取運送方式
+  useEffect(() => {
+    fetchShippingMethods()
+  }, [])
+
+  // 設定預設運送方式
+  useEffect(() => {
+    if (shippingMethods.length > 0 && !selectedShipping) {
+      setSelectedShipping(shippingMethods[0].id)
+    }
+  }, [shippingMethods, selectedShipping, setSelectedShipping])
 
   // 除錯：監控購物車狀態變化
   useEffect(() => {
@@ -97,6 +180,11 @@ export default function CartPage() {
                         {item.category.name}
                       </div>
                     )}
+                    {item.stock_quantity !== undefined && (
+                      <div className="cart-item-stock">
+                        庫存: {item.stock_quantity} 件
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -112,13 +200,31 @@ export default function CartPage() {
                   <input
                     type="number"
                     value={item.quantity}
-                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 1
+                      const maxQuantity = item.stock_quantity || 999
+                      if (newQuantity > maxQuantity) {
+                        alert(`庫存不足！目前庫存：${item.stock_quantity} 件`)
+                        return
+                      }
+                      updateQuantity(item.id, newQuantity)
+                    }}
                     className="cart-quantity-display"
                     min="1"
+                    max={item.stock_quantity || 999}
                   />
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => {
+                      const newQuantity = item.quantity + 1
+                      const maxQuantity = item.stock_quantity || 999
+                      if (newQuantity > maxQuantity) {
+                        alert(`庫存不足！目前庫存：${item.stock_quantity} 件`)
+                        return
+                      }
+                      updateQuantity(item.id, newQuantity)
+                    }}
                     className="cart-quantity-btn"
+                    disabled={item.quantity >= (item.stock_quantity || 999)}
                   >
                     +
                   </button>
@@ -164,19 +270,73 @@ export default function CartPage() {
               <span className="cart-summary-value">NT$ {totalPrice.toLocaleString()}</span>
             </div>
             
-            <div className="cart-summary-row">
-              <span className="cart-summary-label">運費</span>
-              <span className="cart-summary-value">免運費</span>
+            {/* 運送方式選擇 */}
+            <div className="shipping-selection">
+              <h3 className="shipping-title">選擇運送方式</h3>
+              {loadingShipping ? (
+                <div className="shipping-loading">
+                  <p>載入運送方式中...</p>
+                </div>
+              ) : (
+                <div className="shipping-methods">
+                  {shippingMethods.map((method) => {
+                  const isFreeShipping = totalPrice >= method.freeThreshold
+                  return (
+                    <label key={method.id} className="shipping-method">
+                      <input
+                        type="radio"
+                        name="shipping"
+                        value={method.id}
+                        checked={selectedShipping === method.id}
+                        onChange={(e) => setSelectedShipping(e.target.value)}
+                        className="shipping-radio"
+                      />
+                      <div className="shipping-method-content">
+                        <div className="shipping-method-header">
+                          <span className="shipping-method-name">{method.name}</span>
+                          <span className="shipping-method-fee">
+                            {isFreeShipping ? (
+                              <span className="free-shipping">免運費</span>
+                            ) : (
+                              <span className="shipping-fee">NT$ {method.fee}</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="shipping-method-details">
+                          <span className="shipping-description">{method.description}</span>
+                          {!isFreeShipping && (
+                            <span className="shipping-threshold">
+                              滿 NT$ {method.freeThreshold.toLocaleString()} 免運
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  )
+                  })}
+                </div>
+              )}
             </div>
             
             <div className="cart-summary-row">
+              <span className="cart-summary-label">運費</span>
+              <span className="cart-summary-value">
+                {shippingFee === 0 ? (
+                  <span className="free-shipping">免運費</span>
+                ) : (
+                  `NT$ ${shippingFee.toLocaleString()}`
+                )}
+              </span>
+            </div>
+            
+            <div className="cart-summary-row cart-summary-total-row">
               <span className="cart-summary-label">總計</span>
-              <span className="cart-summary-total">NT$ {totalPrice.toLocaleString()}</span>
+              <span className="cart-summary-total">NT$ {finalTotal.toLocaleString()}</span>
             </div>
 
-            <button className="cart-checkout-btn">
+            <a href="/a/checkout" className="cart-checkout-btn">
               立即結帳
-            </button>
+            </a>
             
             <a href="/a/products" className="cart-continue-shopping">
               繼續購物

@@ -1,0 +1,493 @@
+/* 結帳頁面樣式 */
+.checkout-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 140px auto 40px;
+  padding: 0 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 結帳步驟指示器 */
+.checkout-steps {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  padding: 30px;
+}
+
+.checkout-steps-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.checkout-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.checkout-step.active .step-number {
+  background: #007bff;
+  color: white;
+}
+
+.step-label {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.checkout-step.active .step-label {
+  color: #007bff;
+}
+
+.step-divider {
+  flex: 1;
+  height: 2px;
+  background: #e9ecef;
+  margin: 0 20px;
+  margin-bottom: 32px;
+}
+
+/* 主要內容區域 */
+.checkout-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+/* 表單區域 */
+.checkout-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.checkout-section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f8f9fa;
+}
+
+.section-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+/* 訂單商品列表 */
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto auto;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.order-item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-item-placeholder {
+  font-size: 24px;
+  color: #6c757d;
+}
+
+.order-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.order-item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.order-item-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.order-item-quantity {
+  font-size: 14px;
+  color: #6c757d;
+  text-align: center;
+}
+
+.order-item-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #007bff;
+  text-align: right;
+}
+
+/* 收貨資訊表單 */
+.shipping-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  background: #fff;
+}
+
+
+.form-group select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  background: #fff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* 付款方式 */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.payment-method {
+  display: block;
+  padding: 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.payment-method:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.payment-method.selected {
+  border-color: #007bff;
+  background: #f8fbff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.payment-method input[type="radio"] {
+  display: none;
+}
+
+.payment-method-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.payment-method-icon {
+  font-size: 32px;
+  width: 50px;
+  text-align: center;
+}
+
+.payment-method-info {
+  flex: 1;
+}
+
+.payment-method-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.payment-method-description {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* 訂單摘要 */
+.checkout-summary {
+  position: sticky;
+  top: 140px;
+  height: fit-content;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.summary-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  padding: 25px 25px 0;
+}
+
+.summary-content {
+  padding: 25px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-divider {
+  height: 1px;
+  background: #e9ecef;
+  margin: 20px 0;
+}
+
+.summary-total {
+  margin-bottom: 25px;
+}
+
+.summary-total .summary-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-total .summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #007bff;
+}
+
+/* 按鈕樣式 */
+.checkout-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.checkout-submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.checkout-submit-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.back-to-cart {
+  display: block;
+  text-align: center;
+  color: #6c757d;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.back-to-cart:hover {
+  color: #007bff;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .checkout-container {
+    margin-top: 120px;
+    padding: 0 15px;
+  }
+
+  .checkout-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .checkout-summary {
+    position: static;
+    order: -1;
+  }
+
+  .checkout-steps-content {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .step-divider {
+    display: none;
+  }
+
+  .checkout-step {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .order-item {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+
+  .order-item-quantity,
+  .order-item-price {
+    grid-column: 2;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .order-item-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .checkout-section {
+    padding: 20px;
+  }
+
+  .summary-card {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkout-container {
+    padding: 0 10px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .checkout-steps {
+    padding: 20px 15px;
+  }
+
+  .step-number {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .step-label {
+    font-size: 12px;
+  }
+}

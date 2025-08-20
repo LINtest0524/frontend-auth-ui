@@ -9,10 +9,15 @@ export interface CartItem {
   original_price?: number
   thumbnail?: string
   quantity: number
+  stock_quantity?: number
   category?: {
     id: number
     name: string
   }
+  // 新增變體相關欄位
+  variant_id?: number
+  variant_name?: string
+  variant_options?: Record<string, string>
 }
 
 // 購物車狀態介面
@@ -40,13 +45,18 @@ export const useCartStore = create<CartStore>((set, get) => ({
   // 加入商品到購物車
   addItem: (product) => {
     set((state) => {
-      const existingItem = state.items.find(item => item.id === product.id)
+      // 如果有變體，需要同時比較產品ID和變體ID
+      const existingItem = state.items.find(item => 
+        item.id === product.id && 
+        (product.variant_id ? item.variant_id === product.variant_id : !item.variant_id)
+      )
       let newItems
 
       if (existingItem) {
         // 如果商品已存在，增加數量
         newItems = state.items.map(item =>
-          item.id === product.id
+          item.id === product.id && 
+          (product.variant_id ? item.variant_id === product.variant_id : !item.variant_id)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )

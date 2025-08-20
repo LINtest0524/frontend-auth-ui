@@ -4,6 +4,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
+  margin-top: 120px;
 }
 
 .products-page::before {
@@ -29,7 +30,7 @@
 .products-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 3rem 2rem;
+  padding: 20px 25px;
   border-radius: 20px;
   margin-bottom: 2rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -54,7 +55,7 @@
 }
 
 .products-title {
-  font-size: 3rem;
+  font-size: 32px;
   font-weight: 800;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -70,7 +71,7 @@
 .cart-status {
   background: white;
   border-radius: 15px;
-  padding: 1.5rem;
+  padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
@@ -104,7 +105,7 @@
 }
 
 .cart-count {
-  font-size: 1.5rem;
+  font-size: 20px;
   font-weight: 800;
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   -webkit-background-clip: text;
@@ -165,7 +166,6 @@
 }
 
 .category-select {
-  padding: 0.75rem 1rem;
   border: 2px solid #e1e5e9;
   border-radius: 12px;
   font-size: 1rem;

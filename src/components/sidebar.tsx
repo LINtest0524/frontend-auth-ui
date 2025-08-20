@@ -37,6 +37,8 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("loan-product");
     else if (pathname?.startsWith("/admin/products")) setActiveMenu("products");
     else if (pathname?.startsWith("/admin/product-categories")) setActiveMenu("products");
+    else if (pathname?.startsWith("/admin/orders")) setActiveMenu("orders");
+    else if (pathname?.startsWith("/admin/shipping-rules")) setActiveMenu("products");
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
     else if (pathname?.startsWith("/admin/popup-announcement")) setActiveMenu("popup-announcement");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
@@ -390,10 +392,27 @@ export default function Sidebar() {
                 >
                   新增商品
                 </Link>
+                <Link
+                  href="/admin/shipping-rules"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/shipping-rules" && currentActive === null && "active")}
+                >
+                  運送規則
+                </Link>
               </div>
             </div>
           </div>
         )}
+
+        {/* 訂單管理 */}
+        <Link
+          href="/admin/orders"
+          onClick={resetMenu}
+          className={cn("sidebar-item i-plan", pathname === "/admin/orders" && "active")}
+        >
+          <span className="icon" />
+          訂單管理
+        </Link>
 
         {/* 輪盤管理 */}
         <div>

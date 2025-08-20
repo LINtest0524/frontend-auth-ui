@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/pagination'
+import '../app/a/styles/index.css'
 
 
 
@@ -68,7 +69,6 @@ export default function BannerCarousel({ banners }: Props) {
           <img
             src={getImageUrl(isMobile ? b.mobile_image_url : b.desktop_image_url)}
             alt={b.title}
-            className=""
           />
         </SwiperSlide>
       ))}

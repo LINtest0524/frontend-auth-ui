@@ -1,0 +1,278 @@
+/* 會員中心樣式 - 參考主流購物商城設計 */
+
+.member-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding-top: 120px;
+}
+
+.member-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 頁面標題區域 */
+.member-header {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.member-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-title-icon {
+  font-size: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.member-breadcrumb {
+  font-size: 14px;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-breadcrumb a {
+  color: #4299e1;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.member-breadcrumb a:hover {
+  color: #2b6cb0;
+}
+
+/* 主要內容區域 */
+.member-main {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* 左側導航 */
+.member-sidebar {
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  position: sticky;
+  top: 140px;
+}
+
+.member-nav-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.member-nav-list {
+  padding: 8px 0;
+}
+
+.member-nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 16px 24px;
+  border: none;
+  background: none;
+  color: #4a5568;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f7fafc;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-nav-item:last-child {
+  border-bottom: none;
+}
+
+.member-nav-item:hover {
+  background: #f7fafc;
+  color: #2d3748;
+  transform: translateX(4px);
+}
+
+.member-nav-item.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.member-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #ffd700;
+}
+
+.member-nav-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+/* 右側內容區域 */
+.member-content {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  min-height: 600px;
+}
+
+.member-content-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 24px 0;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  position: relative;
+}
+
+.member-content-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .member-main {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .member-sidebar {
+    width: 100%;
+    position: static;
+  }
+  
+  .member-nav-list {
+    display: flex;
+    overflow-x: auto;
+    padding: 0;
+    gap: 0;
+  }
+  
+  .member-nav-item {
+    min-width: 140px;
+    text-align: center;
+    border-bottom: none;
+    border-right: 1px solid #f7fafc;
+    justify-content: center;
+  }
+  
+  .member-nav-item:last-child {
+    border-right: none;
+  }
+  
+  .member-wrapper {
+    padding: 15px;
+  }
+  
+  .member-header {
+    padding: 20px;
+  }
+  
+  .member-title {
+    font-size: 24px;
+  }
+  
+  .member-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .member-title {
+    font-size: 20px;
+  }
+  
+  .member-nav-item {
+    min-width: 120px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .member-nav-icon {
+    font-size: 16px;
+  }
+}
+
+/* 動畫效果 */
+.member-content {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 載入動畫 */
+.member-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #718096;
+}
+
+.member-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

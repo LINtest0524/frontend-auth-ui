@@ -3,8 +3,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/portal/:path*',
+        destination: 'http://localhost:3001/portal/:path*', // Portal API proxy
+      },
+      {
         source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*', // 後端 API proxy
+        destination: 'http://localhost:3001/api/:path*', // 其他 API proxy
       },
     ];
   },

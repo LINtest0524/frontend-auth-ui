@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/ProductCard'
-import { useCartStore } from '@/hooks/use-cart-store-new'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import '@/styles/pages/products.css'
 
@@ -32,32 +31,6 @@ export default function ProductsPage() {
   const searchParams = useSearchParams()
   const companyCode = 'a'
   
-  // 購物車狀態
-  const { addItem, getTotalItems } = useCartStore()
-  const totalItems = getTotalItems()
-  
-  // 處理加入購物車
-  const handleAddToCart = (product: Product) => {
-    console.log('Adding product to cart:', product)
-    
-    addItem({
-      id: product.id,
-      name: product.name,
-      sku: product.sku,
-      price: product.price,
-      original_price: product.original_price,
-      thumbnail: product.thumbnail,
-      category: product.category
-    })
-    
-    // 檢查加入後的狀態
-    setTimeout(() => {
-      console.log('Cart state after adding:', useCartStore.getState())
-    }, 100)
-    
-    // 可以加入成功提示
-    alert(`${product.name} 已加入購物車！`)
-  }
   
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -169,14 +142,6 @@ export default function ProductsPage() {
               <p className="products-subtitle">探索我們的優質產品，發現生活的美好</p>
             </div>
             
-            {/* 購物車狀態 */}
-            <div className="cart-status" onClick={() => router.push('/a/cart')} style={{ cursor: 'pointer' }}>
-              <div className="cart-icon">🛒</div>
-              <div className="cart-info">
-                <h3>我的購物車</h3>
-                <div className="cart-count">{totalItems} 件商品</div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -254,7 +219,6 @@ export default function ProductsPage() {
                   key={product.id}
                   product={product}
                   companySlug={companyCode}
-                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>

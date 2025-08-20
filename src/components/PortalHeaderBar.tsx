@@ -98,14 +98,9 @@ export default function PortalHeaderBar() {
       {logo && (
         <div className="f-logo" style={{
           position: 'fixed',
-          top: '20px',
-          left: '20px',
+          top: '25px',
+          left: '45px',
           zIndex: 1000,
-          backgroundColor: 'white',
-          padding: '8px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e5e7eb'
         }}>
           <img
             src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
@@ -121,7 +116,7 @@ export default function PortalHeaderBar() {
 
       <div className="header-box fo5">
         <div className="header-left">
-          <h1>A首頁</h1>
+          <h1></h1>
           {companyId && <MenuRenderer companyId={companyId} />}
         </div>
         {!user ? (

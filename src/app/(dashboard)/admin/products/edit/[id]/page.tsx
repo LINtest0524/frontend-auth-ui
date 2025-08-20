@@ -25,7 +25,7 @@ type Product = {
   stock_quantity: number
   min_stock: number
   category_id?: number
-  specifications?: Record<string, any>
+  specifications?: Record<string, any> | Array<{key: string, value: string}>
   tags?: string[]
   status: string
   is_featured: boolean
@@ -67,6 +67,10 @@ export default function EditProductPage() {
   const [thumbnail, setThumbnail] = useState('')
   const [specifications, setSpecifications] = useState<{key: string, value: string}[]>([
     { key: '', value: '' }
+  ])
+  
+  const [shippingRules, setShippingRules] = useState<{method: string, base_fee: string, free_shipping_threshold: string}[]>([
+    { method: '', base_fee: '', free_shipping_threshold: '' }
   ])
 
   useEffect(() => {
@@ -123,14 +127,37 @@ export default function EditProductPage() {
           setThumbnail(product.thumbnail || '')
           
           // 處理規格數據
-          if (product.specifications && Object.keys(product.specifications).length > 0) {
-            const specsArray = Object.entries(product.specifications).map(([key, value]) => ({
-              key,
-              value: String(value)
-            }))
-            setSpecifications(specsArray)
+          if (product.specifications) {
+            // 檢查是否為陣列格式（新格式）
+            if (Array.isArray(product.specifications)) {
+              setSpecifications(product.specifications.map(spec => ({
+                key: spec.key || '',
+                value: spec.value || ''
+              })))
+            } 
+            // 檢查是否為物件格式（舊格式）
+            else if (typeof product.specifications === 'object' && Object.keys(product.specifications).length > 0) {
+              const specsArray = Object.entries(product.specifications).map(([key, value]) => ({
+                key,
+                value: String(value)
+              }))
+              setSpecifications(specsArray)
+            } else {
+              setSpecifications([{ key: '', value: '' }])
+            }
           } else {
             setSpecifications([{ key: '', value: '' }])
+          }
+          
+          // 處理運費規則數據
+          if (product.shipping_rules && Array.isArray(product.shipping_rules) && product.shipping_rules.length > 0) {
+            setShippingRules(product.shipping_rules.map(rule => ({
+              method: rule.method || '',
+              base_fee: rule.base_fee?.toString() || '',
+              free_shipping_threshold: rule.free_shipping_threshold?.toString() || ''
+            })))
+          } else {
+            setShippingRules([{ method: '', base_fee: '', free_shipping_threshold: '' }])
           }
         })
         .catch(error => {
@@ -180,6 +207,24 @@ export default function EditProductPage() {
   const removeSpecification = (index: number) => {
     if (specifications.length > 1) {
       setSpecifications(prev => prev.filter((_, i) => i !== index))
+    }
+  }
+
+  const handleShippingRuleChange = (index: number, field: 'method' | 'base_fee' | 'free_shipping_threshold', value: string) => {
+    setShippingRules(prev => {
+      const newRules = [...prev]
+      newRules[index][field] = value
+      return newRules
+    })
+  }
+
+  const addShippingRule = () => {
+    setShippingRules(prev => [...prev, { method: '', base_fee: '', free_shipping_threshold: '' }])
+  }
+
+  const removeShippingRule = (index: number) => {
+    if (shippingRules.length > 1) {
+      setShippingRules(prev => prev.filter((_, i) => i !== index))
     }
   }
 
@@ -249,13 +294,22 @@ export default function EditProductPage() {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      // 處理規格
-      const specificationsObj = specifications
+      // 處理規格 - 保持陣列格式，允許重複的規格名稱
+      const specificationsArray = specifications
         .filter(spec => spec.key.trim() && spec.value.trim())
-        .reduce((acc, spec) => {
-          acc[spec.key.trim()] = spec.value.trim()
-          return acc
-        }, {} as Record<string, string>)
+        .map(spec => ({
+          key: spec.key.trim(),
+          value: spec.value.trim()
+        }))
+
+      // 處理運費規則
+      const shippingRulesArray = shippingRules
+        .filter(rule => rule.method.trim() && rule.base_fee.trim() && rule.free_shipping_threshold.trim())
+        .map(rule => ({
+          method: rule.method.trim(),
+          base_fee: parseFloat(rule.base_fee),
+          free_shipping_threshold: parseFloat(rule.free_shipping_threshold)
+        }))
 
       const submitData = {
         ...formData,
@@ -264,7 +318,8 @@ export default function EditProductPage() {
         stock_quantity: parseInt(formData.stock_quantity),
         min_stock: parseInt(formData.min_stock),
         category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
-        specifications: Object.keys(specificationsObj).length > 0 ? specificationsObj : undefined,
+        specifications: specificationsArray.length > 0 ? specificationsArray : undefined,
+        shipping_rules: shippingRulesArray.length > 0 ? shippingRulesArray : undefined,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
         images: images.length > 0 ? images : undefined,
         thumbnail: thumbnail || undefined,
@@ -616,6 +671,94 @@ export default function EditProductPage() {
               </button>
               <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
                 提示：可以新增多個規格項目，例如重量、顏色、尺寸等。空白的規格項目不會被儲存。
+              </small>
+            </div>
+          </div>
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>運費管理</label>
+            <div style={{ width: '70%' }}>
+              <h4 style={{ marginBottom: '10px', color: '#333' }}>配送方式與運費設定</h4>
+              {shippingRules.map((rule, index) => (
+                <div key={index} style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: '2fr 1fr 1fr auto', 
+                  gap: '10px', 
+                  marginBottom: '10px', 
+                  alignItems: 'center',
+                  padding: '10px',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '6px',
+                  background: '#f8f9fa'
+                }}>
+                  <input
+                    type="text"
+                    placeholder="配送方式 (例：7-11超商取貨、宅配)"
+                    value={rule.method}
+                    onChange={(e) => handleShippingRuleChange(index, 'method', e.target.value)}
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '12px', color: '#666' }}>運費</span>
+                    <input
+                      type="number"
+                      placeholder="60"
+                      value={rule.base_fee}
+                      onChange={(e) => handleShippingRuleChange(index, 'base_fee', e.target.value)}
+                      style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', width: '80px' }}
+                      min="0"
+                      step="1"
+                    />
+                    <span style={{ fontSize: '12px', color: '#666' }}>元</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '12px', color: '#666' }}>滿</span>
+                    <input
+                      type="number"
+                      placeholder="399"
+                      value={rule.free_shipping_threshold}
+                      onChange={(e) => handleShippingRuleChange(index, 'free_shipping_threshold', e.target.value)}
+                      style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px', width: '80px' }}
+                      min="0"
+                      step="1"
+                    />
+                    <span style={{ fontSize: '12px', color: '#666' }}>元免運</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeShippingRule(index)}
+                    disabled={shippingRules.length === 1}
+                    style={{
+                      padding: '8px 12px',
+                      background: shippingRules.length === 1 ? '#ccc' : '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: shippingRules.length === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    刪除
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addShippingRule}
+                style={{
+                  padding: '8px 16px',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginTop: '5px'
+                }}
+              >
+                + 新增配送方式
+              </button>
+              <small style={{ color: '#666', display: 'block', marginTop: '10px' }}>
+                提示：可以新增多個配送方式，例如7-11超商取貨、宅配等。空白的運費規則不會被儲存。
               </small>
             </div>
           </div>

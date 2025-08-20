@@ -81,6 +81,9 @@ export default function CartPage() {
                         {item.category && (
                           <p className="text-sm text-gray-500">分類: {item.category.name}</p>
                         )}
+                        {item.stock_quantity !== undefined && (
+                          <p className="text-sm text-gray-500">庫存: {item.stock_quantity} 件</p>
+                        )}
                       </div>
 
                       {/* 數量控制 */}
@@ -88,13 +91,38 @@ export default function CartPage() {
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                          disabled={item.quantity <= 1}
                         >
                           -
                         </button>
-                        <span className="w-12 text-center">{item.quantity}</span>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const newQuantity = parseInt(e.target.value) || 1
+                            const maxQuantity = item.stock_quantity || 999
+                            if (newQuantity > maxQuantity) {
+                              alert(`庫存不足！目前庫存：${item.stock_quantity} 件`)
+                              return
+                            }
+                            updateQuantity(item.id, newQuantity)
+                          }}
+                          className="w-12 text-center border rounded"
+                          min="1"
+                          max={item.stock_quantity || 999}
+                        />
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => {
+                            const newQuantity = item.quantity + 1
+                            const maxQuantity = item.stock_quantity || 999
+                            if (newQuantity > maxQuantity) {
+                              alert(`庫存不足！目前庫存：${item.stock_quantity} 件`)
+                              return
+                            }
+                            updateQuantity(item.id, newQuantity)
+                          }}
                           className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                          disabled={item.quantity >= (item.stock_quantity || 999)}
                         >
                           +
                         </button>
