@@ -13,6 +13,7 @@ export default function CartPage() {
     updateQuantity, 
     removeItem, 
     clearCart,
+    addToCart,
     selectedShipping,
     shippingMethods,
     setSelectedShipping,
@@ -25,6 +26,7 @@ export default function CartPage() {
 
   // 運送方式狀態
   const [loadingShipping, setLoadingShipping] = useState(true)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const shippingFee = getShippingFee()
   const finalTotal = totalPrice + shippingFee
@@ -92,6 +94,28 @@ export default function CartPage() {
   // 初始化獲取運送方式
   useEffect(() => {
     fetchShippingMethods()
+    
+    // 檢查是否有結帳錯誤訊息
+    const errorMsg = sessionStorage.getItem('checkoutError')
+    if (errorMsg) {
+      setCheckoutError(errorMsg)
+      sessionStorage.removeItem('checkoutError')
+      
+      // 嘗試恢復購物車資料
+      const cartDataStr = sessionStorage.getItem('checkoutCartData')
+      if (cartDataStr) {
+        try {
+          const cartData = JSON.parse(cartDataStr)
+          // 恢復購物車商品
+          cartData.forEach((item: any) => {
+            addToCart(item)
+          })
+          sessionStorage.removeItem('checkoutCartData')
+        } catch (err) {
+          console.error('恢復購物車失敗:', err)
+        }
+      }
+    }
   }, [])
 
   // 設定預設運送方式
@@ -144,6 +168,43 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* 錯誤訊息顯示 */}
+      {checkoutError && (
+        <div style={{
+          backgroundColor: '#f8d7da',
+          color: '#721c24',
+          padding: '15px',
+          borderRadius: '8px',
+          border: '1px solid #f5c6cb',
+          margin: '20px auto',
+          maxWidth: '1200px',
+          position: 'relative'
+        }}>
+          <strong>⚠️ 結帳失敗：</strong>{checkoutError}
+          <button 
+            onClick={() => setCheckoutError(null)}
+            style={{
+              position: 'absolute',
+              right: '15px',
+              top: '15px',
+              background: 'none',
+              border: 'none',
+              color: '#721c24',
+              cursor: 'pointer',
+              fontSize: '20px',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="關閉"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="cart-main">
         {/* 購物車商品列表 */}

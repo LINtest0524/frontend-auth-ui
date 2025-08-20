@@ -36,11 +36,53 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set())
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+
+  // 處理 URL 參數中的成功訊息
+  useEffect(() => {
+    // 確保在客戶端執行
+    if (typeof window === 'undefined') return
+    
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      const success = urlParams.get('success')
+      const orderId = urlParams.get('orderId')
+      
+      console.log('URL 參數:', { success, orderId })
+      
+      if (success && orderId) {
+        setShowSuccessMessage(true)
+        // 5秒後自動隱藏成功訊息
+        setTimeout(() => {
+          setShowSuccessMessage(false)
+        }, 5000)
+        
+        // 清除 URL 參數
+        try {
+          if (window.location && window.location.href) {
+            const url = new URL(window.location.href)
+            url.searchParams.delete('success')
+            url.searchParams.delete('orderId')
+            window.history.replaceState({}, '', url.toString())
+          }
+        } catch (urlError) {
+          console.error('清除 URL 參數失敗:', urlError)
+          // 如果 URL 操作失敗，使用替代方法
+          if (window.location && window.location.pathname) {
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, '', newUrl)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('處理 URL 參數失敗:', error)
+    }
+  }, [])
 
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('portalToken_a')
         if (!token) {
           console.log('未找到登入 token')
           setLoading(false)
@@ -164,6 +206,47 @@ export default function OrdersPage() {
             <span>我的訂單</span>
           </div>
         </div>
+
+        {/* 成功訊息 */}
+        {showSuccessMessage && (
+          <div style={{
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '30px',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px'
+          }}>
+            <div style={{ fontSize: '24px' }}>✅</div>
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '5px' }}>
+                付款成功！
+              </div>
+              <div style={{ fontSize: '14px', opacity: 0.9 }}>
+                您的訂單已成功付款，我們將盡快為您處理。
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSuccessMessage(false)}
+              style={{
+                marginLeft: 'auto',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: 'white',
+                borderRadius: '50%',
+                width: '30px',
+                height: '30px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* 訂單列表 */}
         {orders.length === 0 ? (

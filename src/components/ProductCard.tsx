@@ -1,6 +1,17 @@
 import { useRouter } from "next/navigation";
 import '@/styles/components/product-card.css';
 
+interface ProductVariant {
+  id: number;
+  variant_name: string;
+  sku: string;
+  price: number;
+  original_price?: number;
+  stock_quantity: number;
+  images?: string[];
+  is_default: boolean;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -10,6 +21,7 @@ interface Product {
   short_description?: string;
   thumbnail?: string;
   is_featured: boolean;
+  variants?: ProductVariant[];
   category?: {
     id: number;
     name: string;
@@ -25,7 +37,32 @@ interface ProductCardProps {
 export default function ProductCard({ product, companySlug, onAddToCart }: ProductCardProps) {
   const router = useRouter();
 
-  const hasDiscount = product.original_price && Number(product.original_price) > Number(product.price);
+  // 獲取顯示用的價格和圖片
+  const getDisplayData = () => {
+    // 如果有變體，使用預設變體或第一個變體的資料
+    if (product.variants && product.variants.length > 0) {
+      const defaultVariant = product.variants.find(v => v.is_default) || product.variants[0];
+      return {
+        price: defaultVariant.price,
+        original_price: defaultVariant.original_price,
+        thumbnail: defaultVariant.images && defaultVariant.images.length > 0 
+          ? defaultVariant.images[0] 
+          : product.thumbnail,
+        hasVariants: true
+      };
+    }
+    
+    // 沒有變體，使用主商品資料
+    return {
+      price: product.price,
+      original_price: product.original_price,
+      thumbnail: product.thumbnail,
+      hasVariants: false
+    };
+  };
+
+  const displayData = getDisplayData();
+  const hasDiscount = displayData.original_price && Number(displayData.original_price) > Number(displayData.price);
 
   const handleCardClick = () => {
     router.push(`/${companySlug}/products/${product.id}`);
@@ -42,9 +79,9 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
     <div className="product-card" onClick={handleCardClick}>
       {/* 商品圖片 */}
       <div className="product-image-container">
-        {product.thumbnail ? (
+        {displayData.thumbnail ? (
           <img
-            src={`${process.env.NEXT_PUBLIC_API_BASE}${product.thumbnail}`}
+            src={`${process.env.NEXT_PUBLIC_API_BASE}${displayData.thumbnail}`}
             alt={product.name}
             className="product-image"
           />
@@ -73,11 +110,11 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
         <div className="product-price-section">
           <div className="product-price-container">
             <span className="product-price">
-              ${Number(product.price).toFixed(0)}
+              ${Number(displayData.price).toFixed(0)}
             </span>
             {hasDiscount && (
               <span className="product-original-price">
-                ${Number(product.original_price).toFixed(0)}
+                ${Number(displayData.original_price).toFixed(0)}
               </span>
             )}
           </div>

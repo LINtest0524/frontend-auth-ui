@@ -48,7 +48,24 @@ export default function NewProductPage() {
     { method: '', base_fee: '', free_shipping_threshold: '' }
   ])
   
-  // 移除商品變體相關狀態，改用基本規格方式
+  // 商品變體管理
+  const [variants, setVariants] = useState<{
+    variant_name: string
+    sku: string
+    price: string
+    original_price: string
+    stock_quantity: string
+    variant_options: Record<string, string>
+    images: string[]
+    is_default: boolean
+  }[]>([])
+  
+  const [variantOptions, setVariantOptions] = useState<{
+    name: string
+    values: string[]
+  }[]>([])
+  
+  const [useVariants, setUseVariants] = useState(false)
 
   useEffect(() => {
     // 從 localStorage 獲取用戶資訊
@@ -130,6 +147,159 @@ export default function NewProductPage() {
     }
   }
 
+  // 商品變體管理函數
+  const addVariantOption = () => {
+    setVariantOptions(prev => [...prev, { name: '', values: [] }])
+  }
+
+  const removeVariantOption = (index: number) => {
+    setVariantOptions(prev => prev.filter((_, i) => i !== index))
+    // 重新生成變體
+    generateVariants()
+  }
+
+  const updateVariantOption = (index: number, field: 'name' | 'values', value: string | string[]) => {
+    setVariantOptions(prev => {
+      const newOptions = [...prev]
+      if (field === 'values') {
+        newOptions[index][field] = value as string[]
+      } else {
+        newOptions[index][field] = value as string
+      }
+      return newOptions
+    })
+  }
+
+  const addVariantValue = (optionIndex: number, value: string) => {
+    if (!value.trim()) return
+    setVariantOptions(prev => {
+      const newOptions = [...prev]
+      if (!newOptions[optionIndex].values.includes(value.trim())) {
+        newOptions[optionIndex].values.push(value.trim())
+      }
+      return newOptions
+    })
+  }
+
+  const removeVariantValue = (optionIndex: number, valueIndex: number) => {
+    setVariantOptions(prev => {
+      const newOptions = [...prev]
+      newOptions[optionIndex].values.splice(valueIndex, 1)
+      return newOptions
+    })
+    // 重新生成變體
+    generateVariants()
+  }
+
+  // 生成所有可能的變體組合
+  const generateVariants = () => {
+    const validOptions = variantOptions.filter(opt => opt.name.trim() && opt.values.length > 0)
+    
+    if (validOptions.length === 0) {
+      setVariants([])
+      return
+    }
+
+    // 生成笛卡爾積
+    const combinations = validOptions.reduce((acc, option) => {
+      if (acc.length === 0) {
+        return option.values.map(value => ({ [option.name]: value }))
+      }
+      
+      const newCombinations: Record<string, string>[] = []
+      acc.forEach(combination => {
+        option.values.forEach(value => {
+          newCombinations.push({ ...combination, [option.name]: value })
+        })
+      })
+      return newCombinations
+    }, [] as Record<string, string>[])
+
+    // 保留現有變體的數據
+    const existingVariants = new Map(
+      variants.map(v => [JSON.stringify(v.variant_options), v])
+    )
+
+    const newVariants = combinations.map((combination, index) => {
+      const variantKey = JSON.stringify(combination)
+      const existing = existingVariants.get(variantKey)
+      
+      if (existing) {
+        return existing
+      }
+
+      // 生成變體名稱和SKU
+      const variantName = Object.entries(combination)
+        .map(([key, value]) => `${value}`)
+        .join('-')
+      
+      const variantSku = `${formData.sku}-${Object.values(combination).join('-').toUpperCase()}`
+
+      return {
+        variant_name: variantName,
+        sku: variantSku,
+        price: formData.price,
+        original_price: formData.original_price,
+        stock_quantity: '0',
+        variant_options: combination,
+        images: [],
+        is_default: index === 0
+      }
+    })
+
+    setVariants(newVariants)
+  }
+
+  const updateVariant = (index: number, field: string, value: string | number | boolean | string[]) => {
+    setVariants(prev => {
+      const newVariants = [...prev]
+      newVariants[index] = { ...newVariants[index], [field]: value }
+      return newVariants
+    })
+  }
+
+  const handleVariantImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    const token = localStorage.getItem("token");
+    const uploadFormData = new FormData();
+    
+    Array.from(files).forEach(file => {
+      uploadFormData.append("images", file);
+    });
+
+    try {
+      const res = await fetch("http://localhost:3001/admin/product/upload-images", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: uploadFormData,
+      });
+
+      if (!res.ok) throw new Error("圖片上傳失敗");
+      
+      const data = await res.json();
+      updateVariant(variantIndex, 'images', [...variants[variantIndex].images, ...data.images]);
+    } catch (err) {
+      alert("圖片上傳失敗");
+    } finally {
+      setUploadingImages(false);
+    }
+  }
+
+  const removeVariantImage = (variantIndex: number, imageUrl: string) => {
+    const newImages = variants[variantIndex].images.filter(img => img !== imageUrl)
+    updateVariant(variantIndex, 'images', newImages)
+  }
+
+  // 當變體選項改變時重新生成變體
+  useEffect(() => {
+    if (useVariants) {
+      generateVariants()
+    }
+  }, [variantOptions, useVariants])
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -183,9 +353,30 @@ export default function NewProductPage() {
       return
     }
 
-    if (!formData.name.trim() || !formData.sku.trim() || !formData.price) {
-      alert('請填寫必要欄位')
+    if (!formData.name.trim() || !formData.sku.trim()) {
+      alert('請填寫商品名稱和商品編號')
       return
+    }
+
+    if (!useVariants && !formData.price) {
+      alert('請填寫商品售價')
+      return
+    }
+
+    if (useVariants && variants.length === 0) {
+      alert('請設定商品變體')
+      return
+    }
+
+    if (useVariants) {
+      // 檢查變體是否都有必要資訊
+      const invalidVariants = variants.filter(v => 
+        !v.variant_name || !v.sku || !v.price || v.stock_quantity === ''
+      )
+      if (invalidVariants.length > 0) {
+        alert('請完整填寫所有變體的資訊（名稱、SKU、價格、庫存）')
+        return
+      }
     }
 
     console.log('✅ 基本驗證通過，開始處理資料')
@@ -217,18 +408,31 @@ export default function NewProductPage() {
           free_shipping_threshold: parseFloat(rule.free_shipping_threshold)
         }))
 
+      // 處理變體數據
+      const variantsArray = useVariants && variants.length > 0 ? variants.map(variant => ({
+        variant_name: variant.variant_name,
+        sku: variant.sku,
+        price: parseFloat(variant.price),
+        original_price: variant.original_price ? parseFloat(variant.original_price) : undefined,
+        stock_quantity: parseInt(variant.stock_quantity),
+        variant_options: variant.variant_options,
+        images: variant.images.length > 0 ? variant.images : undefined,
+        is_default: variant.is_default
+      })) : undefined
+
       const submitData = {
         ...formData,
-        price: parseFloat(formData.price),
-        original_price: formData.original_price ? parseFloat(formData.original_price) : undefined,
-        stock_quantity: parseInt(formData.stock_quantity),
+        price: useVariants ? 0 : parseFloat(formData.price), // 如果使用變體，主商品價格設為0
+        original_price: useVariants ? undefined : (formData.original_price ? parseFloat(formData.original_price) : undefined),
+        stock_quantity: useVariants ? 0 : parseInt(formData.stock_quantity), // 如果使用變體，主商品庫存設為0
         min_stock: parseInt(formData.min_stock),
         category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
         specifications: specificationsArray.length > 0 ? specificationsArray : undefined,
         shipping_rules: shippingRulesArray.length > 0 ? shippingRulesArray : undefined,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
-        images: images.length > 0 ? images : undefined,
-        thumbnail: thumbnail || undefined,
+        images: useVariants ? undefined : (images.length > 0 ? images : undefined), // 如果使用變體，主商品不設圖片
+        thumbnail: useVariants ? undefined : (thumbnail || undefined),
+        variants: variantsArray
       }
 
       // Debug: 檢查規格資料
@@ -399,48 +603,64 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>售價</label>
-            <input
-              type="number"
-              name="price"
-              className="w70"
-              value={formData.price}
-              onChange={handleInputChange}
-              placeholder="請輸入售價"
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
+          {!useVariants && (
+            <>
+              <div className="b-form-group-1 w100 fl4">
+                <label>售價</label>
+                <input
+                  type="number"
+                  name="price"
+                  className="w70"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  placeholder="請輸入售價"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>原價</label>
-            <input
-              type="number"
-              name="original_price"
-              className="w70"
-              value={formData.original_price}
-              onChange={handleInputChange}
-              placeholder="請輸入原價（選填）"
-              min="0"
-              step="0.01"
-            />
-          </div>
+              <div className="b-form-group-1 w100 fl4">
+                <label>原價</label>
+                <input
+                  type="number"
+                  name="original_price"
+                  className="w70"
+                  value={formData.original_price}
+                  onChange={handleInputChange}
+                  placeholder="請輸入原價（選填）"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
 
+              <div className="b-form-group-1 w100 fl4">
+                <label>庫存數量</label>
+                <input
+                  type="number"
+                  name="stock_quantity"
+                  className="w70"
+                  value={formData.stock_quantity}
+                  onChange={handleInputChange}
+                  placeholder="請輸入庫存數量"
+                  min="0"
+                />
+              </div>
+            </>
+          )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>庫存數量</label>
-            <input
-              type="number"
-              name="stock_quantity"
-              className="w70"
-              value={formData.stock_quantity}
-              onChange={handleInputChange}
-              placeholder="請輸入庫存數量"
-              min="0"
-            />
-          </div>
+          {useVariants && (
+            <div className="b-form-group-1 w100 fl4">
+              <div style={{ padding: '15px', background: '#e3f2fd', borderRadius: '6px', border: '1px solid #2196f3' }}>
+                <p style={{ margin: 0, color: '#1976d2', fontWeight: 'bold' }}>
+                  ℹ️ 已啟用變體管理
+                </p>
+                <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>
+                  價格、庫存和圖片將在下方的變體設定中管理
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="b-form-group-1 w100 fl4">
             <label>最低庫存警告</label>
@@ -455,77 +675,381 @@ export default function NewProductPage() {
             />
           </div>
 
-          <div className="b-form-group-2 w50 fl4 mb10">
-            <label htmlFor="product-images">商品圖片</label>
-            <input
-              type="file"
-              id="product-images"
-              className="pt3 w70"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageUpload}
-              disabled={uploadingImages}
-            />
-            {uploadingImages && <small style={{ color: '#666', marginLeft: '132px', display: 'block', marginTop: '5px' }}>上傳中...</small>}
-          </div>
+          {!useVariants && (
+            <>
+              <div className="b-form-group-2 w50 fl4 mb10">
+                <label htmlFor="product-images">商品圖片</label>
+                <input
+                  type="file"
+                  id="product-images"
+                  className="pt3 w70"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImages}
+                />
+                {uploadingImages && <small style={{ color: '#666', marginLeft: '132px', display: 'block', marginTop: '5px' }}>上傳中...</small>}
+              </div>
 
-          {images.length > 0 && (
-            <div className="b-form-group-2 w100 fl4 mb25 ml132">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
-                {images.map((imageUrl, index) => (
-                  <div key={index} style={{ position: 'relative' }}>
-                    <img
-                      src={`http://localhost:3001${imageUrl}`}
-                      alt={`商品圖片 ${index + 1}`}
-                      className="b-banner-img"
-                      style={{ width: '120px', height: '120px', objectFit: 'cover' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(imageUrl)}
-                      style={{
-                        position: 'absolute',
-                        top: '2px',
-                        right: '2px',
-                        background: '#ff4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        fontSize: '12px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ×
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setThumbnail(imageUrl)}
-                      style={{
-                        position: 'absolute',
-                        bottom: '2px',
-                        left: '2px',
-                        background: thumbnail === imageUrl ? '#007bff' : '#666',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '3px',
-                        padding: '2px 6px',
-                        fontSize: '10px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {thumbnail === imageUrl ? '主圖' : '設為主圖'}
-                    </button>
+              {images.length > 0 && (
+                <div className="b-form-group-2 w100 fl4 mb25 ml132">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+                    {images.map((imageUrl, index) => (
+                      <div key={index} style={{ position: 'relative' }}>
+                        <img
+                          src={`http://localhost:3001${imageUrl}`}
+                          alt={`商品圖片 ${index + 1}`}
+                          className="b-banner-img"
+                          style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(imageUrl)}
+                          style={{
+                            position: 'absolute',
+                            top: '2px',
+                            right: '2px',
+                            background: '#ff4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '20px',
+                            height: '20px',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ×
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setThumbnail(imageUrl)}
+                          style={{
+                            position: 'absolute',
+                            bottom: '2px',
+                            left: '2px',
+                            background: thumbnail === imageUrl ? '#007bff' : '#666',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            padding: '2px 6px',
+                            fontSize: '10px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {thumbnail === imageUrl ? '主圖' : '設為主圖'}
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {useVariants && (
+            <div className="b-form-group-1 w100 fl4">
+              <div style={{ padding: '15px', background: '#fff3cd', borderRadius: '6px', border: '1px solid #ffc107' }}>
+                <p style={{ margin: 0, color: '#856404', fontWeight: 'bold' }}>
+                  📷 商品圖片管理
+                </p>
+                <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>
+                  啟用變體管理後，每個變體可以設定專屬圖片。請在下方的變體設定中上傳圖片。
+                </p>
               </div>
             </div>
           )}
 
+          {/* 商品變體管理 */}
           <div className="b-form-group-1 w100 fl4">
-            <label>商品規格</label>
+            <label>商品變體管理（多規格銷售）</label>
             <div style={{ width: '70%' }}>
+              <div style={{ padding: '10px', background: '#e8f5e8', borderRadius: '4px', marginBottom: '15px', border: '1px solid #4caf50' }}>
+                <p style={{ margin: 0, fontSize: '14px', color: '#2e7d32' }}>
+                  <strong>🎯 變體管理說明：</strong><br/>
+                  用於管理同一商品的不同規格版本（如顏色、尺寸），每個變體可設定獨立的價格、庫存和圖片。
+                  <br/><strong>範例：</strong>咖啡機有黑色（7台）和白色（2台），價格可能不同。
+                </p>
+              </div>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={useVariants}
+                    onChange={(e) => setUseVariants(e.target.checked)}
+                    style={{ transform: 'scale(1.2)' }}
+                  />
+                  <span style={{ fontWeight: 'bold', color: '#333' }}>啟用商品變體（多規格管理）</span>
+                </label>
+                <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                  啟用後可為不同規格設定獨立的價格、庫存和圖片（如：黑色7台、白色2台）
+                </small>
+              </div>
+
+              {useVariants && (
+                <>
+                  {/* 變體選項設定 */}
+                  <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #e9ecef', borderRadius: '6px', background: '#f8f9fa' }}>
+                    <h4 style={{ marginBottom: '10px', color: '#333' }}>規格選項設定</h4>
+                    {variantOptions.map((option, optionIndex) => (
+                      <div key={optionIndex} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', background: 'white' }}>
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            placeholder="規格名稱 (例：顏色、尺寸)"
+                            value={option.name}
+                            onChange={(e) => updateVariantOption(optionIndex, 'name', e.target.value)}
+                            style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeVariantOption(optionIndex)}
+                            style={{
+                              padding: '8px 12px',
+                              background: '#ff4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            刪除規格
+                          </button>
+                        </div>
+                        
+                        <div style={{ marginBottom: '10px' }}>
+                          <div style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
+                            <input
+                              type="text"
+                              placeholder="新增選項值 (例：黑色、白色)"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addVariantValue(optionIndex, e.currentTarget.value)
+                                  e.currentTarget.value = ''
+                                }
+                              }}
+                              style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                const input = e.currentTarget.previousElementSibling as HTMLInputElement
+                                addVariantValue(optionIndex, input.value)
+                                input.value = ''
+                              }}
+                              style={{
+                                padding: '8px 12px',
+                                background: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              新增
+                            </button>
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                            {option.values.map((value, valueIndex) => (
+                              <span
+                                key={valueIndex}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  padding: '4px 8px',
+                                  background: '#e9ecef',
+                                  borderRadius: '15px',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                {value}
+                                <button
+                                  type="button"
+                                  onClick={() => removeVariantValue(optionIndex, valueIndex)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#ff4444',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    lineHeight: '1'
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <button
+                      type="button"
+                      onClick={addVariantOption}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      + 新增規格選項
+                    </button>
+                  </div>
+
+                  {/* 變體列表 */}
+                  {variants.length > 0 && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <h4 style={{ marginBottom: '10px', color: '#333' }}>商品變體列表</h4>
+                      <small style={{ color: '#666', display: 'block', marginBottom: '10px' }}>
+                        系統已自動生成 {variants.length} 個變體組合，請為每個變體設定價格、庫存和圖片
+                      </small>
+                      
+                      {variants.map((variant, variantIndex) => (
+                        <div key={variantIndex} style={{ 
+                          marginBottom: '15px', 
+                          padding: '15px', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '6px',
+                          background: variant.is_default ? '#f0f8ff' : 'white'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h5 style={{ margin: 0, color: '#333' }}>
+                              {variant.variant_name} 
+                              {variant.is_default && <span style={{ color: '#007bff', fontSize: '12px', marginLeft: '8px' }}>(預設變體)</span>}
+                            </h5>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}>
+                              <input
+                                type="checkbox"
+                                checked={variant.is_default}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    // 設為預設時，取消其他變體的預設狀態
+                                    setVariants(prev => prev.map((v, i) => ({
+                                      ...v,
+                                      is_default: i === variantIndex
+                                    })))
+                                  }
+                                }}
+                              />
+                              設為預設
+                            </label>
+                          </div>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                            <div>
+                              <label style={{ fontSize: '12px', color: '#666' }}>SKU</label>
+                              <input
+                                type="text"
+                                value={variant.sku}
+                                onChange={(e) => updateVariant(variantIndex, 'sku', e.target.value)}
+                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '12px' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '12px', color: '#666' }}>售價</label>
+                              <input
+                                type="number"
+                                value={variant.price}
+                                onChange={(e) => updateVariant(variantIndex, 'price', e.target.value)}
+                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '12px' }}
+                                min="0"
+                                step="0.01"
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '12px', color: '#666' }}>原價</label>
+                              <input
+                                type="number"
+                                value={variant.original_price}
+                                onChange={(e) => updateVariant(variantIndex, 'original_price', e.target.value)}
+                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '12px' }}
+                                min="0"
+                                step="0.01"
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '12px', color: '#666' }}>庫存</label>
+                              <input
+                                type="number"
+                                value={variant.stock_quantity}
+                                onChange={(e) => updateVariant(variantIndex, 'stock_quantity', e.target.value)}
+                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '12px' }}
+                                min="0"
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* 變體圖片上傳 */}
+                          <div style={{ marginTop: '10px' }}>
+                            <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '5px' }}>變體專屬圖片</label>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={(e) => handleVariantImageUpload(variantIndex, e)}
+                              disabled={uploadingImages}
+                              style={{ fontSize: '12px', marginBottom: '5px' }}
+                            />
+                            
+                            {variant.images.length > 0 && (
+                              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                {variant.images.map((imageUrl, imageIndex) => (
+                                  <div key={imageIndex} style={{ position: 'relative' }}>
+                                    <img
+                                      src={`http://localhost:3001${imageUrl}`}
+                                      alt={`變體圖片 ${imageIndex + 1}`}
+                                      style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeVariantImage(variantIndex, imageUrl)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '2px',
+                                        right: '2px',
+                                        background: '#ff4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '16px',
+                                        height: '16px',
+                                        fontSize: '10px',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="b-form-group-1 w100 fl4">
+            <label>商品規格（基本參數）</label>
+            <div style={{ width: '70%' }}>
+              <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '4px', marginBottom: '15px', border: '1px solid #dee2e6' }}>
+                <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                  <strong>📋 商品規格說明：</strong><br/>
+                  用於設定商品的基本參數資訊，如重量、材質、保固等，這些資訊會顯示在商品詳情頁面供用戶參考，但不影響價格和庫存。
+                </p>
+              </div>
               
               {/* 基本規格設定 */}
               <h4 style={{ marginBottom: '10px', color: '#333' }}>基本規格資訊</h4>

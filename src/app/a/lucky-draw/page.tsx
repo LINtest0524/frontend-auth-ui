@@ -247,14 +247,14 @@ export default function Wheel() {
   ];
 
   return (
-    <div className="flex flex-col items-center p-8 bg-gradient-to-b from-purple-100 to-pink-100 min-h-screen">
-      <div className="flex items-center justify-between mb-8 w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-purple-800">幸運輪盤</h1>
+    <div className="lucky-draw-page flex flex-col items-center p-8">
+      <div className="lucky-header flex items-center justify-between w-full max-w-4xl">
+        <h1 className="lucky-title">🎰 幸運大轉盤 🎰</h1>
         <Link 
           href="/a/lucky-draw/history"
-          className="bg-white text-purple-600 px-4 py-2 rounded-lg border-2 border-purple-600 hover:bg-purple-600 hover:text-white transition-colors"
+          className="history-btn"
         >
-            抽獎記錄
+          📋 抽獎記錄
         </Link>
       </div>
       
@@ -345,26 +345,12 @@ export default function Wheel() {
                 <img
                   src={`http://localhost:3001${prize.imageUrl}`}
                   alt={prize.name}
-                  style={{ 
-                    width: 40, 
-                    height: 40, 
-                    objectFit: 'contain',
-                    borderRadius: '50%',
-                    background: 'white',
-                    padding: '4px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                  }}
+                  className="prize-image"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <div style={{ 
-                  fontSize: 10, 
-                  fontWeight: 'bold',
-                  color: 'white',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                  marginTop: '2px'
-                }}>
+                <div className="prize-text">
                   {prize.name}
                 </div>
               </div>
@@ -373,107 +359,72 @@ export default function Wheel() {
         </div>
 
         {/* 指針 */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '-10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
-            borderLeft: '15px solid transparent',
-            borderRight: '15px solid transparent',
-            borderBottom: '30px solid #e53e3e',
-            zIndex: 10,
-          }}
-        />
+        <div className="wheel-pointer" />
 
         {/* 中心按鈕 */}
         <button
           onClick={drawPrize}
           disabled={isSpinning}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            background: isSpinning 
-              ? 'linear-gradient(45deg, #ffd700, #ffed4e)' 
-              : 'linear-gradient(45deg, #ff6b6b, #ee5a52)',
-            border: '4px solid white',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            cursor: isSpinning ? 'not-allowed' : 'pointer',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-            zIndex: 30,
-            transition: 'all 0.3s ease',
-          }}
-          className={`${isSpinning ? 'animate-pulse' : 'hover:scale-110'}`}
+          className="center-button"
         >
-          {isSpinning ? '抽獎中...' : '開始抽獎'}
+          {isSpinning ? '🎲 抽獎中...' : '🎯 開始抽獎'}
         </button>
       </div>
 
       {/* 結果顯示 */}
       {showResult && result && (
-        <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border-4 border-yellow-400 animate-bounce">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-yellow-600 mb-4">恭喜中獎！</h2>
-            <img
-              src={`http://localhost:3001${result.winningPrize.imageUrl}`}
-              alt={result.winningPrize.name}
-              className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-yellow-400"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
+        <div className="result-modal mt-8">
+          <h2 className="result-title">🎉 恭喜中獎！🎉</h2>
+          <img
+            src={`http://localhost:3001${result.winningPrize.imageUrl}`}
+            alt={result.winningPrize.name}
+            className="result-prize-image"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <p className="result-message">🏆 {result.message} 🏆</p>
+          <div className="result-buttons">
+            <button
+              onClick={() => setShowResult(false)}
+              className="result-btn result-btn-primary"
+            >
+              🎮 繼續遊戲
+            </button>
+            <button
+              onClick={() => {
+                setShowResult(false);
+                setWinningClass('');
+                setResult(null);
+                // 重置輪盤到初始位置
+                const wheelElement = document.querySelector('.wheel-container');
+                if (wheelElement) {
+                  (wheelElement as HTMLElement).style.transform = 'rotate(0deg)';
+                  (wheelElement as HTMLElement).style.animation = 'none';
+                }
               }}
-            />
-            <p className="text-xl font-semibold text-gray-800">{result.message}</p>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={() => setShowResult(false)}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                繼續遊戲
-              </button>
-              <button
-                onClick={() => {
-                  setShowResult(false);
-                  setWinningClass('');
-                  setResult(null);
-                  // 重置輪盤到初始位置
-                  const wheelElement = document.querySelector('.wheel-container');
-                  if (wheelElement) {
-                    (wheelElement as HTMLElement).style.transform = 'rotate(0deg)';
-                    (wheelElement as HTMLElement).style.animation = 'none';
-                  }
-                }}
-                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                重置輪盤
-              </button>
-            </div>
+              className="result-btn result-btn-secondary"
+            >
+              🔄 重置輪盤
+            </button>
           </div>
         </div>
       )}
 
       {/* 獎品列表 */}
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="prizes-grid">
         {prizes.map((prize) => (
-          <div key={prize.id} className="bg-white p-4 rounded-lg shadow-md text-center">
+          <div key={prize.id} className="prize-card">
             <img
               src={`http://localhost:3001${prize.imageUrl}`}
               alt={prize.name}
-              className="w-12 h-12 mx-auto mb-2 rounded-full"
+              className="prize-card-image"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
-            <p className="text-sm font-medium">{prize.name}</p>
-            <p className="text-xs text-gray-500">機率: {prize.probability}%</p>
+            <p className="prize-card-name">🎁 {prize.name}</p>
+            <p className="prize-card-probability">🎯 中獎機率: {prize.probability}%</p>
           </div>
         ))}
       </div>

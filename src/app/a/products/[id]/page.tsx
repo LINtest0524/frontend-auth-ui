@@ -7,6 +7,18 @@ import { useCartStore } from '@/hooks/use-cart-store-new'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './product-detail.css'
 
+interface ProductVariant {
+  id: number
+  variant_name: string
+  sku: string
+  price: number
+  original_price?: number
+  stock_quantity: number
+  variant_options: Record<string, string>
+  images?: string[]
+  is_default: boolean
+}
+
 interface Product {
   id: number
   name: string
@@ -32,6 +44,7 @@ interface Product {
     free_shipping_threshold: number
   }>
   tags?: string[]
+  variants?: ProductVariant[]
   created_at: string
   updated_at: string
 }
@@ -52,8 +65,72 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
   const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({})
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [variantThumbnailIndex, setVariantThumbnailIndex] = useState(0)
 
-  // 處理規格資料，將陣列格式轉換為分組格式
+  // 獲取變體選項（從變體中提取）
+  const getVariantOptions = () => {
+    if (!product?.variants || product.variants.length === 0) return {}
+    
+    const options: Record<string, string[]> = {}
+    product.variants.forEach(variant => {
+      Object.entries(variant.variant_options).forEach(([key, value]) => {
+        if (!options[key]) {
+          options[key] = []
+        }
+        if (!options[key].includes(value)) {
+          options[key].push(value)
+        }
+      })
+    })
+    return options
+  }
+
+  // 根據選擇的規格找到對應的變體
+  const findMatchingVariant = (specs: Record<string, string>) => {
+    if (!product?.variants) return null
+    
+    return product.variants.find(variant => {
+      return Object.entries(specs).every(([key, value]) => 
+        variant.variant_options[key] === value
+      )
+    })
+  }
+
+  // 檢查某個規格選項是否有庫存
+  const isOptionAvailable = (optionKey: string, optionValue: string) => {
+    if (!product?.variants) return true
+    
+    const tempSpecs = { ...selectedSpecs, [optionKey]: optionValue }
+    const variant = findMatchingVariant(tempSpecs)
+    return variant ? variant.stock_quantity > 0 : false
+  }
+
+  // 獲取當前選擇的庫存數量
+  const getCurrentStock = () => {
+    if (selectedVariant) {
+      return selectedVariant.stock_quantity
+    }
+    return product?.stock_quantity || 0
+  }
+
+  // 獲取當前價格
+  const getCurrentPrice = () => {
+    if (selectedVariant) {
+      return selectedVariant.price
+    }
+    return product?.price || 0
+  }
+
+  // 獲取當前原價
+  const getCurrentOriginalPrice = () => {
+    if (selectedVariant) {
+      return selectedVariant.original_price
+    }
+    return product?.original_price
+  }
+
+  // 處理規格資料，將陣列格式轉換為分組格式（用於非變體商品）
   const getSpecificationOptions = () => {
     if (!product?.specifications) return {}
     
@@ -83,49 +160,105 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return
     
-    // 檢查是否有規格需要選擇
-    const specOptions = getSpecificationOptions()
-    const specKeys = Object.keys(specOptions)
+    const hasVariants = product.variants && product.variants.length > 0
     
-    // 如果有規格選項，檢查是否都已選擇
-    if (specKeys.length > 0) {
-      const missingSpecs = specKeys.filter(key => !selectedSpecs[key])
-      if (missingSpecs.length > 0) {
-        alert(`請選擇 ${missingSpecs.join('、')} 規格`)
+    if (hasVariants) {
+      // 有變體的商品
+      const variantOptions = getVariantOptions()
+      const variantKeys = Object.keys(variantOptions)
+      
+      // 檢查是否都已選擇變體規格
+      if (variantKeys.length > 0) {
+        const missingSpecs = variantKeys.filter(key => !selectedSpecs[key])
+        if (missingSpecs.length > 0) {
+          alert(`請選擇 ${missingSpecs.join('、')} 規格`)
+          return
+        }
+      }
+      
+      if (!selectedVariant) {
+        alert('請選擇商品規格')
         return
       }
+      
+      // 檢查變體庫存
+      const currentCartQuantity = useCartStore.getState().getItemQuantity(product.id)
+      const totalQuantity = currentCartQuantity + quantity
+      
+      if (totalQuantity > selectedVariant.stock_quantity) {
+        alert(`庫存不足！目前庫存：${selectedVariant.stock_quantity} 件，購物車中已有：${currentCartQuantity} 件`)
+        return
+      }
+      
+      // 建立變體商品名稱
+      const specText = Object.entries(selectedSpecs)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(' ')
+      const productName = `${product.name} (${specText})`
+      
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          id: product.id,
+          name: productName,
+          sku: selectedVariant.sku,
+          price: selectedVariant.price,
+          original_price: selectedVariant.original_price,
+          thumbnail: selectedVariant.images && selectedVariant.images.length > 0 
+            ? selectedVariant.images[0] 
+            : product.thumbnail || (product.images && product.images.length > 0 ? product.images[0] : undefined),
+          stock_quantity: selectedVariant.stock_quantity,
+          category: product.category,
+          selectedSpecs: selectedSpecs,
+          variantId: selectedVariant.id
+        })
+      }
+      
+      alert(`已將 ${quantity} 件 ${productName} 加入購物車！`)
+    } else {
+      // 沒有變體的商品（原有邏輯）
+      const specOptions = getSpecificationOptions()
+      const specKeys = Object.keys(specOptions)
+      
+      // 如果有規格選項，檢查是否都已選擇
+      if (specKeys.length > 0) {
+        const missingSpecs = specKeys.filter(key => !selectedSpecs[key])
+        if (missingSpecs.length > 0) {
+          alert(`請選擇 ${missingSpecs.join('、')} 規格`)
+          return
+        }
+      }
+      
+      // 檢查庫存是否足夠
+      const currentCartQuantity = useCartStore.getState().getItemQuantity(product.id)
+      const totalQuantity = currentCartQuantity + quantity
+      
+      if (totalQuantity > (product.stock_quantity || 0)) {
+        alert(`庫存不足！目前庫存：${product.stock_quantity} 件，購物車中已有：${currentCartQuantity} 件`)
+        return
+      }
+      
+      // 建立商品名稱（包含規格）
+      const specText = Object.entries(selectedSpecs)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(' ')
+      const productName = specText ? `${product.name} (${specText})` : product.name
+      
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          id: product.id,
+          name: productName,
+          sku: product.sku,
+          price: product.price,
+          original_price: product.original_price,
+          thumbnail: product.thumbnail,
+          stock_quantity: product.stock_quantity,
+          category: product.category,
+          selectedSpecs: selectedSpecs
+        })
+      }
+      
+      alert(`已將 ${quantity} 件 ${productName} 加入購物車！`)
     }
-    
-    // 檢查庫存是否足夠
-    const currentCartQuantity = useCartStore.getState().getItemQuantity(product.id)
-    const totalQuantity = currentCartQuantity + quantity
-    
-    if (totalQuantity > (product.stock_quantity || 0)) {
-      alert(`庫存不足！目前庫存：${product.stock_quantity} 件，購物車中已有：${currentCartQuantity} 件`)
-      return
-    }
-    
-    // 建立商品名稱（包含規格）
-    const specText = Object.entries(selectedSpecs)
-      .map(([key, value]) => `${key}:${value}`)
-      .join(' ')
-    const productName = specText ? `${product.name} (${specText})` : product.name
-    
-    for (let i = 0; i < quantity; i++) {
-      addItem({
-        id: product.id,
-        name: productName,
-        sku: product.sku,
-        price: product.price,
-        original_price: product.original_price,
-        thumbnail: product.thumbnail,
-        stock_quantity: product.stock_quantity,
-        category: product.category,
-        selectedSpecs: selectedSpecs
-      })
-    }
-    
-    alert(`已將 ${quantity} 件 ${productName} 加入購物車！`)
   }
 
   useEffect(() => {
@@ -138,6 +271,13 @@ export default function ProductDetailPage() {
         if (response.ok) {
           const data = await response.json()
           setProduct(data)
+          
+          // 如果有變體，設定預設變體
+          if (data.variants && data.variants.length > 0) {
+            const defaultVariant = data.variants.find((v: ProductVariant) => v.is_default) || data.variants[0]
+            setSelectedVariant(defaultVariant)
+            setSelectedSpecs(defaultVariant.variant_options)
+          }
         } else {
           console.error('產品不存在')
           router.push('/a/products')
@@ -154,6 +294,20 @@ export default function ProductDetailPage() {
       fetchProduct()
     }
   }, [productId, router])
+
+  // 當選擇的規格改變時，更新對應的變體
+  useEffect(() => {
+    if (product?.variants && product.variants.length > 0) {
+      const variant = findMatchingVariant(selectedSpecs)
+      setSelectedVariant(variant)
+      
+      // 重置數量為1，避免超過新變體的庫存
+      setQuantity(1)
+      
+      // 重置圖片選擇為第一張
+      setSelectedImage(0)
+    }
+  }, [selectedSpecs, product])
 
   if (loading) {
     return (
@@ -186,11 +340,69 @@ export default function ProductDetailPage() {
     ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100)
     : 0
 
-  const images = product.images && product.images.length > 0 
-    ? product.images 
-    : product.thumbnail 
-    ? [product.thumbnail] 
-    : []
+  // 獲取當前顯示的圖片（優先顯示選中變體的圖片）
+  const getCurrentImages = () => {
+    if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+      return selectedVariant.images
+    }
+    
+    // 如果沒有選中變體或變體沒有圖片，使用主商品圖片
+    if (product.images && product.images.length > 0) {
+      return product.images
+    }
+    
+    // 如果主商品也沒有圖片，使用縮圖
+    if (product.thumbnail) {
+      return [product.thumbnail]
+    }
+    
+    // 如果有變體但當前沒有選中，顯示第一個變體的圖片
+    if (product.variants && product.variants.length > 0) {
+      const firstVariantWithImages = product.variants.find(v => v.images && v.images.length > 0)
+      if (firstVariantWithImages) {
+        return firstVariantWithImages.images!
+      }
+    }
+    
+    return []
+  }
+
+  const images = getCurrentImages()
+
+  // 獲取所有變體的縮圖用於底部滑動展示
+  const getAllVariantThumbnails = () => {
+    if (!product?.variants || product.variants.length === 0) return []
+    
+    const thumbnails: Array<{
+      variant: ProductVariant,
+      image: string,
+      variantName: string
+    }> = []
+    
+    product.variants.forEach(variant => {
+      if (variant.images && variant.images.length > 0) {
+        thumbnails.push({
+          variant,
+          image: variant.images[0], // 使用第一張圖片作為縮圖
+          variantName: variant.variant_name
+        })
+      }
+    })
+    
+    return thumbnails
+  }
+
+  const variantThumbnails = getAllVariantThumbnails()
+  const thumbnailsPerPage = 4 // 每頁顯示4個縮圖
+  const maxThumbnailIndex = Math.max(0, variantThumbnails.length - thumbnailsPerPage)
+
+  // 處理變體縮圖點擊
+  const handleVariantThumbnailClick = (variant: ProductVariant) => {
+    // 設定選中的規格
+    setSelectedSpecs(variant.variant_options)
+    setSelectedVariant(variant)
+    setSelectedImage(0) // 重置主圖為第一張
+  }
 
   return (
     <>
@@ -272,6 +484,129 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
               )}
+              
+              {/* 變體縮圖滑動區域 */}
+              {variantThumbnails.length > 0 && (
+                <div style={{ marginTop: '15px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px',
+                    padding: '10px',
+                    background: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #e9ecef'
+                  }}>
+                    {/* 左箭頭 */}
+                    <button
+                      onClick={() => setVariantThumbnailIndex(Math.max(0, variantThumbnailIndex - 1))}
+                      disabled={variantThumbnailIndex === 0}
+                      style={{
+                        background: variantThumbnailIndex === 0 ? '#e9ecef' : '#007bff',
+                        color: variantThumbnailIndex === 0 ? '#6c757d' : 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: variantThumbnailIndex === 0 ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ‹
+                    </button>
+                    
+                    {/* 縮圖容器 */}
+                    <div style={{ 
+                      flex: 1, 
+                      overflow: 'hidden',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        transform: `translateX(-${variantThumbnailIndex * (100 / thumbnailsPerPage)}%)`,
+                        transition: 'transform 0.3s ease-in-out',
+                        width: `${(variantThumbnails.length / thumbnailsPerPage) * 100}%`
+                      }}>
+                        {variantThumbnails.map((thumbnail, index) => {
+                          const isSelected = selectedVariant?.id === thumbnail.variant.id
+                          return (
+                            <div
+                              key={thumbnail.variant.id}
+                              onClick={() => handleVariantThumbnailClick(thumbnail.variant)}
+                              style={{
+                                flex: `0 0 ${100 / variantThumbnails.length}%`,
+                                cursor: 'pointer',
+                                border: isSelected ? '2px solid #007bff' : '2px solid transparent',
+                                borderRadius: '6px',
+                                overflow: 'hidden',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <img
+                                src={`http://localhost:3001${thumbnail.image}`}
+                                alt={thumbnail.variantName}
+                                style={{
+                                  width: '100%',
+                                  height: '60px',
+                                  objectFit: 'cover',
+                                  display: 'block'
+                                }}
+                              />
+                              <div style={{
+                                padding: '4px',
+                                background: isSelected ? '#007bff' : '#fff',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '10px',
+                                textAlign: 'center',
+                                fontWeight: isSelected ? 'bold' : 'normal'
+                              }}>
+                                {thumbnail.variantName}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    
+                    {/* 右箭頭 */}
+                    <button
+                      onClick={() => setVariantThumbnailIndex(Math.min(maxThumbnailIndex, variantThumbnailIndex + 1))}
+                      disabled={variantThumbnailIndex >= maxThumbnailIndex}
+                      style={{
+                        background: variantThumbnailIndex >= maxThumbnailIndex ? '#e9ecef' : '#007bff',
+                        color: variantThumbnailIndex >= maxThumbnailIndex ? '#6c757d' : 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: variantThumbnailIndex >= maxThumbnailIndex ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ›
+                    </button>
+                  </div>
+                  
+                  {/* 提示文字 */}
+                  <div style={{ 
+                    textAlign: 'center', 
+                    marginTop: '8px', 
+                    fontSize: '12px', 
+                    color: '#666' 
+                  }}>
+                    點擊縮圖查看不同規格
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 產品基本資訊 - 中間 */}
@@ -295,25 +630,38 @@ export default function ProductDetailPage() {
               <div className="price-section">
                 <div className="price-container">
                   <span className="current-price">
-                    NT$ {product.price.toLocaleString()}
+                    NT$ {getCurrentPrice().toLocaleString()}
                   </span>
-                  {hasDiscount && (
-                    <>
-                      <span className="original-price">
-                        NT$ {product.original_price?.toLocaleString()}
-                      </span>
-                      <span className="discount-badge">
-                        省 {discountPercent}%
-                      </span>
-                    </>
-                  )}
+                  {(() => {
+                    const currentOriginalPrice = getCurrentOriginalPrice()
+                    const currentPrice = getCurrentPrice()
+                    const hasCurrentDiscount = currentOriginalPrice && currentOriginalPrice > currentPrice
+                    const currentDiscountPercent = hasCurrentDiscount ? Math.round(((currentOriginalPrice - currentPrice) / currentOriginalPrice) * 100) : 0
+                    
+                    return hasCurrentDiscount ? (
+                      <>
+                        <span className="original-price">
+                          NT$ {currentOriginalPrice.toLocaleString()}
+                        </span>
+                        <span className="discount-badge">
+                          省 {currentDiscountPercent}%
+                        </span>
+                      </>
+                    ) : null
+                  })()}
                 </div>
                 
-                {hasDiscount && (
-                  <div className="savings-text">
-                    您節省了 NT$ {((product.original_price || 0) - product.price).toLocaleString()}
-                  </div>
-                )}
+                {(() => {
+                  const currentOriginalPrice = getCurrentOriginalPrice()
+                  const currentPrice = getCurrentPrice()
+                  const hasCurrentDiscount = currentOriginalPrice && currentOriginalPrice > currentPrice
+                  
+                  return hasCurrentDiscount ? (
+                    <div className="savings-text">
+                      您節省了 NT$ {(currentOriginalPrice - currentPrice).toLocaleString()}
+                    </div>
+                  ) : null
+                })()}
               </div>
 
               {/* 商品特色 */}
@@ -373,34 +721,102 @@ export default function ProductDetailPage() {
                 
                 {/* 商品規格選擇 */}
                 {(() => {
-                  const specOptions = getSpecificationOptions()
-                  const specKeys = Object.keys(specOptions)
+                  const hasVariants = product.variants && product.variants.length > 0
                   
-                  if (specKeys.length > 0) {
-                    return (
-                      <div className="specs-selection-section">
-                        <h4 className="specs-title">選擇規格</h4>
-                        {specKeys.map(specKey => (
-                          <div key={specKey} className="spec-group">
-                            <label className="spec-label">{specKey}</label>
-                            <div className="spec-options">
-                              {specOptions[specKey].map(option => (
-                                <button
-                                  key={option}
-                                  onClick={() => setSelectedSpecs(prev => ({
-                                    ...prev,
-                                    [specKey]: option
-                                  }))}
-                                  className={`spec-option ${selectedSpecs[specKey] === option ? 'selected' : ''}`}
-                                >
-                                  {option}
-                                </button>
-                              ))}
+                  if (hasVariants) {
+                    // 有變體的商品
+                    const variantOptions = getVariantOptions()
+                    const variantKeys = Object.keys(variantOptions)
+                    
+                    if (variantKeys.length > 0) {
+                      return (
+                        <div className="specs-selection-section">
+                          <h4 className="specs-title">選擇規格</h4>
+                          {variantKeys.map(specKey => (
+                            <div key={specKey} className="spec-group">
+                              <label className="spec-label">{specKey}</label>
+                              <div className="spec-options">
+                                {variantOptions[specKey].map(option => {
+                                  const isAvailable = isOptionAvailable(specKey, option)
+                                  return (
+                                    <button
+                                      key={option}
+                                      onClick={() => {
+                                        if (isAvailable) {
+                                          setSelectedSpecs(prev => ({
+                                            ...prev,
+                                            [specKey]: option
+                                          }))
+                                        }
+                                      }}
+                                      className={`spec-option ${selectedSpecs[specKey] === option ? 'selected' : ''} ${!isAvailable ? 'out-of-stock' : ''}`}
+                                      disabled={!isAvailable}
+                                      style={{
+                                        backgroundColor: !isAvailable ? '#f5f5f5' : selectedSpecs[specKey] === option ? '#007bff' : 'white',
+                                        color: !isAvailable ? '#999' : selectedSpecs[specKey] === option ? 'white' : '#333',
+                                        cursor: !isAvailable ? 'not-allowed' : 'pointer',
+                                        opacity: !isAvailable ? 0.6 : 1
+                                      }}
+                                    >
+                                      {option}
+                                      {!isAvailable && <span style={{ fontSize: '10px', display: 'block' }}>(無庫存)</span>}
+                                    </button>
+                                  )
+                                })}
+                              </div>
                             </div>
+                          ))}
+                          
+                          {/* 庫存顯示 */}
+                          <div style={{ marginTop: '10px', fontSize: '12px', color: '#e74c3c' }}>
+                            庫存 {getCurrentStock()} 台
                           </div>
-                        ))}
-                      </div>
-                    )
+                        </div>
+                      )
+                    }
+                  } else {
+                    // 沒有變體的商品（原有邏輯）
+                    const specOptions = getSpecificationOptions()
+                    const specKeys = Object.keys(specOptions)
+                    
+                    if (specKeys.length > 0) {
+                      return (
+                        <div className="specs-selection-section">
+                          <h4 className="specs-title">選擇規格</h4>
+                          {specKeys.map(specKey => (
+                            <div key={specKey} className="spec-group">
+                              <label className="spec-label">{specKey}</label>
+                              <div className="spec-options">
+                                {specOptions[specKey].map(option => (
+                                  <button
+                                    key={option}
+                                    onClick={() => setSelectedSpecs(prev => ({
+                                      ...prev,
+                                      [specKey]: option
+                                    }))}
+                                    className={`spec-option ${selectedSpecs[specKey] === option ? 'selected' : ''}`}
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {/* 庫存顯示 */}
+                          <div style={{ marginTop: '10px', fontSize: '12px', color: '#e74c3c' }}>
+                            庫存 {getCurrentStock()} 台
+                          </div>
+                        </div>
+                      )
+                    } else {
+                      // 沒有規格選項，只顯示庫存
+                      return (
+                        <div style={{ marginBottom: '15px', fontSize: '12px', color: '#e74c3c' }}>
+                          庫存 {getCurrentStock()} 台
+                        </div>
+                      )
+                    }
                   }
                   return null
                 })()}
@@ -423,20 +839,20 @@ export default function ProductDetailPage() {
                       value={quantity}
                       onChange={(e) => {
                         const newQuantity = Math.max(1, parseInt(e.target.value) || 1)
-                        const maxQuantity = product.stock_quantity || 1
+                        const maxQuantity = getCurrentStock()
                         setQuantity(Math.min(newQuantity, maxQuantity))
                       }}
                       className="quantity-input"
                       min="1"
-                      max={product.stock_quantity || 1}
+                      max={getCurrentStock()}
                     />
                     <button
                       onClick={() => {
-                        const maxQuantity = product.stock_quantity || 1
+                        const maxQuantity = getCurrentStock()
                         setQuantity(Math.min(quantity + 1, maxQuantity))
                       }}
                       className="quantity-button"
-                      disabled={quantity >= (product.stock_quantity || 1)}
+                      disabled={quantity >= getCurrentStock()}
                     >
                       +
                     </button>
@@ -448,7 +864,7 @@ export default function ProductDetailPage() {
                   <div className="subtotal-row">
                     <span className="subtotal-label">小計:</span>
                     <span className="subtotal-price">
-                      NT$ {(product.price * quantity).toLocaleString()}
+                      NT$ {(getCurrentPrice() * quantity).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -457,7 +873,7 @@ export default function ProductDetailPage() {
                 <div className="button-group">
                   <button 
                     className="btn btn-primary"
-                    disabled={product.stock_quantity === 0 || quantity > (product.stock_quantity || 0)}
+                    disabled={getCurrentStock() === 0 || quantity > getCurrentStock()}
                     onClick={handleAddToCart}
                   >
                     🛒 加入購物車

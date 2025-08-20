@@ -25,6 +25,8 @@ interface Order {
   payment_method: string
   total_amount: number
   status: string
+  payment_status?: string
+  shipping_status?: string
   created_at: string
   updated_at: string
   notes?: string
@@ -101,6 +103,67 @@ export default function MemberOrders() {
       'cancelled': '#ef4444'
     }
     return colorMap[status] || '#6b7280'
+  }
+
+  const getPaymentStatusText = (paymentStatus: string) => {
+    const statusMap: { [key: string]: string } = {
+      'pending': '待付款',
+      'paid': '已付款',
+      'failed': '付款失敗',
+      'refunded': '已退款'
+    }
+    return statusMap[paymentStatus] || paymentStatus
+  }
+
+  const getPaymentStatusColor = (paymentStatus: string) => {
+    const colorMap: { [key: string]: string } = {
+      'pending': '#f59e0b',
+      'paid': '#10b981',
+      'failed': '#ef4444',
+      'refunded': '#6b7280'
+    }
+    return colorMap[paymentStatus] || '#6b7280'
+  }
+
+  const getShippingStatusText = (shippingStatus: string) => {
+    const statusMap: { [key: string]: string } = {
+      'pending': '待出貨',
+      'preparing': '準備中',
+      'processing': '處理中',
+      'shipped': '已出貨',
+      'in_transit': '運送中',
+      'delivered': '已送達',
+      'returned': '已退回'
+    }
+    return statusMap[shippingStatus] || shippingStatus
+  }
+
+  const getShippingStatusColor = (shippingStatus: string) => {
+    const colorMap: { [key: string]: string } = {
+      'pending': '#f59e0b',
+      'preparing': '#3b82f6',
+      'processing': '#3b82f6',
+      'shipped': '#8b5cf6',
+      'in_transit': '#06b6d4',
+      'delivered': '#059669',
+      'returned': '#ef4444'
+    }
+    return colorMap[shippingStatus] || '#6b7280'
+  }
+
+  const getPaymentMethodText = (method: string) => {
+    const methodMap: { [key: string]: string } = {
+      'credit_card': '信用卡',
+      'bank_transfer': '銀行轉帳',
+      'cash_on_delivery': '貨到付款',
+      'line_pay': 'LINE Pay',
+      'ecpay_credit': '綠界信用卡',
+      'ecpay_atm': '綠界ATM轉帳',
+      'ecpay_cvs': '綠界超商代碼',
+      'ecpay_barcode': '綠界超商條碼',
+      'ecpay_all': '綠界金流'
+    }
+    return methodMap[method] || method
   }
 
   const toggleOrderExpansion = (orderId: number) => {
@@ -209,15 +272,38 @@ export default function MemberOrders() {
                     {new Date(order.created_at).toLocaleString('zh-TW')}
                   </div>
                 </div>
-                <div style={{
-                  background: getStatusColor(order.status),
-                  color: 'white',
-                  padding: '4px 10px',
-                  borderRadius: '16px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}>
-                  {getStatusText(order.status)}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {/* 付款狀態標籤 */}
+                  <div style={{
+                    background: getPaymentStatusColor(order.payment_status || order.status),
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span>💳</span>
+                    {getPaymentStatusText(order.payment_status || order.status)}
+                  </div>
+                  
+                  {/* 出貨狀態標籤 */}
+                  <div style={{
+                    background: getShippingStatusColor(order.shipping_status || 'pending'),
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span>📦</span>
+                    {getShippingStatusText(order.shipping_status || 'pending')}
+                  </div>
                 </div>
               </div>
 

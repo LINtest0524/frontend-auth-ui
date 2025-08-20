@@ -260,7 +260,12 @@ export default function OrdersManagePage() {
       'credit_card': '信用卡',
       'bank_transfer': '銀行轉帳',
       'cash_on_delivery': '貨到付款',
-      'line_pay': 'LINE Pay'
+      'line_pay': 'LINE Pay',
+      'ecpay_credit': '綠界信用卡',
+      'ecpay_atm': '綠界ATM轉帳',
+      'ecpay_cvs': '綠界超商代碼',
+      'ecpay_barcode': '綠界超商條碼',
+      'ecpay_all': '綠界金流'
     }
     return methodMap[method] || method
   }

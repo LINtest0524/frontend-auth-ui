@@ -56,45 +56,60 @@ export default function CheckoutPage() {
 
   const paymentMethods: PaymentMethod[] = [
     {
-      id: 'credit_card',
-      name: '信用卡付款',
-      description: 'Visa、MasterCard、JCB',
+      id: 'ecpay_credit',
+      name: '綠界信用卡',
+      description: '透過綠界金流 - Visa、MasterCard、JCB',
       icon: '💳'
     },
     {
-      id: 'bank_transfer',
-      name: '銀行轉帳',
-      description: '轉帳後請保留收據',
-      icon: '🏦'
+      id: 'ecpay_atm',
+      name: 'ATM 轉帳',
+      description: '透過綠界金流 - 虛擬帳號轉帳',
+      icon: '🏧'
+    },
+    {
+      id: 'ecpay_cvs',
+      name: '超商代碼繳費',
+      description: '透過綠界金流 - 7-11、全家、萊爾富',
+      icon: '🏪'
+    },
+    {
+      id: 'ecpay_barcode',
+      name: '超商條碼繳費',
+      description: '透過綠界金流 - 超商條碼繳費',
+      icon: '📊'
+    },
+    {
+      id: 'ecpay_all',
+      name: '綠界所有付款方式',
+      description: '讓客戶在綠界頁面選擇付款方式',
+      icon: '🌐'
     },
     {
       id: 'cash_on_delivery',
       name: '貨到付款',
       description: '收貨時現金付款',
       icon: '💰'
-    },
-    {
-      id: 'line_pay',
-      name: 'LINE Pay',
-      description: '使用 LINE Pay 付款',
-      icon: '📱'
     }
   ]
 
-  // 如果購物車為空或沒有選擇運送方式，重導向到購物車頁面
+  // 標記是否正在處理付款，避免在付款過程中重導向
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
+  // 如果購物車為空且不是在處理付款，重導向到購物車頁面
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !isProcessingPayment) {
       window.location.href = '/a/cart'
     }
-  }, [items])
+  }, [items, isProcessingPayment])
 
   // 如果沒有選擇運送方式，提示用戶回到購物車選擇
   useEffect(() => {
-    if (items.length > 0 && !selectedShippingMethod) {
+    if (items.length > 0 && !selectedShippingMethod && !isProcessingPayment) {
       alert('請先在購物車頁面選擇運送方式')
       window.location.href = '/a/cart'
     }
-  }, [items.length, selectedShippingMethod])
+  }, [items.length, selectedShippingMethod, isProcessingPayment])
 
   const handleShippingInfoChange = (field: keyof ShippingInfo, value: string) => {
     setShippingInfo(prev => ({
@@ -130,7 +145,8 @@ export default function CheckoutPage() {
           price: item.price,
           product_name: item.name,
           product_sku: item.sku,
-          selected_specs: item.selectedSpecs || {}
+          selected_specs: item.selectedSpecs || {},
+          variant_id: item.variantId || null
         })),
         customer_name: shippingInfo.fullName,
         customer_phone: shippingInfo.phone,
@@ -176,18 +192,87 @@ export default function CheckoutPage() {
 
       const result = await response.json()
 
-      // 清空購物車
-      clearCart()
-
-      // 重導向到訂單完成頁面
-      alert(`訂單提交成功！訂單編號：${result.order_number}`)
-      window.location.href = '/a/orders'
+      // 檢查是否為綠界付款
+      if (selectedPayment.startsWith('ecpay_')) {
+        // 建立綠界付款
+        await handleEcpayPayment(result.id, selectedPayment)
+      } else {
+        // 非綠界付款，直接完成
+        clearCart()
+        alert(`訂單提交成功！訂單編號：${result.order_number}`)
+        window.location.href = '/a/orders'
+      }
 
     } catch (error) {
       console.error('提交訂單失敗:', error)
       alert('提交訂單失敗，請稍後再試')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  // 處理綠界付款
+  const handleEcpayPayment = async (orderId: number, paymentMethod: string) => {
+    try {
+      // 轉換付款方式
+      let ecpayMethod = ''
+      switch (paymentMethod) {
+        case 'ecpay_credit':
+          ecpayMethod = 'credit_card'
+          break
+        case 'ecpay_atm':
+          ecpayMethod = 'atm'
+          break
+        case 'ecpay_cvs':
+          ecpayMethod = 'cvs'
+          break
+        case 'ecpay_barcode':
+          ecpayMethod = 'barcode'
+          break
+        default:
+          ecpayMethod = 'all'
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/ecpay/create-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          paymentMethod: ecpayMethod
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('建立綠界付款失敗')
+      }
+
+      const paymentResult = await response.json()
+
+      if (paymentResult.success) {
+        // 標記正在處理付款，防止 useEffect 重導向
+        setIsProcessingPayment(true)
+        
+        // 將付款資料存到 sessionStorage，然後跳轉到專用的付款頁面
+        sessionStorage.setItem('ecpayPaymentData', JSON.stringify(paymentResult.data))
+        
+        // 將購物車資料也暫存，以防付款失敗時可以恢復
+        sessionStorage.setItem('checkoutCartData', JSON.stringify(items))
+        
+        // 清空購物車（在跳轉前清空，避免用戶返回時看到重複的商品）
+        clearCart()
+        
+        // 短暫延遲後跳轉，確保狀態更新完成
+        setTimeout(() => {
+          window.location.href = '/a/ecpay-payment'
+        }, 100)
+      } else {
+        throw new Error(paymentResult.message || '建立付款失敗')
+      }
+    } catch (error) {
+      console.error('綠界付款處理失敗:', error)
+      alert('付款處理失敗，請稍後再試')
     }
   }
 

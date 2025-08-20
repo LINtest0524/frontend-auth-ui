@@ -5,6 +5,18 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/hooks/use-user-store";
 import dayjs from "dayjs";
 
+interface ProductVariant {
+  id: number;
+  variant_name: string;
+  sku: string;
+  price: number;
+  original_price?: number;
+  stock_quantity: number;
+  variant_options: Record<string, string>;
+  images?: string[];
+  is_default: boolean;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -24,6 +36,8 @@ interface Product {
     name: string;
   };
   thumbnail?: string;
+  images?: string[];
+  variants?: ProductVariant[];
   created_at: string;
 }
 
@@ -301,6 +315,94 @@ export default function ProductListPage() {
     }
   };
 
+  // 獲取商品顯示圖片（優先顯示變體圖片）
+  const getProductDisplayImage = (product: Product) => {
+    // 如果有變體，優先顯示第一個有圖片的變體的第一張圖片
+    if (product.variants && product.variants.length > 0) {
+      const variantWithImage = product.variants.find(variant => 
+        variant.images && variant.images.length > 0
+      );
+      if (variantWithImage && variantWithImage.images) {
+        return variantWithImage.images[0];
+      }
+    }
+    
+    // 如果沒有變體圖片，使用主商品圖片
+    if (product.images && product.images.length > 0) {
+      return product.images[0];
+    }
+    
+    // 最後使用縮圖
+    return product.thumbnail;
+  };
+
+  // 獲取商品庫存顯示
+  const getStockDisplay = (product: Product) => {
+    // 如果有變體，顯示變體庫存詳情
+    if (product.variants && product.variants.length > 0) {
+      return (
+        <div style={{ fontSize: "12px", lineHeight: "1.4" }}>
+          {product.variants.map((variant, index) => {
+            const optionsText = Object.entries(variant.variant_options)
+              .map(([key, value]) => `${value}`)
+              .join(' ');
+            
+            return (
+              <div 
+                key={variant.id} 
+                style={{ 
+                  color: variant.stock_quantity <= 0 ? "#dc3545" : "inherit",
+                  marginBottom: index < product.variants!.length - 1 ? "2px" : "0"
+                }}
+              >
+                {optionsText} x {variant.stock_quantity}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    
+    // 沒有變體時顯示主商品庫存
+    return (
+      <span style={{ color: product.stock_quantity <= 0 ? "#dc3545" : "inherit" }}>
+        {product.stock_quantity}
+      </span>
+    );
+  };
+
+  // 獲取商品價格顯示
+  const getPriceDisplay = (product: Product) => {
+    // 如果有變體，顯示價格範圍
+    if (product.variants && product.variants.length > 0) {
+      const prices = product.variants.map(v => v.price);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      if (minPrice === maxPrice) {
+        return (
+          <div style={{ fontWeight: "500" }}>${Number(minPrice).toFixed(0)}</div>
+        );
+      } else {
+        return (
+          <div style={{ fontWeight: "500" }}>${Number(minPrice).toFixed(0)} - ${Number(maxPrice).toFixed(0)}</div>
+        );
+      }
+    }
+    
+    // 沒有變體時顯示主商品價格
+    return (
+      <div>
+        <div style={{ fontWeight: "500" }}>${Number(product.price).toFixed(0)}</div>
+        {product.original_price && product.original_price > product.price && (
+          <div style={{ fontSize: "12px", color: "#6c757d", textDecoration: "line-through" }}>
+            ${Number(product.original_price).toFixed(0)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderPagination = () => {
     if (totalPages <= 1 || totalCount === 0) return null;
 
@@ -572,35 +674,36 @@ export default function ProductListPage() {
                     <tr key={product.id}>
                       <td>{product.id}</td>
                       <td>
-                        {product.thumbnail ? (
-                          <img 
-                            src={`http://localhost:3001${product.thumbnail}`} 
-                            alt={product.name}
-                            style={{width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", margin: "0 auto", display: "block"}}
-                          />
-                        ) : (
-                          <div style={{width: "48px", height: "48px", backgroundColor: "#f0f0f0", borderRadius: "4px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center"}}>
-                            📦
-                          </div>
-                        )}
+                        {(() => {
+                          const displayImage = getProductDisplayImage(product);
+                          return displayImage ? (
+                            <img 
+                              src={`http://localhost:3001${displayImage}`} 
+                              alt={product.name}
+                              style={{width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", margin: "0 auto", display: "block"}}
+                            />
+                          ) : (
+                            <div style={{width: "48px", height: "48px", backgroundColor: "#f0f0f0", borderRadius: "4px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center"}}>
+                              📦
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td style={{fontFamily: "monospace", fontSize: "12px"}}>{product.sku}</td>
                       <td>
                         <div style={{fontWeight: "500"}}>{product.name}</div>
-                      </td>
-                      <td>{product.category?.name || "-"}</td>
-                      <td style={{textAlign: "right"}}>
-                        <div style={{fontWeight: "500"}}>${product.price}</div>
-                        {product.original_price && product.original_price > product.price && (
-                          <div style={{fontSize: "12px", color: "#6c757d", textDecoration: "line-through"}}>
-                            ${product.original_price}
+                        {product.variants && product.variants.length > 0 && (
+                          <div style={{fontSize: "11px", color: "#6c757d", marginTop: "2px"}}>
+                            {product.variants.length} 個變體
                           </div>
                         )}
                       </td>
+                      <td>{product.category?.name || "-"}</td>
+                      <td style={{textAlign: "right"}}>
+                        {getPriceDisplay(product)}
+                      </td>
                       <td style={{textAlign: "center"}}>
-                        <span style={{color: product.stock_quantity <= 0 ? "#dc3545" : "inherit"}}>
-                          {product.stock_quantity}
-                        </span>
+                        {getStockDisplay(product)}
                       </td>
                       <td>
                         <span style={{color: getStatusColor(product.status)}}>
