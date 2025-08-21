@@ -48,6 +48,7 @@ export interface CartItem {
     name: string
   }
   selectedSpecs?: Record<string, string>
+  variantId?: number
 }
 
 // 購物車狀態介面

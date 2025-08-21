@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
           stock_quantity: selectedVariant.stock_quantity,
           category: product.category,
           selectedSpecs: selectedSpecs,
-          variantId: selectedVariant.id
+          variantId: selectedVariant?.id
         })
       }
       
@@ -275,7 +275,7 @@ export default function ProductDetailPage() {
           // 如果有變體，設定預設變體
           if (data.variants && data.variants.length > 0) {
             const defaultVariant = data.variants.find((v: ProductVariant) => v.is_default) || data.variants[0]
-            setSelectedVariant(defaultVariant)
+            setSelectedVariant(defaultVariant as ProductVariant)
             setSelectedSpecs(defaultVariant.variant_options)
           }
         } else {
@@ -299,7 +299,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
       const variant = findMatchingVariant(selectedSpecs)
-      setSelectedVariant(variant)
+      setSelectedVariant(variant as ProductVariant | null)
       
       // 重置數量為1，避免超過新變體的庫存
       setQuantity(1)
@@ -400,7 +400,7 @@ export default function ProductDetailPage() {
   const handleVariantThumbnailClick = (variant: ProductVariant) => {
     // 設定選中的規格
     setSelectedSpecs(variant.variant_options)
-    setSelectedVariant(variant)
+    setSelectedVariant(variant as ProductVariant)
     setSelectedImage(0) // 重置主圖為第一張
   }
 
@@ -694,30 +694,11 @@ export default function ProductDetailPage() {
                 ))}
               </div>
 
-              {/* 運費規則 */}
-              {product.shipping_rules && product.shipping_rules.length > 0 && (
-                <div className="shipping-rules">
-                  <span className="shipping-label">運費規則:</span>
-                  <div className="shipping-rules-list">
-                    {product.shipping_rules.map((rule, index) => (
-                      <div key={index} className="shipping-rule-item">
-                        <div className="shipping-method">
-                          <span className="method-name">{rule.method}</span>
-                        </div>
-                        <div className="shipping-fee-info">
-                          <span className="base-fee">運費 NT$ {rule.base_fee}</span>
-                          <span className="free-threshold">滿 NT$ {rule.free_shipping_threshold.toLocaleString()} 免運</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* 購買區域 - 右側 */}
             <div className="purchase-section">
-              <h3 className="purchase-title">立即購買</h3>
+          
                 
                 {/* 商品規格選擇 */}
                 {(() => {
@@ -883,6 +864,40 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
+                {/* 運費規則 */}
+                {product.shipping_rules && product.shipping_rules.length > 0 ? (
+                  <div className="shipping-rules-section">
+                    <h4 className="shipping-rules-title">🚚 運費說明</h4>
+                    <div className="shipping-rules-list">
+                      {product.shipping_rules.map((rule, index) => (
+                        <div key={index} className="shipping-rule-item">
+                          <div className="shipping-method">
+                            <span className="method-name">{rule.method}</span>
+                          </div>
+                          <div className="shipping-fee-info">
+                            <span className="base-fee">運費 NT$ {rule.base_fee}</span>
+                            <span className="free-threshold">滿 NT$ {rule.free_shipping_threshold.toLocaleString()} 免運</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="shipping-rules-section">
+                    <h4 className="shipping-rules-title">🚚 運費說明</h4>
+                    <div className="shipping-rules-list">
+                      <div className="shipping-rule-item">
+                        <div className="shipping-method">
+                          <span className="method-name">測試運送方式</span>
+                        </div>
+                        <div className="shipping-fee-info">
+                          <span className="base-fee">運費 NT$ 60</span>
+                          <span className="free-threshold">滿 NT$ 1,000 免運</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
             </div>
           </div>
@@ -945,6 +960,8 @@ export default function ProductDetailPage() {
             {activeTab === 'shipping' && (
               <div>
                 <h3 className="tab-title">配送與退換貨說明</h3>
+                
+                {/* 配送說明內容 */}
                 {product.shipping_description ? (
                   <div 
                     className="tab-text"

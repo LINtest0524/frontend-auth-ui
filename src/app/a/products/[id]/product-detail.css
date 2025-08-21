@@ -996,3 +996,103 @@
     font-size: 12px;
   }
 }
+
+/* 購買區域中的運費規則樣式 */
+.shipping-rules-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border-radius: 8px;
+  border: 1px solid #b3d9ff;
+}
+
+.shipping-rules-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0066cc;
+  margin-bottom: 12px;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shipping-rules-section .shipping-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shipping-rules-section .shipping-rule-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #cce7ff;
+  box-shadow: 0 2px 4px rgba(0, 102, 204, 0.1);
+}
+
+.shipping-rules-section .shipping-method {
+  margin-bottom: 8px;
+}
+
+.shipping-rules-section .method-name {
+  font-weight: 600;
+  color: #0066cc;
+  font-size: 14px;
+  background: #e6f3ff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.shipping-rules-section .shipping-fee-info {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.shipping-rules-section .base-fee {
+  color: #dc3545;
+  font-weight: 500;
+  font-size: 13px;
+  background: #ffe6e6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.shipping-rules-section .free-threshold {
+  color: #28a745;
+  font-weight: 500;
+  font-size: 13px;
+  background: #e6ffe6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* 響應式設計 - 購買區域運費規則 */
+@media (max-width: 768px) {
+  .shipping-rules-section {
+    margin-top: 15px;
+    padding: 12px;
+  }
+  
+  .shipping-rules-title {
+    font-size: 14px;
+  }
+  
+  .shipping-rules-section .shipping-fee-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .shipping-rules-section .method-name {
+    font-size: 13px;
+  }
+  
+  .shipping-rules-section .base-fee,
+  .shipping-rules-section .free-threshold {
+    font-size: 12px;
+  }
+}

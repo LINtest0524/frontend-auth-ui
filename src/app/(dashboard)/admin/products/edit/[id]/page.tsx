@@ -37,7 +37,6 @@ type Product = {
   stock_quantity: number
   min_stock: number
   category_id?: number
-  specifications?: Record<string, any> | Array<{key: string, value: string}>
   tags?: string[]
   status: string
   is_featured: boolean
@@ -78,9 +77,11 @@ export default function EditProductPage() {
 
   const [images, setImages] = useState<string[]>([])
   const [thumbnail, setThumbnail] = useState('')
-  const [specifications, setSpecifications] = useState<{key: string, value: string}[]>([
-    { key: '', value: '' }
-  ])
+  
+  // 運費規則模板相關狀態
+  const [shippingTemplates, setShippingTemplates] = useState<any[]>([])
+  const [selectedShippingTemplate, setSelectedShippingTemplate] = useState<string>('')
+  const [useCustomShipping, setUseCustomShipping] = useState(false)
   
   const [shippingRules, setShippingRules] = useState<{method: string, base_fee: string, free_shipping_threshold: string}[]>([
     { method: '', base_fee: '', free_shipping_threshold: '' }
@@ -106,12 +107,24 @@ export default function EditProductPage() {
   useEffect(() => {
     if (companyId) {
       const token = localStorage.getItem('token')
+      
+      // 載入商品分類
       fetch('http://localhost:3001/admin/product-category', {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => res.ok ? res.json() : [])
         .then(setCategories)
         .catch(() => setCategories([]))
+      
+      // 載入運費規則模板
+      fetch('http://localhost:3001/admin/shipping-rule-templates', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.ok ? res.json() : [])
+        .then((templates) => {
+          setShippingTemplates(templates)
+        })
+        .catch(() => setShippingTemplates([]))
     }
   }, [companyId])
 
@@ -147,37 +160,26 @@ export default function EditProductPage() {
           setImages(product.images || [])
           setThumbnail(product.thumbnail || '')
           
-          // 處理規格數據
-          if (product.specifications) {
-            // 檢查是否為陣列格式（新格式）
-            if (Array.isArray(product.specifications)) {
-              setSpecifications(product.specifications.map(spec => ({
-                key: spec.key || '',
-                value: spec.value || ''
-              })))
-            } 
-            // 檢查是否為物件格式（舊格式）
-            else if (typeof product.specifications === 'object' && Object.keys(product.specifications).length > 0) {
-              const specsArray = Object.entries(product.specifications).map(([key, value]) => ({
-                key,
-                value: String(value)
-              }))
-              setSpecifications(specsArray)
-            } else {
-              setSpecifications([{ key: '', value: '' }])
-            }
-          } else {
-            setSpecifications([{ key: '', value: '' }])
-          }
           
           // 處理運費規則數據
-          if (product.shipping_rules && Array.isArray(product.shipping_rules) && product.shipping_rules.length > 0) {
+          if (product.shipping_rule_template_id) {
+            // 使用運費規則模板
+            setSelectedShippingTemplate(product.shipping_rule_template_id.toString())
+            setUseCustomShipping(false)
+            setShippingRules([{ method: '', base_fee: '', free_shipping_threshold: '' }])
+          } else if (product.shipping_rules && Array.isArray(product.shipping_rules) && product.shipping_rules.length > 0) {
+            // 使用自訂運費規則
+            setUseCustomShipping(true)
+            setSelectedShippingTemplate('')
             setShippingRules(product.shipping_rules.map(rule => ({
               method: rule.method || '',
               base_fee: rule.base_fee?.toString() || '',
               free_shipping_threshold: rule.free_shipping_threshold?.toString() || ''
             })))
           } else {
+            // 預設狀態
+            setUseCustomShipping(false)
+            setSelectedShippingTemplate('')
             setShippingRules([{ method: '', base_fee: '', free_shipping_threshold: '' }])
           }
 
@@ -250,23 +252,6 @@ export default function EditProductPage() {
     setFormData(prev => ({ ...prev, shipping_description: content }))
   }
 
-  const handleSpecificationChange = (index: number, field: 'key' | 'value', value: string) => {
-    setSpecifications(prev => {
-      const newSpecs = [...prev]
-      newSpecs[index][field] = value
-      return newSpecs
-    })
-  }
-
-  const addSpecification = () => {
-    setSpecifications(prev => [...prev, { key: '', value: '' }])
-  }
-
-  const removeSpecification = (index: number) => {
-    if (specifications.length > 1) {
-      setSpecifications(prev => prev.filter((_, i) => i !== index))
-    }
-  }
 
   const handleShippingRuleChange = (index: number, field: 'method' | 'base_fee' | 'free_shipping_threshold', value: string) => {
     setShippingRules(prev => {
@@ -524,13 +509,6 @@ export default function EditProductPage() {
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      // 處理規格 - 保持陣列格式，允許重複的規格名稱
-      const specificationsArray = specifications
-        .filter(spec => spec.key.trim() && spec.value.trim())
-        .map(spec => ({
-          key: spec.key.trim(),
-          value: spec.value.trim()
-        }))
 
       // 處理運費規則
       const shippingRulesArray = shippingRules
@@ -552,7 +530,7 @@ export default function EditProductPage() {
         variant_options: variant.variant_options,
         images: variant.images.length > 0 ? variant.images : undefined,
         is_default: variant.is_default
-      })) : undefined
+      })) : []
 
       const submitData = {
         ...formData,
@@ -561,12 +539,13 @@ export default function EditProductPage() {
         stock_quantity: useVariants ? 0 : parseInt(formData.stock_quantity), // 如果使用變體，主商品庫存設為0
         min_stock: parseInt(formData.min_stock),
         category_id: formData.category_id ? parseInt(formData.category_id) : undefined,
-        specifications: specificationsArray.length > 0 ? specificationsArray : undefined,
-        shipping_rules: shippingRulesArray.length > 0 ? shippingRulesArray : undefined,
+        shipping_rule_template_id: selectedShippingTemplate && !useCustomShipping ? parseInt(selectedShippingTemplate) : undefined,
+        shipping_rules: useCustomShipping && shippingRulesArray.length > 0 ? shippingRulesArray : undefined,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
         images: useVariants ? undefined : (images.length > 0 ? images : undefined), // 如果使用變體，主商品不設圖片
         thumbnail: useVariants ? undefined : (thumbnail || undefined),
-        variants: variantsArray
+        variants: variantsArray, // 當 useVariants 為 false 時，這會是空陣列，後端應該要清除所有變體
+        clearVariants: !useVariants // 明確告知後端要清除變體
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/product/${productId}`, {
@@ -904,67 +883,101 @@ export default function EditProductPage() {
             </div>
           )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品規格</label>
-            <div style={{ width: '70%' }}>
-              {specifications.map((spec, index) => (
-                <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    placeholder="規格名稱 (例：重量、顏色、尺寸)"
-                    value={spec.key}
-                    onChange={(e) => handleSpecificationChange(index, 'key', e.target.value)}
-                    style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="規格值 (例：1.5kg、紅色、30x20x10cm)"
-                    value={spec.value}
-                    onChange={(e) => handleSpecificationChange(index, 'value', e.target.value)}
-                    style={{ flex: '1', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSpecification(index)}
-                    disabled={specifications.length === 1}
-                    style={{
-                      padding: '8px 12px',
-                      background: specifications.length === 1 ? '#ccc' : '#ff4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: specifications.length === 1 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    刪除
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addSpecification}
-                style={{
-                  padding: '8px 16px',
-                  background: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginTop: '5px'
-                }}
-              >
-                + 新增規格
-              </button>
-              <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                提示：可以新增多個規格項目，例如重量、顏色、尺寸等。空白的規格項目不會被儲存。
-              </small>
-            </div>
-          </div>
 
           <div className="b-form-group-1 w100 fl4">
             <label>運費管理</label>
             <div style={{ width: '70%' }}>
-              <h4 style={{ marginBottom: '10px', color: '#333' }}>配送方式與運費設定</h4>
+              <div style={{ marginBottom: '15px', padding: '15px', background: '#e8f5e8', borderRadius: '6px', border: '1px solid #4caf50' }}>
+                <p style={{ margin: 0, fontSize: '14px', color: '#2e7d32' }}>
+                  <strong>🚚 運費設定說明：</strong><br/>
+                  您可以選擇使用預設的運費規則模板，或自訂此商品的專屬運費規則。
+                  <br/><strong>建議：</strong>使用運費規則模板可以統一管理，方便日後調整。
+                </p>
+              </div>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ fontWeight: 'bold', color: '#333', marginBottom: '10px', display: 'block' }}>運費設定方式</label>
+                
+                {/* 運費規則模板選擇 */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      checked={!useCustomShipping}
+                      onChange={() => setUseCustomShipping(false)}
+                      style={{ transform: 'scale(1.2)' }}
+                    />
+                    <span style={{ fontWeight: 'bold', color: '#333' }}>使用運費規則模板</span>
+                  </label>
+                  
+                  {!useCustomShipping && (
+                    <div style={{ marginLeft: '30px', marginBottom: '10px' }}>
+                      <select
+                        value={selectedShippingTemplate}
+                        onChange={(e) => setSelectedShippingTemplate(e.target.value)}
+                        style={{ 
+                          padding: '8px 12px', 
+                          border: '1px solid #ddd', 
+                          borderRadius: '4px', 
+                          width: '300px',
+                          background: 'white'
+                        }}
+                      >
+                        <option value="">請選擇運費規則模板</option>
+                        {shippingTemplates.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name} {template.is_default ? '(預設)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {selectedShippingTemplate && (
+                        <div style={{ marginTop: '10px', padding: '10px', background: '#f8f9fa', borderRadius: '4px', border: '1px solid #e9ecef' }}>
+                          {(() => {
+                            const template = shippingTemplates.find(t => t.id.toString() === selectedShippingTemplate)
+                            return template ? (
+                              <div>
+                                <h5 style={{ margin: '0 0 8px 0', color: '#333' }}>{template.name}</h5>
+                                <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#666' }}>{template.description}</p>
+                                <div style={{ fontSize: '12px' }}>
+                                  <strong>包含的運送方式：</strong>
+                                  {template.items?.map((item: any, index: number) => (
+                                    <div key={index} style={{ marginLeft: '10px', color: '#555' }}>
+                                      • {item.method}: 運費 ${item.base_fee}, 滿 ${item.free_shipping_threshold} 免運
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* 自訂運費規則 */}
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      checked={useCustomShipping}
+                      onChange={() => setUseCustomShipping(true)}
+                      style={{ transform: 'scale(1.2)' }}
+                    />
+                    <span style={{ fontWeight: 'bold', color: '#333' }}>自訂此商品的運費規則</span>
+                  </label>
+                  <small style={{ color: '#666', display: 'block', marginLeft: '30px', marginBottom: '10px' }}>
+                    為此商品設定專屬的運費規則，不使用模板
+                  </small>
+                </div>
+              </div>
+              
+              {useCustomShipping && (
+                <>
+                  <h4 style={{ marginBottom: '10px', color: '#333' }}>自訂配送方式與運費設定</h4>
               {shippingRules.map((rule, index) => (
                 <div key={index} style={{ 
                   display: 'grid', 
@@ -1043,9 +1056,11 @@ export default function EditProductPage() {
               >
                 + 新增配送方式
               </button>
-              <small style={{ color: '#666', display: 'block', marginTop: '10px' }}>
-                提示：可以新增多個配送方式，例如7-11超商取貨、宅配等。空白的運費規則不會被儲存。
-              </small>
+                  <small style={{ color: '#666', display: 'block', marginTop: '10px' }}>
+                    提示：設定不同配送方式的運費和免運門檻。例如：7-11超商取貨運費60元，滿399元免運；宅配運費210元，滿999元免運。空白的運費規則不會被儲存。
+                  </small>
+                </>
+              )}
             </div>
           </div>
 
@@ -1092,7 +1107,15 @@ export default function EditProductPage() {
               type="checkbox"
               name="use_variants"
               checked={useVariants}
-              onChange={(e) => setUseVariants(e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked
+                setUseVariants(checked)
+                // 如果取消使用變體，清除變體相關資料
+                if (!checked) {
+                  setVariants([])
+                  setVariantOptions([])
+                }
+              }}
               id="use-variants"
               className="new-checkbox"
             />
