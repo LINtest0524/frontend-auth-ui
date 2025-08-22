@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import ArticleDetailClient from './ArticleDetailClient'
-import '@/styles/pages/news.css'
+import '@/styles/pages/articles.css'
 
 type ArticleDetail = {
   id: number

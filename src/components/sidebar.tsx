@@ -42,6 +42,7 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/floating-ad")) setActiveMenu("floating-ad");
     else if (pathname?.startsWith("/admin/popup-announcement")) setActiveMenu("popup-announcement");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
+    else if (pathname?.startsWith("/admin/messages")) setActiveMenu("messages");
     else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
@@ -84,6 +85,15 @@ export default function Sidebar() {
         >
           <span className="icon" />
           會員管理
+        </Link>
+
+        <Link
+          href="/admin/messages"
+          onClick={resetMenu}
+          className={cn("sidebar-item i-user", pathname === "/admin/messages" && currentActive === null && "active")}
+        >
+          <span className="icon" />
+          消息管理
         </Link>
 
         {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (

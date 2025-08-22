@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { getUser, getToken, logout } from '@/lib/useAuth'
 import { logoutWithRecord } from '@/lib/logout'
 import MenuRenderer from './menu/MenuRenderer'
+import MessageIcon from './message/MessageIcon'
 import '../../src/app/a/styles/index.css'
 import '../../src/styles/components/menu.css'
 
@@ -126,6 +127,7 @@ export default function PortalHeaderBar() {
           </div>
         ) : (
           <div className="fl6">
+            <MessageIcon />
             <button onClick={handleGoToMember} className="usernamebox" title="查看會員中心">
               {user.username}
             </button>

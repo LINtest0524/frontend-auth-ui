@@ -25,6 +25,8 @@ interface Order {
   payment_method: string
   total_amount: number
   status: string
+  payment_status?: string
+  shipping_status?: string
   created_at: string
   updated_at: string
   notes?: string
@@ -135,6 +137,46 @@ export default function OrdersPage() {
       'cancelled': '#ef4444'
     }
     return colorMap[status] || '#6b7280'
+  }
+
+  const getPaymentStatusText = (paymentStatus: string) => {
+    const statusMap: { [key: string]: string } = {
+      'pending': '待付款',
+      'paid': '已付款',
+      'refunded': '已退款',
+      'cancelled': '已取消'
+    }
+    return statusMap[paymentStatus] || paymentStatus
+  }
+
+  const getPaymentStatusColor = (paymentStatus: string) => {
+    const colorMap: { [key: string]: string } = {
+      'pending': '#f59e0b',
+      'paid': '#10b981',
+      'refunded': '#6b7280',
+      'cancelled': '#ef4444'
+    }
+    return colorMap[paymentStatus] || '#6b7280'
+  }
+
+  const getShippingStatusText = (shippingStatus: string) => {
+    const statusMap: { [key: string]: string } = {
+      'pending': '待出貨',
+      'processing': '處理中',
+      'shipped': '已出貨',
+      'delivered': '已送達'
+    }
+    return statusMap[shippingStatus] || shippingStatus
+  }
+
+  const getShippingStatusColor = (shippingStatus: string) => {
+    const colorMap: { [key: string]: string } = {
+      'pending': '#f59e0b',
+      'processing': '#3b82f6',
+      'shipped': '#8b5cf6',
+      'delivered': '#059669'
+    }
+    return colorMap[shippingStatus] || '#6b7280'
   }
 
   const toggleOrderExpansion = (orderId: number) => {
@@ -332,15 +374,30 @@ export default function OrdersPage() {
                       訂購時間: {new Date(order.created_at).toLocaleString('zh-TW')}
                     </div>
                   </div>
-                  <div style={{
-                    background: getStatusColor(order.status),
-                    color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '20px',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                  }}>
-                    {getStatusText(order.status)}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {/* 付款狀態標籤 */}
+                    <div style={{
+                      background: getPaymentStatusColor(order.payment_status || 'pending'),
+                      color: 'white',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      {getPaymentStatusText(order.payment_status || 'pending')}
+                    </div>
+                    
+                    {/* 出貨狀態標籤 */}
+                    <div style={{
+                      background: getShippingStatusColor(order.shipping_status || 'pending'),
+                      color: 'white',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      {getShippingStatusText(order.shipping_status || 'pending')}
+                    </div>
                   </div>
                 </div>
 

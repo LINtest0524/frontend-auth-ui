@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
-import '@/styles/pages/news.css'
+import '@/styles/pages/articles.css'
 
 type ArticleItem = {
   id: number
@@ -134,163 +134,307 @@ export default function ArticlesListPage() {
   }
 
   const renderPagination = () => {
+    if (totalPages <= 1) return null
+
     const pages = []
-    const maxVisiblePages = 5
-    
+    const maxVisiblePages = 7
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1)
     }
 
-    // 上一頁
-    if (currentPage > 1) {
+    // 第一頁
+    if (startPage > 1) {
       pages.push(
         <button
-          key="prev"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          className="news-pagination-btn"
+          key={1}
+          onClick={() => setCurrentPage(1)}
+          className="pagination-btn"
         >
-          上一頁
+          1
         </button>
       )
+      if (startPage > 2) {
+        pages.push(
+          <span key="ellipsis1" className="pagination-ellipsis">
+            ...
+          </span>
+        )
+      }
     }
 
-    // 頁碼
+    // 頁碼範圍
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
           key={i}
           onClick={() => setCurrentPage(i)}
-          className={`news-pagination-btn ${currentPage === i ? 'active' : ''}`}
+          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
         >
           {i}
         </button>
       )
     }
 
-    // 下一頁
-    if (currentPage < totalPages) {
+    // 最後一頁
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="ellipsis2" className="pagination-ellipsis">
+            ...
+          </span>
+        )
+      }
       pages.push(
         <button
-          key="next"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          className="news-pagination-btn"
+          key={totalPages}
+          onClick={() => setCurrentPage(totalPages)}
+          className="pagination-btn"
         >
-          下一頁
+          {totalPages}
         </button>
       )
     }
 
-    return pages
+    return (
+      <div className="pagination-container">
+        <button
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="pagination-nav-btn"
+        >
+          <svg className="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          上一頁
+        </button>
+        
+        <div className="pagination-numbers">
+          {pages}
+        </div>
+        
+        <button
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="pagination-nav-btn"
+        >
+          下一頁
+          <svg className="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    )
   }
 
   return (
     <>
       <PortalHeaderBar />
-      <div className="news-container">
-        <h1 className="news-title">文章專區</h1>
-        
-        {/* 分類導航 */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleCategoryChange('')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === '' 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              全部分類
-            </button>
-            {categories.map((category) => (
+      
+      <div className="articles-page">
+        {/* 頁面標題區域 */}
+        <div className="articles-hero">
+          <div className="articles-hero-content">
+            <h1 className="articles-hero-title">
+              <span className="articles-hero-icon">📚</span>
+              文章專區
+            </h1>
+            <p className="articles-hero-subtitle">深度閱讀，探索知識的無限可能</p>
+          </div>
+        </div>
+
+        <div className="articles-container">
+          {/* 分類導航區域 */}
+          <div className="articles-categories">
+            <div className="categories-header">
+              <h2>文章分類</h2>
+              <span className="articles-count">共 {articles.length} 篇文章</span>
+            </div>
+            <div className="categories-list">
               <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.id.toString())}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category.id.toString()
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                onClick={() => handleCategoryChange('')}
+                className={`category-btn ${selectedCategory === '' ? 'active' : ''}`}
               >
-                {category.name}
+                <svg className="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                全部分類
               </button>
-            ))}
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.id.toString())}
+                  className={`category-btn ${selectedCategory === category.id.toString() ? 'active' : ''}`}
+                >
+                  <svg className="category-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* 搜尋區域 */}
-        <div className="news-search-section">
-          <form onSubmit={handleSearch} className="news-search-form">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="搜尋文章標題或內容..."
-              className="news-search-input"
-            />
-            <button type="submit" className="news-search-btn">
-              搜尋
-            </button>
-          </form>
-        </div>
+          {/* 搜尋和篩選區域 */}
+          <div className="articles-filters">
+            <div className="articles-filters-header">
+              <h2>搜尋文章</h2>
+              <span className="filter-count">找到 {articles.length} 篇相關文章</span>
+            </div>
+            <form onSubmit={handleSearch} className="articles-search-form">
+              <div className="search-input-group">
+                <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="搜尋文章標題或內容..."
+                  className="articles-search-input"
+                />
+              </div>
+              <button type="submit" className="articles-search-btn">
+                <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                搜尋
+              </button>
+            </form>
+          </div>
 
-        {/* 文章列表 */}
-        {loading ? (
-          <div className="news-loading">
-            <div className="news-loading-spinner"></div>
-            <p className="news-loading-text">載入中...</p>
-          </div>
-        ) : articles.length === 0 ? (
-          <div className="news-empty">
-            <p>目前沒有文章</p>
-          </div>
-        ) : (
-          <div className="news-list">
-            {articles.map((item) => (
-              <article
-                key={item.id}
-                className="news-item"
-                onClick={() => router.push(`/a/articles/${item.id}`)}
-              >
-                <div className="news-item-content">
-                  {item.image_url && (
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
-                      alt={item.title}
-                      className="news-item-image"
-                    />
-                  )}
-                  <div className="news-item-body">
-                    <div className="news-item-badges">
-                      {item.is_featured && (
-                        <span className="news-badge news-badge-featured">置頂</span>
-                      )}
-                      <span className="news-badge news-badge-category">
-                        {item.category.name}
-                      </span>
-                    </div>
-                    <h2 className="news-item-title">
-                      {item.title}
-                    </h2>
-                    <p className="news-item-summary" style={{ whiteSpace: 'pre-line' }}>
-                      {item.summary}
-                    </p>
-                    <div className="news-item-meta">
-                      <span>📅 {formatDate(item.publish_date)}</span>
-                      <span>👁 {item.view_count} 次瀏覽</span>
-                    </div>
+          {/* 文章列表 */}
+          {loading ? (
+            <div className="articles-loading">
+              <div className="loading-animation">
+                <div className="loading-spinner"></div>
+                <div className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+              <p className="loading-text">正在載入精彩文章...</p>
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="articles-empty">
+              <div className="empty-icon">📖</div>
+              <h3>暫無文章</h3>
+              <p>目前沒有符合條件的文章，請稍後再試或調整篩選條件</p>
+            </div>
+          ) : (
+            <>
+              {/* 置頂文章 */}
+              {articles.filter(item => item.is_featured).length > 0 && (
+                <div className="featured-articles-section">
+                  <h3 className="section-title">
+                    <span className="title-icon">⭐</span>
+                    精選文章
+                  </h3>
+                  <div className="featured-articles-grid">
+                    {articles.filter(item => item.is_featured).map((item) => (
+                      <article
+                        key={`featured-${item.id}`}
+                        className="article-card featured"
+                        onClick={() => router.push(`/a/articles/${item.id}`)}
+                      >
+                        <div className="article-card-header">
+                          {item.image_url && (
+                            <div className="article-card-image">
+                              <img
+                                src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
+                                alt={item.title}
+                              />
+                              <div className="image-overlay"></div>
+                            </div>
+                          )}
+                          <div className="article-card-badges">
+                            <span className="badge featured">精選</span>
+                            <span className="badge category">{item.category.name}</span>
+                          </div>
+                        </div>
+                        <div className="article-card-content">
+                          <h4 className="article-card-title">{item.title}</h4>
+                          <p className="article-card-summary">{item.summary}</p>
+                          <div className="article-card-meta">
+                            <span className="meta-item">
+                              <svg className="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {formatDate(item.publish_date)}
+                            </span>
+                            <span className="meta-item">
+                              <svg className="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              {item.view_count}
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
                   </div>
                 </div>
-              </article>
-            ))}
-          </div>
-        )}
+              )}
 
-        {/* 分頁 */}
-        <div className="news-pagination">
+              {/* 一般文章 */}
+              <div className="regular-articles-section">
+                <h3 className="section-title">
+                  <span className="title-icon">📄</span>
+                  所有文章
+                </h3>
+                <div className="articles-grid">
+                  {articles.map((item) => (
+                    <article
+                      key={item.id}
+                      className="article-card"
+                      onClick={() => router.push(`/a/articles/${item.id}`)}
+                    >
+                      <div className="article-card-header">
+                        {item.image_url && (
+                          <div className="article-card-image">
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
+                              alt={item.title}
+                            />
+                            <div className="image-overlay"></div>
+                          </div>
+                        )}
+                        <div className="article-card-badges">
+                          {item.is_featured && <span className="badge featured">精選</span>}
+                          <span className="badge category">{item.category.name}</span>
+                        </div>
+                      </div>
+                      <div className="article-card-content">
+                        <h4 className="article-card-title">{item.title}</h4>
+                        <p className="article-card-summary">{item.summary}</p>
+                        <div className="article-card-meta">
+                          <span className="meta-item">
+                            <svg className="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {formatDate(item.publish_date)}
+                          </span>
+                          <span className="meta-item">
+                            <svg className="meta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            {item.view_count}
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* 分頁 */}
           {renderPagination()}
         </div>
       </div>
