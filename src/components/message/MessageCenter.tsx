@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import '../../styles/message-center.css'
 
 interface Message {
-  id: number
+  id: number | string  // 支援數字ID和字符串ID（系統廣播）
   title: string
   content: string
   isRead: boolean
@@ -35,8 +35,8 @@ export default function MessageCenter() {
   const [activeTab, setActiveTab] = useState('all')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedMessages, setSelectedMessages] = useState<number[]>([])
-  const [expandedMessages, setExpandedMessages] = useState<number[]>([])
+  const [selectedMessages, setSelectedMessages] = useState<(number | string)[]>([])
+  const [expandedMessages, setExpandedMessages] = useState<(number | string)[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -44,6 +44,7 @@ export default function MessageCenter() {
   // 使用 ref 來追蹤最新的狀態值，避免閉包問題
   const activeTabRef = useRef(activeTab)
   const currentPageRef = useRef(currentPage)
+  const isProcessingRef = useRef(false) // 追蹤是否正在處理刪除操作
   
   // 更新 ref 值
   useEffect(() => {
@@ -56,6 +57,7 @@ export default function MessageCenter() {
 
   // 獲取消息列表
   const fetchMessages = async (isRead?: boolean, page = 1) => {
+    console.log('🔄 fetchMessages 被調用:', { isRead, page, caller: new Error().stack?.split('\n')[2]?.trim() })
     if (!user || !company) return
 
     setLoading(true)
@@ -71,12 +73,6 @@ export default function MessageCenter() {
       }
 
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/messages?${params}`
-      console.log('🔍 API 請求:', {
-        activeTab,
-        isRead,
-        apiUrl,
-        params: params.toString()
-      })
 
       const response = await fetch(apiUrl, {
         headers: {
@@ -87,15 +83,16 @@ export default function MessageCenter() {
 
       if (response.ok) {
         const data: MessageListResponse = await response.json()
-        console.log('📨 API 響應:', {
-          總數量: data.total,
-          消息數量: data.messages.length,
-          頁籤: activeTab,
-          篩選條件: isRead,
-          消息狀態統計: {
-            未讀: data.messages.filter(m => !m.isRead).length,
-            已讀: data.messages.filter(m => m.isRead).length
-          }
+        console.log('📋 獲取到的消息列表:', {
+          total: data.messages.length,
+          messages: data.messages.map(msg => ({
+            id: msg.id,
+            type: typeof msg.id,
+            title: msg.title,
+            messageType: msg.messageType,
+            isRead: msg.isRead,
+            createdAt: msg.createdAt
+          }))
         })
         setMessages(data.messages)
         setTotalPages(data.totalPages)
@@ -133,7 +130,7 @@ export default function MessageCenter() {
   }
 
   // 標記為已讀
-  const markAsRead = async (messageId: number) => {
+  const markAsRead = async (messageId: number | string) => {
     if (!user || !company) return
 
     try {
@@ -189,22 +186,23 @@ export default function MessageCenter() {
   }
 
   // 刪除消息
-  const deleteMessage = async (messageId: number) => {
+  const deleteMessage = async (messageId: number | string) => {
     if (!user || !company) return
+
+    console.log('🗑️ 準備刪除消息:', { messageId, type: typeof messageId })
 
     if (!confirm('確定要刪除這條消息嗎？')) {
       return
     }
 
+    // 設置處理狀態，防止焦點事件干擾
+    isProcessingRef.current = true
+
     try {
       const token = localStorage.getItem(`portalToken_${company}`)
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/portal/messages/${messageId}`
-      
-      console.log('單個刪除請求:', {
-        url: apiUrl,
-        messageId: messageId,
-        token: token ? 'exists' : 'missing'
-      })
+
+      console.log('🌐 發送刪除請求:', { apiUrl, messageId })
 
       const response = await fetch(apiUrl, {
         method: 'DELETE',
@@ -213,24 +211,39 @@ export default function MessageCenter() {
         },
       })
 
-      console.log('單個刪除響應:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      })
+      console.log('📡 收到響應:', { status: response.status, ok: response.ok })
 
       if (response.ok) {
-        alert('刪除成功！')
-        setMessages(prev => prev.filter(msg => msg.id !== messageId))
-        fetchUnreadCount()
+        const result = await response.json()
+        console.log('✅ 刪除響應結果:', result)
+        
+        if (result.message && result.message.includes('系統廣播已刪除')) {
+          console.log('📢 系統廣播刪除成功:', result.message)
+          alert(result.message)
+          // 系統廣播刪除後，直接從列表中移除，不需要重新載入
+          setMessages(prev => prev.filter(msg => msg.id !== messageId))
+          await fetchUnreadCount()
+        } else {
+          console.log('💬 個人消息刪除成功')
+          alert('刪除成功！')
+          // 對於個人消息，直接從列表中移除，不需要重新載入
+          setMessages(prev => prev.filter(msg => msg.id !== messageId))
+          await fetchUnreadCount()
+        }
       } else {
         const errorText = await response.text()
-        console.error('刪除失敗響應:', errorText)
+        console.error('❌ 刪除失敗響應:', errorText)
         alert(`刪除失敗: ${response.status} ${response.statusText}`)
       }
     } catch (error) {
-      console.error('刪除消息失敗:', error)
+      console.error('💥 刪除消息失敗:', error)
       alert('刪除失敗，請檢查網路連線')
+    } finally {
+      // 重置處理狀態
+      setTimeout(() => {
+        isProcessingRef.current = false
+        console.log('✅ 刪除處理完成，重置狀態')
+      }, 1000) // 延遲1秒重置，確保所有相關的焦點事件都處理完
     }
   }
 
@@ -245,15 +258,12 @@ export default function MessageCenter() {
       return
     }
 
+    // 設置處理狀態，防止焦點事件干擾
+    isProcessingRef.current = true
+
     try {
       const token = localStorage.getItem(`portalToken_${company}`)
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/portal/messages/batch`
-      
-      console.log('刪除請求:', {
-        url: apiUrl,
-        messageIds: selectedMessages,
-        token: token ? 'exists' : 'missing'
-      })
 
       const response = await fetch(apiUrl, {
         method: 'DELETE',
@@ -264,17 +274,19 @@ export default function MessageCenter() {
         body: JSON.stringify({ messageIds: selectedMessages }),
       })
 
-      console.log('刪除響應:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      })
-
       if (response.ok) {
-        alert('刪除成功！')
+        const result = await response.json()
+        // 使用後端返回的訊息
+        if (result.message) {
+          alert(result.message)
+        } else {
+          alert('操作完成！')
+        }
+        
+        // 直接從列表中移除已刪除的消息，不需要重新載入
+        setMessages(prev => prev.filter(msg => !selectedMessages.includes(msg.id)))
         setSelectedMessages([])
-        fetchMessages(activeTab === 'unread' ? false : undefined, currentPage)
-        fetchUnreadCount()
+        await fetchUnreadCount()
       } else {
         const errorText = await response.text()
         console.error('刪除失敗響應:', errorText)
@@ -283,31 +295,33 @@ export default function MessageCenter() {
     } catch (error) {
       console.error('批量刪除失敗:', error)
       alert('刪除失敗，請檢查網路連線')
+    } finally {
+      // 重置處理狀態
+      setTimeout(() => {
+        isProcessingRef.current = false
+        console.log('✅ 批量刪除處理完成，重置狀態')
+      }, 1000) // 延遲1秒重置，確保所有相關的焦點事件都處理完
     }
   }
 
   // 處理標籤切換
   const handleTabChange = (value: string) => {
-    console.log('🔄 切換頁籤:', value)
     setActiveTab(value)
     setSelectedMessages([])
     setExpandedMessages([])
     setCurrentPage(1)
     
     if (value === 'all') {
-      console.log('📋 獲取全部消息')
       fetchMessages(undefined, 1)
     } else if (value === 'unread') {
-      console.log('📬 獲取未讀消息 (isRead: false)')
       fetchMessages(false, 1)
     } else if (value === 'read') {
-      console.log('📭 獲取已讀消息 (isRead: true)')
       fetchMessages(true, 1)
     }
   }
 
   // 處理消息展開/收起
-  const handleMessageToggle = (messageId: number) => {
+  const handleMessageToggle = (messageId: number | string) => {
     setExpandedMessages(prev => {
       if (prev.includes(messageId)) {
         return prev.filter(id => id !== messageId)
@@ -323,7 +337,7 @@ export default function MessageCenter() {
   }
 
   // 處理消息選擇
-  const handleMessageSelect = (messageId: number, checked: boolean) => {
+  const handleMessageSelect = (messageId: number | string, checked: boolean) => {
     if (checked) {
       setSelectedMessages(prev => [...prev, messageId])
     } else {
@@ -376,6 +390,14 @@ export default function MessageCenter() {
       
       // 監聽頁面焦點事件，當用戶回到頁面時才更新消息列表
       const handleFocus = () => {
+        console.log('🔍 頁面焦點事件觸發, 是否正在處理:', isProcessingRef.current)
+        
+        // 如果正在處理刪除操作，忽略焦點事件
+        if (isProcessingRef.current) {
+          console.log('⏸️ 正在處理刪除操作，忽略焦點事件')
+          return
+        }
+        
         // 用戶切回頁面時才更新消息列表（這時不會干擾操作）
         // 使用 ref 獲取最新的狀態值
         const currentActiveTab = activeTabRef.current
@@ -395,6 +417,7 @@ export default function MessageCenter() {
       
       // 監聽頁面可見性變化
       const handleVisibilityChange = () => {
+        console.log('👁️ 頁面可見性變化:', !document.hidden ? '可見' : '隱藏')
         if (!document.hidden) {
           // 頁面變為可見時才更新消息列表
           // 使用 ref 獲取最新的狀態值

@@ -102,66 +102,110 @@ export default function BankVerificationPage() {
     if (!file) return null
     const url = typeof file === 'string' ? file : URL.createObjectURL(file)
     return (
-      <img
-        key={`${previewKey}-${url}`}
-        src={url}
-        alt="preview"
-        className="w-40 h-auto border rounded mb-2"
-      />
+      <div className="bank-upload-preview">
+        <img
+          key={`${previewKey}-${url}`}
+          src={url}
+          alt="存摺封面預覽"
+        />
+      </div>
     )
   }
 
   const isDisabled = status === 'PENDING' || status === 'APPROVED'
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">銀行帳戶驗證</h1>
+    <div className="bank-verification-container">
+      <div className="bank-verification-header">
+        <h1 className="bank-verification-title">
+          <div className="bank-verification-icon">🏦</div>
+          銀行帳戶驗證
+        </h1>
+      </div>
 
-      {status === 'PENDING' && (
-        <p className="text-blue-600 font-semibold mb-4">已送出審核，請耐心等待客服審核</p>
-      )}
-      {status === 'APPROVED' && (
-        <p className="text-green-600 font-semibold mb-4">  已通過銀行驗證</p>
-      )}
-      {status === 'REJECTED' && (
-        <div className="mb-4">
-          <p className="text-red-600 font-semibold">
-                驗證未通過：{note || '資料有誤，請重新上傳'}
-          </p>
-          <button
-            onClick={handleReset}
-            className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-          >
-            重新驗證
-          </button>
+      <div className="bank-verification-content">
+        {/* 使用說明 */}
+        <div className="bank-verification-instructions">
+          <h3>📋 驗證說明</h3>
+          <ul>
+            <li>請上傳清晰的存摺封面照片</li>
+            <li>確保帳戶資訊（銀行名稱、帳號、戶名）清楚可見</li>
+            <li>照片格式支援 JPG、PNG 等常見圖片格式</li>
+            <li>請確認存摺戶名與註冊資料一致</li>
+            <li>審核時間約 2 個小時，請耐心等待</li>
+          </ul>
         </div>
-      )}
 
-      {status !== 'REJECTED' && (
-        <>
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">上傳存摺封面照片</label>
-            {renderPreview(file)}
-            {!isDisabled && (
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                onChange={e => setFile(e.target.files?.[0] ?? null)}
-              />
-            )}
+        {/* 狀態顯示 */}
+        {status === 'PENDING' && (
+          <div className="bank-verification-status pending">
+            <div className="bank-verification-status-icon">⏳</div>
+            已送出審核，請耐心等待客服審核
           </div>
+        )}
+        {status === 'APPROVED' && (
+          <div className="bank-verification-status approved">
+            <div className="bank-verification-status-icon">✅</div>
+            已通過銀行帳戶驗證
+          </div>
+        )}
+        {status === 'REJECTED' && (
+          <div className="bank-verification-status rejected">
+            <div className="bank-verification-status-icon">❌</div>
+            驗證未通過：{note || '資料有誤，請重新上傳'}
+          </div>
+        )}
 
-          {!isDisabled && (
+        {status !== 'REJECTED' && (
+          <>
+            <div className={`bank-upload-section ${file ? 'has-file' : ''} ${isDisabled ? 'disabled' : ''}`}>
+              <div className="bank-upload-label">
+                <span className="bank-upload-icon">📄</span>
+                上傳存摺封面照片
+              </div>
+              
+              {renderPreview(file)}
+              
+              {!isDisabled && (
+                <>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setFile(e.target.files?.[0] ?? null)}
+                    className="bank-upload-input"
+                  />
+                  <div className="bank-upload-hint">
+                    請選擇清晰的存摺封面照片，確保銀行名稱、帳號及戶名清楚可見
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="bank-verification-actions">
+              {!isDisabled && (
+                <button
+                  onClick={handleSubmit}
+                  className="bank-verification-btn primary"
+                >
+                  📤 送出審核
+                </button>
+              )}
+            </div>
+          </>
+        )}
+
+        {status === 'REJECTED' && (
+          <div className="bank-verification-actions">
             <button
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              onClick={handleReset}
+              className="bank-verification-btn danger"
             >
-              送出審核
+              🔄 重新驗證
             </button>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

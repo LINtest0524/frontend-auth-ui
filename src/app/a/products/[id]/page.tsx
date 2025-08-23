@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCartStore } from '@/hooks/use-cart-store-new'
+import { useFavoritesStore } from '@/hooks/use-favorites-store'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './product-detail.css'
 
@@ -58,6 +59,9 @@ export default function ProductDetailPage() {
   // 購物車狀態
   const { addItem, getTotalItems } = useCartStore()
   const totalItems = getTotalItems()
+  
+  // 收藏功能狀態
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavoritesStore()
   
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -258,6 +262,43 @@ export default function ProductDetailPage() {
       }
       
       alert(`已將 ${quantity} 件 ${productName} 加入購物車！`)
+    }
+  }
+
+  // 處理收藏功能
+  const handleToggleFavorite = () => {
+    if (!product) return
+    
+    const isCurrentlyFavorite = isFavorite(product.id)
+    
+    if (isCurrentlyFavorite) {
+      removeFromFavorites(product.id)
+      alert('已從收藏中移除')
+    } else {
+      // 獲取變體資訊 - 與 ProductCard 邏輯保持一致
+      const hasVariants = product.variants && product.variants.length > 0
+      let displayThumbnail = product.thumbnail
+      
+      if (hasVariants) {
+        // 使用預設變體或第一個變體的第一張圖片
+        const defaultVariant = product.variants.find(v => v.is_default) || product.variants[0]
+        if (defaultVariant.images && defaultVariant.images.length > 0) {
+          displayThumbnail = defaultVariant.images[0]
+        }
+      }
+      
+      const favoriteItem = {
+        id: product.id,
+        name: product.name,
+        price: getCurrentPrice(),
+        original_price: product.original_price,
+        thumbnail: displayThumbnail,
+        sku: product.sku,
+        hasVariants,
+        variantImages: hasVariants && displayThumbnail !== product.thumbnail ? [displayThumbnail] : undefined
+      }
+      addToFavorites(favoriteItem)
+      alert('已加入收藏')
     }
   }
 
@@ -859,8 +900,11 @@ export default function ProductDetailPage() {
                   >
                     🛒 加入購物車
                   </button>
-                  <button className="btn btn-tertiary">
-                    ❤️ 加入收藏
+                  <button 
+                    className="btn btn-tertiary"
+                    onClick={handleToggleFavorite}
+                  >
+                    {isFavorite(product.id) ? '💖 已收藏' : '❤️ 加入收藏'}
                   </button>
                 </div>
 

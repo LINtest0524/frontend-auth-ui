@@ -74,26 +74,38 @@ export default function MemberEditForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">信箱</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+    <div className="member-form-container">
+      <div className="member-form-header">
+        <h3 className="member-form-title">
+          <div className="member-form-icon">✏️</div>
+          修改個人資料
+        </h3>
       </div>
+      
+      <div className="member-form-content">
+        <form onSubmit={handleSubmit} className="member-form">
+          <div className="member-form-group">
+            <label className="member-form-label">信箱地址</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="member-form-input"
+              placeholder="請輸入您的信箱地址"
+            />
+          </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-      {success && <div className="text-green-600 text-sm">{success}</div>}
+          {error && <div className="member-form-message error">{error}</div>}
+          {success && <div className="member-form-message success">{success}</div>}
 
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        儲存修改
-      </button>
-    </form>
+          <button
+            type="submit"
+            className="member-form-button"
+          >
+            💾 儲存修改
+          </button>
+        </form>
+      </div>
+    </div>
   )
 }

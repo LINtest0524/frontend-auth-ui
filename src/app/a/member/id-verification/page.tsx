@@ -115,92 +115,138 @@ export default function IDVerificationPage() {
     if (!file) return null;
     const url = typeof file === 'string' ? file : URL.createObjectURL(file);
     return (
-      <img
-        key={`${previewKey}-${url}`}
-        src={url}
-        alt="preview"
-        className="w-40 h-auto border rounded mb-2"
-      />
+      <div className="id-upload-preview">
+        <img
+          key={`${previewKey}-${url}`}
+          src={url}
+          alt="preview"
+        />
+      </div>
     );
   };
 
   const isDisabled = status === 'PENDING' || status === 'APPROVED';
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">身份證驗證</h1>
+    <div className="id-verification-container">
+      <div className="id-verification-header">
+        <h1 className="id-verification-title">
+          <div className="id-verification-icon">🆔</div>
+          身份證驗證
+        </h1>
+      </div>
 
-      {status === 'PENDING' && (
-        <p className="text-blue-600 font-semibold mb-4">已送出審核，請耐心等待客服審核</p>
-      )}
-      {status === 'APPROVED' && (
-        <p className="text-green-600 font-semibold mb-4">  已通過身份驗證</p>
-      )}
-      {status === 'REJECTED' && (
-        <div className="mb-4">
-          <p className="text-red-600 font-semibold">
-                驗證未通過：{note || '資料有誤，請重新上傳'}
-          </p>
-          <button
-            onClick={handleReset}
-            className="mt-2 bg-blue-500 text-white px-3 py-1 rounded"
-          >
-            重新驗證
-          </button>
+      <div className="id-verification-content">
+        {/* 使用說明 */}
+        <div className="id-verification-instructions">
+          <h3>📋 驗證說明</h3>
+          <ul>
+            <li>請上傳清晰的身份證正面、反面照片</li>
+            <li>請手持身份證拍攝自拍照，確保臉部和身份證都清楚可見</li>
+            <li>照片格式支援 JPG、PNG 等常見圖片格式</li>
+            <li>審核時間約 2 個小時，請耐心等待</li>
+          </ul>
         </div>
-      )}
 
-      {status !== 'REJECTED' && (
-        <>
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">正面</label>
-            {renderPreview(front)}
-            {!isDisabled && (
-              <input
-                ref={frontRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFront(e.target.files?.[0] ?? null)}
-              />
-            )}
+        {/* 狀態顯示 */}
+        {status === 'PENDING' && (
+          <div className="id-verification-status pending">
+            <div className="id-verification-status-icon">⏳</div>
+            已送出審核，請耐心等待客服審核
           </div>
-
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">反面</label>
-            {renderPreview(back)}
-            {!isDisabled && (
-              <input
-                ref={backRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setBack(e.target.files?.[0] ?? null)}
-              />
-            )}
+        )}
+        {status === 'APPROVED' && (
+          <div className="id-verification-status approved">
+            <div className="id-verification-status-icon">✅</div>
+            已通過身份驗證
           </div>
-
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">手持身分證</label>
-            {renderPreview(selfie)}
-            {!isDisabled && (
-              <input
-                ref={selfieRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setSelfie(e.target.files?.[0] ?? null)}
-              />
-            )}
+        )}
+        {status === 'REJECTED' && (
+          <div className="id-verification-status rejected">
+            <div className="id-verification-status-icon">❌</div>
+            驗證未通過：{note || '資料有誤，請重新上傳'}
           </div>
+        )}
 
-          {!isDisabled && (
+        {status !== 'REJECTED' && (
+          <>
+            <div className="id-upload-section">
+              <div className={`id-upload-item ${front ? 'has-file' : ''} ${isDisabled ? 'id-upload-disabled' : ''}`}>
+                <div className="id-upload-label">
+                  <span className="id-upload-icon">📄</span>
+                  身份證正面
+                </div>
+                {renderPreview(front)}
+                {!isDisabled && (
+                  <input
+                    ref={frontRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFront(e.target.files?.[0] ?? null)}
+                    className="id-upload-input"
+                  />
+                )}
+              </div>
+
+              <div className={`id-upload-item ${back ? 'has-file' : ''} ${isDisabled ? 'id-upload-disabled' : ''}`}>
+                <div className="id-upload-label">
+                  <span className="id-upload-icon">📄</span>
+                  身份證反面
+                </div>
+                {renderPreview(back)}
+                {!isDisabled && (
+                  <input
+                    ref={backRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setBack(e.target.files?.[0] ?? null)}
+                    className="id-upload-input"
+                  />
+                )}
+              </div>
+
+              <div className={`id-upload-item ${selfie ? 'has-file' : ''} ${isDisabled ? 'id-upload-disabled' : ''}`}>
+                <div className="id-upload-label">
+                  <span className="id-upload-icon">🤳</span>
+                  手持身份證自拍
+                </div>
+                {renderPreview(selfie)}
+                {!isDisabled && (
+                  <input
+                    ref={selfieRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setSelfie(e.target.files?.[0] ?? null)}
+                    className="id-upload-input"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="id-verification-actions">
+              {!isDisabled && (
+                <button
+                  onClick={handleSubmit}
+                  className="id-verification-btn primary"
+                >
+                  📤 送出審核
+                </button>
+              )}
+            </div>
+          </>
+        )}
+
+        {status === 'REJECTED' && (
+          <div className="id-verification-actions">
             <button
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              onClick={handleReset}
+              className="id-verification-btn danger"
             >
-              送出審核
+              🔄 重新驗證
             </button>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -81,6 +81,10 @@ export default function MemberProfile({
     fetchStatus('BANK_ACCOUNT')
   }, [])
 
+  const getStatusIcon = (type: VerifyType) => {
+    return type === 'ID_CARD' ? '🆔' : '🏦'
+  }
+
   const renderStatus = (
     type: VerifyType,
     label: string,
@@ -89,60 +93,94 @@ export default function MemberProfile({
     const status = statusMap[type]
 
     return (
-      <div>
-        <span className="font-medium">{label}：</span>
-        {status === 'NONE' && (
-          <button
-            className="text-blue-600 underline ml-2"
-            onClick={onGo}
-          >
-            前往驗證
-          </button>
-        )}
-        {status === 'PENDING' && (
-          <span className="text-yellow-600 ml-2">等待驗證中</span>
-        )}
-        {status === 'PROCESSING' && (
-          <span className="text-yellow-600 ml-2">等待驗證中</span>
-        )}
-        {status === 'APPROVED' && (
-          <span className="text-green-600 ml-2">已驗證</span>
-        )}
-        {status === 'REJECTED' && (
-          <>
-            <span className="text-red-600 ml-2">驗證失敗</span>
-            <button
-              className="text-blue-600 underline ml-2"
-              onClick={() => handleDelete(type)}
-            >
-              重新驗證
-            </button>
-          </>
-        )}
+      <div className="member-verification-item">
+        <div className="member-verification-label">
+          <div className="member-verification-icon">
+            {getStatusIcon(type)}
+          </div>
+          {label}
+        </div>
+        <div className="member-verification-actions">
+          {status === 'NONE' && (
+            <>
+              <span className="member-verification-status none">未驗證</span>
+              <button
+                className="member-verification-btn primary"
+                onClick={onGo}
+              >
+                ✨ 前往驗證
+              </button>
+            </>
+          )}
+          {status === 'PENDING' && (
+            <span className="member-verification-status pending">等待驗證中</span>
+          )}
+          {status === 'PROCESSING' && (
+            <span className="member-verification-status processing">處理中</span>
+          )}
+          {status === 'APPROVED' && (
+            <span className="member-verification-status approved">✅ 已驗證</span>
+          )}
+          {status === 'REJECTED' && (
+            <>
+              <span className="member-verification-status rejected">❌ 驗證失敗</span>
+              <button
+                className="member-verification-btn danger"
+                onClick={() => handleDelete(type)}
+              >
+                🔄 重新驗證
+              </button>
+            </>
+          )}
+        </div>
       </div>
     )
   }
 
-  if (!user) return <div className="text-gray-500">尚未登入</div>
+  if (!user) {
+    return (
+      <div className="member-not-logged-in">
+        <div className="member-not-logged-in-icon">🔒</div>
+        <div className="member-not-logged-in-text">尚未登入</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 w-full max-w-md">
-      <h2 className="text-lg font-semibold mb-4">個人基本資料</h2>
-      <div className="space-y-2">
-        <div>
-          <span className="font-medium">帳號：</span>
-          <span>{user.username || '（無）'}</span>
+    <div className="member-profile-card">
+      <div className="member-profile-header">
+        <h2 className="member-profile-title">
+          <div className="member-profile-icon">👤</div>
+          個人基本資料
+        </h2>
+      </div>
+      
+      <div className="member-profile-content">
+        <div className="member-profile-info">
+          <div className="member-info-item">
+            <div className="member-info-label">帳號</div>
+            <div className={`member-info-value ${!user.username ? 'member-info-empty' : ''}`}>
+              {user.username || '（無）'}
+            </div>
+          </div>
+          
+          <div className="member-info-item">
+            <div className="member-info-label">信箱</div>
+            <div className={`member-info-value ${!user.email ? 'member-info-empty' : ''}`}>
+              {user.email || '（無）'}
+            </div>
+          </div>
+          
+          <div className="member-info-item">
+            <div className="member-info-label">角色</div>
+            <div className={`member-info-value ${!user.role ? 'member-info-empty' : ''}`}>
+              {user.role || '（無）'}
+            </div>
+          </div>
+          
+          {renderStatus('ID_CARD', '身分證驗證', onGoToIdVerification)}
+          {renderStatus('BANK_ACCOUNT', '銀行帳戶驗證', onGoToBankVerification)}
         </div>
-        <div>
-          <span className="font-medium">信箱：</span>
-          <span>{user.email || '（無）'}</span>
-        </div>
-        <div>
-          <span className="font-medium">角色：</span>
-          <span>{user.role || '（無）'}</span>
-        </div>
-        {renderStatus('ID_CARD', '身分證驗證', onGoToIdVerification)}
-        {renderStatus('BANK_ACCOUNT', '銀行帳戶驗證', onGoToBankVerification)}
       </div>
     </div>
   )

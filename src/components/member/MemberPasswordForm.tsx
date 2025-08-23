@@ -68,46 +68,60 @@ export default function MemberPasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">舊密碼</label>
-        <input
-          type="password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+    <div className="member-form-container">
+      <div className="member-form-header">
+        <h3 className="member-form-title">
+          <div className="member-form-icon">🔒</div>
+          修改密碼
+        </h3>
       </div>
+      
+      <div className="member-form-content">
+        <form onSubmit={handleSubmit} className="member-form">
+          <div className="member-form-group">
+            <label className="member-form-label">舊密碼</label>
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              className="member-form-input"
+              placeholder="請輸入目前的密碼"
+            />
+          </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">新密碼</label>
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
+          <div className="member-form-group">
+            <label className="member-form-label">新密碼</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="member-form-input"
+              placeholder="請輸入新密碼（至少6碼）"
+            />
+          </div>
+
+          <div className="member-form-group">
+            <label className="member-form-label">確認新密碼</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="member-form-input"
+              placeholder="請再次輸入新密碼"
+            />
+          </div>
+
+          {error && <div className="member-form-message error">{error}</div>}
+          {success && <div className="member-form-message success">{success}</div>}
+
+          <button
+            type="submit"
+            className="member-form-button"
+          >
+            🔐 送出修改
+          </button>
+        </form>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">確認新密碼</label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-      </div>
-
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-      {success && <div className="text-green-600 text-sm">{success}</div>}
-
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        送出修改
-      </button>
-    </form>
+    </div>
   )
 }

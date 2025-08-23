@@ -33,7 +33,7 @@ export default function VerificationNotificationSimple() {
       const token = localStorage.getItem('token')
       if (!token) return
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/notifications/unread-verifications`, {
+      const response = await fetch('/api/notifications/unread-verifications', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

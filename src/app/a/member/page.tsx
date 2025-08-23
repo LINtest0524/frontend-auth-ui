@@ -7,6 +7,7 @@ import PortalHeaderBar from '@/components/PortalHeaderBar'
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
 import MemberOrders from '@/components/member/MemberOrders'
+import MemberFavorites from '@/components/member/MemberFavorites'
 import IdVerification from '@/app/a/member/id-verification/page'
 import BankVerification from '@/app/a/member/bank-verification/page'
 import '../../../styles/pages/member.css'
@@ -15,7 +16,7 @@ import '../../../styles/pages/member.css'
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders' | 'favorites'>('profile')
 
   const getTabTitle = () => {
     const titles = {
@@ -24,7 +25,8 @@ export default function MemberPage() {
       'edit': '修改個人資料',
       'id-verification': '身分證驗證',
       'bank-verification': '銀行帳戶驗證',
-      'orders': '我的訂單'
+      'orders': '我的訂單',
+      'favorites': '我的最愛'
     }
     return titles[tab]
   }
@@ -36,7 +38,8 @@ export default function MemberPage() {
       'edit': '✏️',
       'id-verification': '🆔',
       'bank-verification': '🏦',
-      'orders': '📋'
+      'orders': '📋',
+      'favorites': '❤️'
     }
     return icons[tabName as keyof typeof icons]
   }
@@ -66,54 +69,80 @@ export default function MemberPage() {
           <div className="member-main">
             {/* 左側導航 */}
             <aside className="member-sidebar">
-              <div className="member-nav-header">
-                會員功能選單
-              </div>
               <nav className="member-nav-list">
-                <button
-                  onClick={() => setTab('profile')}
-                  className={`member-nav-item ${tab === 'profile' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('profile')}</span>
-                  個人資料
-                </button>
-                <button
-                  onClick={() => setTab('orders')}
-                  className={`member-nav-item ${tab === 'orders' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('orders')}</span>
-                  我的訂單
-                </button>
-                <button
-                  onClick={() => setTab('edit')}
-                  className={`member-nav-item ${tab === 'edit' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('edit')}</span>
-                  修改個人資料
-                </button>
-                <button
-                  onClick={() => setTab('password')}
-                  className={`member-nav-item ${tab === 'password' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('password')}</span>
-                  修改密碼
-                </button>
-                <button
-                  onClick={() => setTab('id-verification')}
-                  className={`member-nav-item ${tab === 'id-verification' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('id-verification')}</span>
-                  身分證驗證
-                </button>
-                <button
-                  onClick={() => setTab('bank-verification')}
-                  className={`member-nav-item ${tab === 'bank-verification' ? 'active' : ''}`}
-                >
-                  <span className="member-nav-icon">{getTabIcon('bank-verification')}</span>
-                  銀行帳戶驗證
-                </button>
+                {/* 會員中心選單分組 */}
+                <div className="member-nav-group">
+                  <div className="member-nav-group-header">
+                    <span className="member-nav-group-icon">👤</span>
+                    會員中心選單
+                  </div>
+                  <div className="member-nav-group-items">
+                    <button
+                      onClick={() => setTab('profile')}
+                      className={`member-nav-item ${tab === 'profile' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('profile')}</span>
+                      個人資料
+                    </button>
+                    <button
+                      onClick={() => setTab('edit')}
+                      className={`member-nav-item ${tab === 'edit' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('edit')}</span>
+                      修改個人資料
+                    </button>
+                    <button
+                      onClick={() => setTab('password')}
+                      className={`member-nav-item ${tab === 'password' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('password')}</span>
+                      修改密碼
+                    </button>
+                    <button
+                      onClick={() => setTab('id-verification')}
+                      className={`member-nav-item ${tab === 'id-verification' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('id-verification')}</span>
+                      身分證驗證
+                    </button>
+                    <button
+                      onClick={() => setTab('bank-verification')}
+                      className={`member-nav-item ${tab === 'bank-verification' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('bank-verification')}</span>
+                      銀行帳戶驗證
+                    </button>
+                  </div>
+                </div>
+
+                {/* 購物功能選單分組 */}
+                <div className="member-nav-group">
+                  <div className="member-nav-group-header">
+                    <span className="member-nav-group-icon">🛒</span>
+                    購物功能選單
+                  </div>
+                  <div className="member-nav-group-items">
+                    <button
+                      onClick={() => setTab('orders')}
+                      className={`member-nav-item ${tab === 'orders' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('orders')}</span>
+                      我的訂單
+                    </button>
+                    <button
+                      onClick={() => setTab('favorites')}
+                      className={`member-nav-item ${tab === 'favorites' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('favorites')}</span>
+                      我的最愛
+                    </button>
+                  </div>
+                </div>
               </nav>
             </aside>
+
+
+            
 
             {/* 右側內容 */}
             <main className="member-content">
@@ -131,8 +160,11 @@ export default function MemberPage() {
               {tab === 'id-verification' && <IdVerification />}
               {tab === 'bank-verification' && <BankVerification />}
               {tab === 'orders' && <MemberOrders />}
+              {tab === 'favorites' && <MemberFavorites />}
             </main>
           </div>
+
+          
         </div>
       </div>
     </>
