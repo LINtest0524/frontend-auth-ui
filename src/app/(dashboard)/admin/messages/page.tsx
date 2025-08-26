@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import SunEditor from '@/components/SunEditor'
 import { useUserStore } from '@/hooks/use-user-store'
+import dayjs from 'dayjs'
 
 interface Message {
   id: number
@@ -67,6 +68,16 @@ export default function AdminMessagesPage() {
   const [filterType, setFilterType] = useState<'ALL' | 'SYSTEM' | 'USER' | 'ADMIN'>('ALL')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'list' | 'send' | 'broadcast'>('list')
+  
+  // 時間篩選
+  const [createdFrom, setCreatedFrom] = useState(() => {
+    const today = dayjs()
+    return today.subtract(2, 'day').format('YYYY-MM-DD')
+  })
+  const [createdTo, setCreatedTo] = useState(() => {
+    const today = dayjs()
+    return today.format('YYYY-MM-DD')
+  })
 
   // 消息操作相關狀態
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
@@ -79,6 +90,41 @@ export default function AdminMessagesPage() {
   const canUseBroadcast = () => {
     if (!currentUser?.role) return false
     return ['AGENT_SUPPORT', 'AGENT_OWNER', 'SUPER_ADMIN'].includes(currentUser.role)
+  }
+
+  // 快速設定日期
+  const quickSetDate = (type: string) => {
+    const today = dayjs()
+    let fromDate = ''
+    let toDate = ''
+
+    switch (type) {
+      case 'today':
+        fromDate = today.format('YYYY-MM-DD')
+        toDate = today.format('YYYY-MM-DD')
+        break
+      case 'yesterday':
+        const y = today.subtract(1, 'day')
+        fromDate = y.format('YYYY-MM-DD')
+        toDate = y.format('YYYY-MM-DD')
+        break
+      case '3days':
+        fromDate = today.subtract(2, 'day').format('YYYY-MM-DD')
+        toDate = today.format('YYYY-MM-DD')
+        break
+      case 'thisMonth':
+        fromDate = today.startOf('month').format('YYYY-MM-DD')
+        toDate = today.endOf('month').format('YYYY-MM-DD')
+        break
+      case 'lastMonth':
+        const last = today.subtract(1, 'month')
+        fromDate = last.startOf('month').format('YYYY-MM-DD')
+        toDate = last.endOf('month').format('YYYY-MM-DD')
+        break
+    }
+
+    setCreatedFrom(fromDate)
+    setCreatedTo(toDate)
   }
 
   // 移除自動獲取用戶列表，改為手動輸入用戶名
@@ -97,6 +143,18 @@ export default function AdminMessagesPage() {
       
       if (filterType !== 'ALL') {
         params.append('messageType', filterType)
+      }
+      
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim())
+      }
+      
+      if (createdFrom) {
+        params.append('createdFrom', createdFrom)
+      }
+      
+      if (createdTo) {
+        params.append('createdTo', createdTo)
       }
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages?${params}`, {
@@ -152,6 +210,8 @@ export default function AdminMessagesPage() {
   const clearFilter = () => {
     setSearchTerm('')
     setFilterType('ALL')
+    setCreatedFrom('')
+    setCreatedTo('')
     setMessages([])
     setTotalPages(1)
     setTotalCount(0)
@@ -528,7 +588,38 @@ export default function AdminMessagesPage() {
                       <option value="USER">用戶消息</option>
                     </select>
                   </div>
-                  
+
+                  <div className="w50 fd1 mb25">
+                    <div className="b-form-group-2 fl4 w100 mb10">
+                      <label htmlFor="date-select-1">發送時間</label>
+                      <div className="w70 fl4">
+                        <input 
+                          type="date" 
+                          id="date-select-1" 
+                          value={createdFrom} 
+                          onChange={(e) => setCreatedFrom(e.target.value)} 
+                          className="date-select flex1" 
+                        />
+                        <span className="dateto">到</span>
+                        <input 
+                          type="date" 
+                          value={createdTo} 
+                          onChange={(e) => setCreatedTo(e.target.value)} 
+                          className="date-select flex1" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="b-form-group-2 w100 fl4">
+                      <div className="b-date-fast fl4 w70 ml132">
+                        <button onClick={() => quickSetDate("today")}>今日</button>
+                        <button onClick={() => quickSetDate("yesterday")}>昨日</button>
+                        <button onClick={() => quickSetDate("3days")}>近三日</button>
+                        <button onClick={() => quickSetDate("thisMonth")}>本月</button>
+                        <button onClick={() => quickSetDate("lastMonth")}>上月</button>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="fl4 w100 b-btnbox">
                     <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>

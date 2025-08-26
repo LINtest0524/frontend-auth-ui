@@ -36,10 +36,10 @@ export default function MessageCenter() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedMessages, setSelectedMessages] = useState<(number | string)[]>([])
-  const [expandedMessages, setExpandedMessages] = useState<(number | string)[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [selectedMessageForModal, setSelectedMessageForModal] = useState<Message | null>(null)
   
   // 使用 ref 來追蹤最新的狀態值，避免閉包問題
   const activeTabRef = useRef(activeTab)
@@ -146,11 +146,21 @@ export default function MessageCenter() {
       )
 
       if (response.ok) {
+        console.log('✅ 標記已讀成功:', messageId)
         // 更新本地狀態
         setMessages(prev => prev.map(msg => 
           msg.id === messageId ? { ...msg, isRead: true, readAt: new Date().toISOString() } : msg
         ))
-        fetchUnreadCount()
+        // 立即更新未讀數量
+        await fetchUnreadCount()
+        
+        // 如果當前在未讀標籤頁，重新獲取消息列表以移除已讀消息
+        if (activeTab === 'unread') {
+          const isReadFilter = false
+          await fetchMessages(isReadFilter, currentPage)
+        }
+      } else {
+        console.error('標記已讀失敗:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('標記已讀失敗:', error)
@@ -308,7 +318,7 @@ export default function MessageCenter() {
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     setSelectedMessages([])
-    setExpandedMessages([])
+    setSelectedMessageForModal(null)
     setCurrentPage(1)
     
     if (value === 'all') {
@@ -320,21 +330,37 @@ export default function MessageCenter() {
     }
   }
 
-  // 處理消息展開/收起
-  const handleMessageToggle = (messageId: number | string) => {
-    setExpandedMessages(prev => {
-      if (prev.includes(messageId)) {
-        return prev.filter(id => id !== messageId)
-      } else {
-        // 點擊展開時自動標記為已讀
-        const message = messages.find(msg => msg.id === messageId)
-        if (message && !message.isRead) {
-          markAsRead(messageId)
-        }
-        return [...prev, messageId]
+  // 處理消息點擊，打開模態框
+  const handleMessageClick = (messageId: number | string) => {
+    const message = messages.find(msg => msg.id === messageId)
+    if (message) {
+      setSelectedMessageForModal(message)
+      // 點擊時自動標記為已讀
+      if (!message.isRead) {
+        markAsRead(messageId)
       }
-    })
+    }
   }
+
+  // 關閉模態框
+  const closeModal = () => {
+    setSelectedMessageForModal(null)
+  }
+
+  // 處理鍵盤事件
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && selectedMessageForModal) {
+      closeModal()
+    }
+  }
+
+  // 添加鍵盤事件監聽
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [selectedMessageForModal])
 
   // 處理消息選擇
   const handleMessageSelect = (messageId: number | string, checked: boolean) => {
@@ -398,20 +424,7 @@ export default function MessageCenter() {
           return
         }
         
-        // 用戶切回頁面時才更新消息列表（這時不會干擾操作）
-        // 使用 ref 獲取最新的狀態值
-        const currentActiveTab = activeTabRef.current
-        const currentPageValue = currentPageRef.current
-        
-        let isReadFilter: boolean | undefined = undefined
-        if (currentActiveTab === 'unread') {
-          isReadFilter = false
-        } else if (currentActiveTab === 'read') {
-          isReadFilter = true
-        }
-        
-        // 重新獲取當前頁面的消息
-        fetchMessages(isReadFilter, currentPageValue)
+        // 只更新未讀數量，不重新載入消息列表，避免干擾用戶操作
         fetchUnreadCount()
       }
       
@@ -419,20 +432,7 @@ export default function MessageCenter() {
       const handleVisibilityChange = () => {
         console.log('👁️ 頁面可見性變化:', !document.hidden ? '可見' : '隱藏')
         if (!document.hidden) {
-          // 頁面變為可見時才更新消息列表
-          // 使用 ref 獲取最新的狀態值
-          const currentActiveTab = activeTabRef.current
-          const currentPageValue = currentPageRef.current
-          
-          let isReadFilter: boolean | undefined = undefined
-          if (currentActiveTab === 'unread') {
-            isReadFilter = false
-          } else if (currentActiveTab === 'read') {
-            isReadFilter = true
-          }
-          
-          // 重新獲取當前頁面的消息
-          fetchMessages(isReadFilter, currentPageValue)
+          // 頁面變為可見時只更新未讀數量，避免干擾用戶操作
           fetchUnreadCount()
         }
       }
@@ -570,11 +570,10 @@ export default function MessageCenter() {
               {/* 消息列表 */}
               <div className="message-list">
                 {messages.map((message) => {
-                  const isExpanded = expandedMessages.includes(message.id)
                   return (
                     <div
                       key={message.id}
-                      className={`message-item ${!message.isRead ? 'unread' : ''} ${isExpanded ? 'expanded' : ''}`}
+                      className={`message-item ${!message.isRead ? 'unread' : ''}`}
                     >
                       <div className="message-row">
                         <input
@@ -587,14 +586,11 @@ export default function MessageCenter() {
                         
                         <div 
                           className="message-body clickable"
-                          onClick={() => handleMessageToggle(message.id)}
+                          onClick={() => handleMessageClick(message.id)}
                         >
                           <div className="message-header-row">
                             <h3 className={`message-subject ${message.isRead ? 'read' : 'unread'}`}>
                               {message.title}
-                              <span className="expand-indicator">
-                                {isExpanded ? '▼' : '▶'}
-                              </span>
                             </h3>
                             <div className="message-badges">
                               {getMessageTypeBadge(message.messageType)}
@@ -604,23 +600,14 @@ export default function MessageCenter() {
                             </div>
                           </div>
                           
-                          {!isExpanded ? (
-                            <div 
-                              className="message-preview"
-                              dangerouslySetInnerHTML={{
-                                __html: message.content.length > 100 
-                                  ? `${message.content.substring(0, 100)}...` 
-                                  : message.content
-                              }}
-                            />
-                          ) : (
-                            <div className="message-full-content">
-                              <div 
-                                className="message-content-text"
-                                dangerouslySetInnerHTML={{ __html: message.content }}
-                              />
-                            </div>
-                          )}
+                          <div 
+                            className="message-preview"
+                            dangerouslySetInnerHTML={{
+                              __html: message.content.length > 100 
+                                ? `${message.content.substring(0, 100)}...` 
+                                : message.content
+                            }}
+                          />
                           
                           <div className="message-meta">
                             <div className="message-info">
@@ -685,6 +672,69 @@ export default function MessageCenter() {
           )}
         </div>
       </div>
+
+      {/* 消息詳情模態框 */}
+      {selectedMessageForModal && (
+        <div className="message-modal-overlay" onClick={closeModal}>
+          <div className="message-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="message-modal-header">
+              <div className="modal-title-section">
+                <h2 className="modal-title">{selectedMessageForModal.title}</h2>
+                <div className="modal-badges">
+                  {getMessageTypeBadge(selectedMessageForModal.messageType)}
+                  {!selectedMessageForModal.isRead && (
+                    <span className="message-badge new">新</span>
+                  )}
+                </div>
+              </div>
+              <button className="modal-close-btn" onClick={closeModal} title="關閉 (ESC)">
+                ✕
+              </button>
+            </div>
+            
+            <div className="message-modal-meta">
+              {selectedMessageForModal.sender && (
+                <div className="modal-meta-item">
+                  <span className="meta-label">發送者:</span>
+                  <span className="meta-value">{selectedMessageForModal.sender.username}</span>
+                </div>
+              )}
+              <div className="modal-meta-item">
+                <span className="meta-label">發送時間:</span>
+                <span className="meta-value">{formatDate(selectedMessageForModal.createdAt)}</span>
+              </div>
+              {selectedMessageForModal.readAt && (
+                <div className="modal-meta-item">
+                  <span className="meta-label">已讀時間:</span>
+                  <span className="meta-value">{formatDate(selectedMessageForModal.readAt)}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="message-modal-content">
+              <div 
+                className="modal-content-text"
+                dangerouslySetInnerHTML={{ __html: selectedMessageForModal.content }}
+              />
+            </div>
+            
+            <div className="message-modal-footer">
+              <button 
+                className="modal-btn modal-btn-danger"
+                onClick={() => {
+                  deleteMessage(selectedMessageForModal.id)
+                  closeModal()
+                }}
+              >
+                🗑️ 刪除消息
+              </button>
+              <button className="modal-btn modal-btn-primary" onClick={closeModal}>
+                關閉
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -13,7 +13,7 @@ export default function CartPage() {
     updateQuantity, 
     removeItem, 
     clearCart,
-    addToCart,
+    addItem,
     selectedShipping,
     shippingMethods,
     setSelectedShipping,
@@ -108,7 +108,7 @@ export default function CartPage() {
           const cartData = JSON.parse(cartDataStr)
           // 恢復購物車商品
           cartData.forEach((item: any) => {
-            addToCart(item)
+            addItem(item)
           })
           sessionStorage.removeItem('checkoutCartData')
         } catch (err) {

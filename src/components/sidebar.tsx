@@ -414,6 +414,52 @@ export default function Sidebar() {
           </div>
         )}
 
+        {/* 優惠活動管理 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("promotions");
+                setCurrentActive("promotions");
+              }}
+              className={cn(
+                "sidebar-item i-modules", 
+                currentActive === "promotions" && "active",
+                activeMenu === "promotions" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              優惠活動
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "promotions" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/promotion-categories"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/promotion-categories" && currentActive === null && "active")}
+                >
+                  活動分類
+                </Link>
+                <Link
+                  href="/admin/promotions"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/promotions" && currentActive === null && "active")}
+                >
+                  活動列表
+                </Link>
+                <Link
+                  href="/admin/promotions/new"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/promotions/new" && currentActive === null && "active")}
+                >
+                  新增活動
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 訂單管理 */}
         <Link
           href="/admin/orders"

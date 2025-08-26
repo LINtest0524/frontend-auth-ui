@@ -8,6 +8,18 @@ import { useFavoritesStore } from '@/hooks/use-favorites-store'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './product-detail.css'
 
+interface FavoriteItem {
+  id: number
+  name: string
+  price: number
+  original_price?: number
+  thumbnail?: string
+  sku: string
+  addedAt: string
+  hasVariants?: boolean
+  variantImages?: string[]
+}
+
 interface ProductVariant {
   id: number
   variant_name: string
@@ -279,23 +291,28 @@ export default function ProductDetailPage() {
       const hasVariants = product.variants && product.variants.length > 0
       let displayThumbnail = product.thumbnail
       
-      if (hasVariants) {
+      if (hasVariants && product.variants) {
         // 使用預設變體或第一個變體的第一張圖片
         const defaultVariant = product.variants.find(v => v.is_default) || product.variants[0]
-        if (defaultVariant.images && defaultVariant.images.length > 0) {
+        if (defaultVariant && defaultVariant.images && defaultVariant.images.length > 0) {
           displayThumbnail = defaultVariant.images[0]
         }
       }
       
-      const favoriteItem = {
+      // 計算當前價格：如果有選中的變體則使用變體價格，否則使用產品價格
+      const currentPrice = hasVariants && selectedVariant ? selectedVariant.price : product.price;
+      
+      const favoriteItem: Omit<FavoriteItem, 'addedAt'> = {
         id: product.id,
         name: product.name,
-        price: getCurrentPrice(),
+        price: currentPrice,
         original_price: product.original_price,
         thumbnail: displayThumbnail,
         sku: product.sku,
         hasVariants,
-        variantImages: hasVariants && displayThumbnail !== product.thumbnail ? [displayThumbnail] : undefined
+        ...(hasVariants && displayThumbnail && displayThumbnail !== product.thumbnail 
+          ? { variantImages: [displayThumbnail] } 
+          : {})
       }
       addToFavorites(favoriteItem)
       alert('已加入收藏')
@@ -316,8 +333,10 @@ export default function ProductDetailPage() {
           // 如果有變體，設定預設變體
           if (data.variants && data.variants.length > 0) {
             const defaultVariant = data.variants.find((v: ProductVariant) => v.is_default) || data.variants[0]
-            setSelectedVariant(defaultVariant as ProductVariant)
-            setSelectedSpecs(defaultVariant.variant_options)
+            if (defaultVariant) {
+              setSelectedVariant(defaultVariant as ProductVariant)
+              setSelectedSpecs(defaultVariant.variant_options)
+            }
           }
         } else {
           console.error('產品不存在')
