@@ -29,8 +29,7 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    if (pathname?.startsWith("/admin/banner")) setActiveMenu("banner");
-    else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
+    if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
@@ -93,7 +92,7 @@ export default function Sidebar() {
           className={cn("sidebar-item i-user", pathname === "/admin/messages" && currentActive === null && "active")}
         >
           <span className="icon" />
-          消息管理
+          站內信管理
         </Link>
 
         {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
@@ -153,42 +152,18 @@ export default function Sidebar() {
         )}
 
         {/* BANNER 管理 */}
-        <div>
-          <button
-            onClick={() => {
-              toggleMenu("banner");
-              setCurrentActive("banner");
-            }}
-            className={cn(
-              "sidebar-item i-banner",
-              currentActive === "banner" && "active",
-              activeMenu === "banner" && "expanded"
-            )}
-          >
-            <span className="icon" />
-            BANNER 管理
-            <span className="i-arrow"></span>
-          </button>
-
-          <div className={cn("sidebar-submenu", activeMenu === "banner" && "open")}>
-            <div className="sidebar-fd">
-              <Link
-                href="/admin/banner"
-                onClick={resetMenu}
-                className={cn("sidebar-subitem", pathname === "/admin/banner" && currentActive === null && "active")}
-              >
-                Banner 列表
-              </Link>
-              <Link
-                href="/admin/banner/new"
-                onClick={resetMenu}
-                className={cn("sidebar-subitem", pathname === "/admin/banner/new" && currentActive === null && "active")}
-              >
-                新增 Banner
-              </Link>
-            </div>
-          </div>
-        </div>
+        <Link
+          href="/admin/banner"
+          onClick={resetMenu}
+          className={cn(
+            "sidebar-item i-banner",
+            pathname?.startsWith("/admin/banner") && "active"
+          )}
+        >
+          <span className="icon" />
+          BANNER 管理
+        </Link>
+      
 
         {/* 跑馬燈管理 */}
         <div>
@@ -216,13 +191,6 @@ export default function Sidebar() {
               跑馬燈列表
             </Link>
             <Link
-              href="/admin/marquee/new"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/admin/marquee/new" && currentActive === null && "active")}
-            >
-              新增內容
-            </Link>
-            <Link
               href="/admin/marquee-tags"
               onClick={resetMenu}
               className={cn("sidebar-subitem", pathname === "/admin/marquee-tags" && currentActive === null && "active")}
@@ -234,41 +202,17 @@ export default function Sidebar() {
 
         {/* 最新消息管理 */}
         {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
-          <div>
-            <button
-              onClick={() => {
-                toggleMenu("news");
-                setCurrentActive("news");
-              }}
-              className={cn(
-                "sidebar-item i-modules", 
-                currentActive === "news" && "active",
-                activeMenu === "news" && "expanded"
-              )}
-            >
-              <span className="icon" />
-              最新消息
-              <span className="i-arrow"></span>
-            </button>
-            <div className={cn("sidebar-submenu", activeMenu === "news" && "open")}>
-              <div className="sidebar-fd">
-                <Link
-                  href="/admin/news"
-                  onClick={resetMenu}
-                  className={cn("sidebar-subitem", pathname === "/admin/news" && currentActive === null && "active")}
-                >
-                  消息列表
-                </Link>
-                <Link
-                  href="/admin/news/new"
-                  onClick={resetMenu}
-                  className={cn("sidebar-subitem", pathname === "/admin/news/new" && currentActive === null && "active")}
-                >
-                  新增消息
-                </Link>
-              </div>
-            </div>
-          </div>
+          <Link
+            href="/admin/news"
+            onClick={resetMenu}
+            className={cn(
+              "sidebar-item i-modules",
+              pathname?.startsWith("/admin/news") && "active"
+            )}
+          >
+            <span className="icon" />
+            最新消息
+          </Link>
         )}
 
         {/* 文章管理 */}
@@ -303,13 +247,6 @@ export default function Sidebar() {
                   className={cn("sidebar-subitem", pathname === "/admin/articles" && currentActive === null && "active")}
                 >
                   文章列表
-                </Link>
-                <Link
-                  href="/admin/articles/new"
-                  onClick={resetMenu}
-                  className={cn("sidebar-subitem", pathname === "/admin/articles/new" && currentActive === null && "active")}
-                >
-                  新增文章
                 </Link>
               </div>
             </div>

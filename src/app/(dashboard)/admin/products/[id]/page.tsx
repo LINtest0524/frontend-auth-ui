@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useUserStore } from "@/hooks/use-user-store";
+import '@/styles/pages/product-detail.css';
 
 type Product = {
   id: number
@@ -38,6 +39,22 @@ type Product = {
     id: number
     username: string
     display_name?: string
+  }
+  shipping_rules?: Array<{
+    method: string
+    base_fee: number
+    free_shipping_threshold: number
+  }>
+  shipping_rule_template?: {
+    id: number
+    name: string
+    description?: string
+    is_default: boolean
+    items?: Array<{
+      method: string
+      base_fee: number
+      free_shipping_threshold: number
+    }>
   }
 }
 
@@ -91,9 +108,10 @@ export default function ViewProductPage() {
 
   if (loading) {
     return (
-      <div className="b-ibox">
-        <h1>載入中...</h1>
-        <div className="b-ibox-s">
+      <div className="product-detail-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <h2>載入中...</h2>
           <p>正在載入產品資料...</p>
         </div>
       </div>
@@ -102,13 +120,14 @@ export default function ViewProductPage() {
 
   if (!product) {
     return (
-      <div className="b-ibox">
-        <h1>產品不存在</h1>
-        <div className="b-ibox-s">
-          <p>找不到指定的產品</p>
+      <div className="product-detail-container">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h2 className="error-title">產品不存在</h2>
+          <p className="error-message">找不到指定的產品</p>
           <button
             onClick={() => router.push('/admin/products')}
-            className="b-btn-s2 b-btn-c1"
+            className="btn-primary"
           >
             返回產品列表
           </button>
@@ -118,145 +137,158 @@ export default function ViewProductPage() {
   }
 
   return (
-    <div className="b-ibox">
-      <h1>查看商品</h1>
+    <div className="product-detail-container">
+      {/* 頁面標題 */}
+      <div className="product-detail-header">
+        <h1 className="product-detail-title">
+          📦 {product.name}
+        </h1>
+        <p className="product-detail-subtitle">商品詳細資訊 • ID: {product.id}</p>
+      </div>
 
-      <div className="b-ibox-s">
-        <div className="w100">
-          {/* 基本資訊 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品 ID</label>
-            <div className="w70 pt10">{product.id}</div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品名稱</label>
-            <div className="w70 pt10" style={{fontWeight: "500"}}>{product.name}</div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品編號 (SKU)</label>
-            <div className="w70 pt10" style={{fontFamily: "monospace"}}>{product.sku}</div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品分類</label>
-            <div className="w70 pt10">{product.category?.name || "未分類"}</div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品狀態</label>
-            <div className="w70 pt10">
-              <span style={{color: getStatusColor(product.status), fontWeight: "500"}}>
-                {getStatusText(product.status)}
-              </span>
+      <div className="product-detail-content">
+        {/* 主要資訊區域 */}
+        <div className="product-main-info">
+          {/* 基本資訊區塊 */}
+          <div className="info-section">
+            <h3 className="section-header">
+              ℹ️ 基本資訊
+            </h3>
+            <div className="section-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">🆔 商品 ID</div>
+                  <div className="info-value">{product.id}</div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">📝 商品名稱</div>
+                  <div className="info-value highlight">{product.name}</div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">🏷️ 商品編號</div>
+                  <div className="info-value" style={{fontFamily: "monospace"}}>{product.sku}</div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">📂 商品分類</div>
+                  <div className="info-value">{product.category?.name || "未分類"}</div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">📊 商品狀態</div>
+                  <div className="info-value">
+                    <span className={`status-badge ${product.status.toLowerCase().replace('_', '-')}`}>
+                      {getStatusText(product.status)}
+                    </span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">🏢 所屬公司</div>
+                  <div className="info-value">{product.company?.name || "-"}</div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>所屬公司</label>
-            <div className="w70 pt10">{product.company?.name || "-"}</div>
-          </div>
-
-          {/* 描述 */}
-          {product.short_description && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>簡短描述</label>
-              <div className="w70 pt10">{product.short_description}</div>
-            </div>
-          )}
-
-          {product.description && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>詳細描述</label>
-              <div 
-                className="w70 pt10" 
-                style={{lineHeight: "1.5"}}
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
-            </div>
-          )}
-
-          {product.specifications_description && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>規格說明</label>
-              <div 
-                className="w70 pt10" 
-                style={{lineHeight: "1.5"}}
-                dangerouslySetInnerHTML={{ __html: product.specifications_description }}
-              />
-            </div>
-          )}
-
-          {product.shipping_description && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>配送說明</label>
-              <div 
-                className="w70 pt10" 
-                style={{lineHeight: "1.5"}}
-                dangerouslySetInnerHTML={{ __html: product.shipping_description }}
-              />
-            </div>
-          )}
-
-          {/* 價格資訊 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>售價</label>
-            <div className="w70 pt10" style={{fontSize: "18px", fontWeight: "500", color: "#dc3545"}}>
-              NT$ {product.price.toLocaleString()}
-            </div>
-          </div>
-
-          {product.original_price && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>原價</label>
-              <div className="w70 pt10" style={{textDecoration: "line-through", color: "#6c757d"}}>
-                NT$ {product.original_price.toLocaleString()}
+          {/* 描述資訊區塊 */}
+          {(product.short_description || product.description || product.specifications_description || product.shipping_description) && (
+            <div className="info-section">
+              <h3 className="section-header">
+                📄 商品描述
+              </h3>
+              <div className="section-content">
+                <div className="info-grid">
+                  {product.short_description && (
+                    <div className="info-item">
+                      <div className="info-label">📝 簡短描述</div>
+                      <div className="info-value">{product.short_description}</div>
+                    </div>
+                  )}
+                  {product.description && (
+                    <div className="info-item">
+                      <div className="info-label">📋 詳細描述</div>
+                      <div className="info-value description-content" dangerouslySetInnerHTML={{ __html: product.description }} />
+                    </div>
+                  )}
+                  {product.specifications_description && (
+                    <div className="info-item">
+                      <div className="info-label">⚙️ 規格說明</div>
+                      <div className="info-value description-content" dangerouslySetInnerHTML={{ __html: product.specifications_description }} />
+                    </div>
+                  )}
+                  {product.shipping_description && (
+                    <div className="info-item">
+                      <div className="info-label">🚚 配送說明</div>
+                      <div className="info-value description-content" dangerouslySetInnerHTML={{ __html: product.shipping_description }} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* 庫存資訊 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>庫存數量</label>
-            <div className="w70 pt10">
-              <span style={{color: product.stock_quantity <= 0 ? "#dc3545" : "inherit", fontWeight: "500"}}>
-                {product.stock_quantity} 件
-              </span>
+          {/* 價格資訊區塊 */}
+          <div className="info-section">
+            <h3 className="section-header">
+              💰 價格資訊
+            </h3>
+            <div className="section-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">💵 售價</div>
+                  <div className="info-value price">
+                    NT$ {product.price.toLocaleString()}
+                  </div>
+                </div>
+                {product.original_price && (
+                  <div className="info-item">
+                    <div className="info-label">🏷️ 原價</div>
+                    <div className="info-value original-price">
+                      NT$ {product.original_price.toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>最低庫存警告</label>
-            <div className="w70 pt10">{product.min_stock} 件</div>
+          {/* 庫存資訊區塊 */}
+          <div className="info-section">
+            <h3 className="section-header">
+              📦 庫存資訊
+            </h3>
+            <div className="section-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">📊 庫存數量</div>
+                  <div className={`info-value stock ${product.stock_quantity <= 0 ? 'low' : 'normal'}`}>
+                    {product.stock_quantity} 件
+                    {product.stock_quantity <= 0 && " ⚠️"}
+                    {product.stock_quantity <= product.min_stock && product.stock_quantity > 0 && " ⚠️ 庫存不足"}
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">⚠️ 最低庫存警告</div>
+                  <div className="info-value">{product.min_stock} 件</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* 商品圖片 */}
+          {/* 商品圖片區塊 */}
           {product.images && product.images.length > 0 && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>商品圖片</label>
-              <div className="w70 pt10">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+            <div className="info-section">
+              <h3 className="section-header">
+                🖼️ 商品圖片
+              </h3>
+              <div className="section-content">
+                <div className="images-grid">
                   {product.images.map((imageUrl, index) => (
-                    <div key={index} style={{ position: 'relative' }}>
+                    <div key={index} className="image-item">
                       <img
                         src={`http://localhost:3001${imageUrl}`}
                         alt={`商品圖片 ${index + 1}`}
-                        style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
                       />
                       {product.thumbnail === imageUrl && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: '2px',
-                            left: '2px',
-                            background: '#007bff',
-                            color: 'white',
-                            borderRadius: '3px',
-                            padding: '2px 6px',
-                            fontSize: '10px',
-                          }}
-                        >
+                        <div className="image-badge">
                           主圖
                         </div>
                       )}
@@ -267,112 +299,202 @@ export default function ViewProductPage() {
             </div>
           )}
 
-          {/* 其他資訊 */}
-          {product.weight && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>重量</label>
-              <div className="w70 pt10">{product.weight} 公斤</div>
-            </div>
-          )}
-
-          {product.dimensions && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>尺寸</label>
-              <div className="w70 pt10">{product.dimensions}</div>
-            </div>
-          )}
-
-          {product.tags && product.tags.length > 0 && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>標籤</label>
-              <div className="w70 pt10">
-                {product.tags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    style={{
-                      display: "inline-block",
-                      background: "#e9ecef",
-                      padding: "2px 8px",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      marginRight: "6px",
-                      marginBottom: "4px"
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
+          {/* 運送方式區塊 */}
+          {(product.shipping_rules && product.shipping_rules.length > 0) || product.shipping_rule_template ? (
+            <div className="info-section">
+              <h3 className="section-header">
+                🚚 運送方式
+              </h3>
+              <div className="section-content">
+                {product.shipping_rule_template && (
+                  <div className="info-item">
+                    <div className="info-label">📋 運費規則模板</div>
+                    <div className="info-value">
+                      <div style={{ fontWeight: '600', marginBottom: '8px' }}>
+                        {product.shipping_rule_template.name}
+                        {product.shipping_rule_template.is_default && (
+                          <span style={{ 
+                            marginLeft: '8px', 
+                            fontSize: '12px', 
+                            background: '#e3f2fd', 
+                            color: '#1976d2', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px' 
+                          }}>
+                            預設
+                          </span>
+                        )}
+                      </div>
+                      {product.shipping_rule_template.description && (
+                        <div style={{ color: '#6c757d', fontSize: '14px', marginBottom: '12px' }}>
+                          {product.shipping_rule_template.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {(product.shipping_rules && product.shipping_rules.length > 0) && (
+                  <div className="info-item">
+                    <div className="info-label">🚛 配送方式與運費</div>
+                    <div className="info-value">
+                      <div className="shipping-rules-grid">
+                        {product.shipping_rules.map((rule, index) => (
+                          <div key={index} className="shipping-rule-card">
+                            <div className="shipping-method-name">
+                              📦 {rule.method}
+                            </div>
+                            <div className="shipping-fee-info">
+                              <div className="shipping-fee">
+                                運費：<span className="fee-amount">NT$ {rule.base_fee}</span>
+                              </div>
+                              <div className="free-shipping">
+                                滿 <span className="threshold-amount">NT$ {rule.free_shipping_threshold.toLocaleString()}</span> 免運
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {(!product.shipping_rules || product.shipping_rules.length === 0) && !product.shipping_rule_template && (
+                  <div className="info-item">
+                    <div className="info-label">🚚 運送方式</div>
+                    <div className="info-value" style={{ color: '#6c757d', fontStyle: 'italic' }}>
+                      未設定運送方式
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          ) : null}
 
-          {/* 設定 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>精選商品</label>
-            <div className="w70 pt10">
-              <span style={{color: product.is_featured ? "#28a745" : "#6c757d"}}>
-                {product.is_featured ? "⭐ 是" : "否"}
-              </span>
-            </div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>前台顯示</label>
-            <div className="w70 pt10">
-              <span style={{color: product.is_visible ? "#28a745" : "#6c757d"}}>
-                {product.is_visible ? "✅ 顯示" : "❌ 隱藏"}
-              </span>
-            </div>
-          </div>
-
-          {/* 時間資訊 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>建立時間</label>
-            <div className="w70 pt10">
-              {new Date(product.created_at).toLocaleString("zh-TW", { 
-                timeZone: "Asia/Taipei", 
-                hour12: false 
-              })}
-            </div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>更新時間</label>
-            <div className="w70 pt10">
-              {new Date(product.updated_at).toLocaleString("zh-TW", { 
-                timeZone: "Asia/Taipei", 
-                hour12: false 
-              })}
-            </div>
-          </div>
-
-          {product.created_by && (
-            <div className="b-form-group-1 w100 fl4">
-              <label>建立者</label>
-              <div className="w70 pt10">
-                {product.created_by.display_name || product.created_by.username}
+          {/* 其他資訊區塊 */}
+          {(product.weight || product.dimensions || (product.tags && product.tags.length > 0)) && (
+            <div className="info-section">
+              <h3 className="section-header">
+                📏 其他資訊
+              </h3>
+              <div className="section-content">
+                <div className="info-grid">
+                  {product.weight && (
+                    <div className="info-item">
+                      <div className="info-label">⚖️ 重量</div>
+                      <div className="info-value">{product.weight} 公斤</div>
+                    </div>
+                  )}
+                  {product.dimensions && (
+                    <div className="info-item">
+                      <div className="info-label">📐 尺寸</div>
+                      <div className="info-value">{product.dimensions}</div>
+                    </div>
+                  )}
+                  {product.tags && product.tags.length > 0 && (
+                    <div className="info-item">
+                      <div className="info-label">🏷️ 標籤</div>
+                      <div className="info-value">
+                        <div className="tags-container">
+                          {product.tags.map((tag, index) => (
+                            <span key={index} className="tag">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {/* 操作按鈕 */}
-          <div className="fl4 w100 b-btnbox">
+          <div className="action-buttons">
             {(currentUser?.role === "SUPER_ADMIN" || 
               currentUser?.role === "GLOBAL_ADMIN" || 
               currentUser?.role === "AGENT_OWNER") && (
               <button
                 onClick={() => router.push(`/admin/products/edit/${product.id}`)}
-                className="b-btn-s2 b-btn-c4 mr20"
+                className="btn-primary"
               >
-                編輯商品
+                ✏️ 編輯商品
               </button>
             )}
             <button
               onClick={() => router.push("/admin/products")}
-              className="b-btn-s2 b-btn-c1"
+              className="btn-secondary"
             >
-              返回列表
+              ← 返回列表
             </button>
+          </div>
+        </div>
+
+        {/* 側邊欄 */}
+        <div className="product-sidebar">
+          {/* 商品設定 */}
+          <div className="info-section">
+            <h3 className="section-header">
+              ⚙️ 商品設定
+            </h3>
+            <div className="section-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">⭐ 精選商品</div>
+                  <div className="info-value">
+                    <span className={`feature-badge ${product.is_featured ? 'featured' : ''}`}>
+                      {product.is_featured ? "⭐ 是" : "否"}
+                    </span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">👁️ 前台顯示</div>
+                  <div className="info-value">
+                    <span className={`feature-badge ${product.is_visible ? 'visible' : 'hidden'}`}>
+                      {product.is_visible ? "✅ 顯示" : "❌ 隱藏"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 時間資訊 */}
+          <div className="info-section">
+            <h3 className="section-header">
+              🕒 時間資訊
+            </h3>
+            <div className="section-content">
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">📅 建立時間</div>
+                  <div className="info-value">
+                    {new Date(product.created_at).toLocaleString("zh-TW", { 
+                      timeZone: "Asia/Taipei", 
+                      hour12: false 
+                    })}
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div className="info-label">🔄 更新時間</div>
+                  <div className="info-value">
+                    {new Date(product.updated_at).toLocaleString("zh-TW", { 
+                      timeZone: "Asia/Taipei", 
+                      hour12: false 
+                    })}
+                  </div>
+                </div>
+                {product.created_by && (
+                  <div className="info-item">
+                    <div className="info-label">👤 建立者</div>
+                    <div className="info-value">
+                      {product.created_by.display_name || product.created_by.username}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

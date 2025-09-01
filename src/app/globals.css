@@ -241,6 +241,10 @@ body {
   width: 20%;
 }
 
+.w30{
+  width: 30%;
+}
+
 .w33{
   width: 33%;
 }
@@ -376,6 +380,10 @@ body {
 
 .h32{
   height: 32px;
+}
+
+.po-r{
+  position: relative;
 }
 
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import "@/styles/pages/marquee-admin.css";
 
 type MarqueeItem = {
   id: number;
@@ -66,127 +67,183 @@ export default function MarqueeListPage() {
       return;
     }
 
-    await fetch(`${apiBase}/admin/marquee/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    fetchData();
+    try {
+      const res = await fetch(`${apiBase}/admin/marquee/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (res.ok) {
+        fetchData();
+      } else {
+        alert("刪除失敗，請稍後再試");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("刪除失敗，請稍後再試");
+    }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  // 統計數據
+  const activeCount = items.filter(item => item.isActive).length;
+  const inactiveCount = items.filter(item => !item.isActive).length;
+
   return (
-    <div className="b-ibox">
-   
-      <h1>跑馬燈列表</h1>
+    <div className="marquee-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="marquee-admin-header">
+        <h1>🎯 跑馬燈管理</h1>
+        <div className="marquee-admin-header-actions">
+          <button 
+            onClick={() => router.push("/admin/marquee/new")} 
+            className="btn-primary"
+          >
+            ✨ 新增跑馬燈
+          </button>
+        </div>
+      </div>
 
-      <div className="b-ibox-s">
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
 
-      
-        <button onClick={() => router.push("/admin/marquee/new")} className="b-btn-s2 b-btn-c4 mb25">
-            新增跑馬燈
-        </button>
-    
+      {/* 錯誤訊息 */}
+      {error && (
+        <div className="error-message">
+          ⚠️ {error}
+        </div>
+      )}
 
-      {loading ? (
-        <p>載入中...</p>
-      ) : error ? (
-        <p className="ps-err mb15">{error}</p>
-      ) : (
-        <table className="b-table-box admin-table mb15">
-          <thead>
-            <tr>
-              <th>標題（後台參考用）</th>
-              <th>內容（實際顯示）</th>
-              <th>標籤</th>
-              <th>連結</th>
-              <th>啟用</th>
-              <th>建立時間</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td>{item.title || "-"}</td>
-                <td>{item.content || "-"}</td>
-                <td>
-                  {item.tag ? (
-                    <span
-                      style={{
-                        backgroundColor: item.tag.backgroundColor,
-                        color: item.tag.textColor,
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        fontWeight: "bold"
-                      }}
-                    >
-                      {item.tag.name}
-                    </span>
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                <td>
-                  {item.link ? (
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      className="b-btn-s3 b-btn-c2 mlr10"
-                    >
-                      查看
-                    </a>
-                  ) : (
-                    "-"
-                  )}
-                </td>
+      {/* 內容區域 */}
+      {!loading && !error && (
+        <div className="content-section">
+          {/* 統計信息 */}
+          <div className="table-stats">
+            <div className="stats-info">
+              <div className="stats-item">
+                <span>📊 總計：</span>
+                <span className="stats-number">{items.length}</span>
+              </div>
+              <div className="stats-item">
+                <span>✅ 啟用：</span>
+                <span className="stats-number">{activeCount}</span>
+              </div>
+              <div className="stats-item">
+                <span>❌ 停用：</span>
+                <span className="stats-number">{inactiveCount}</span>
+              </div>
+            </div>
+          </div>
 
-                <td>
-                  <span
-                    className={`${
-                      item.isActive ? "b-btn-s3 b-btn-c4 w50px" : "b-btn-s3 b-btn-c3 w50px"
-                    }`}
-                  >
-                    {item.isActive ? "ON" : "OFF"}
-                  </span>
-                </td>
-
-
-
-                <td>
-                  {format(new Date(item.createdAt), "yyyy-MM-dd HH:mm")}
-                </td>
-                <td className="fl4">
-                  <button onClick={() => router.push(`/admin/marquee/${item.id}/edit`)} className="b-btn-s3 b-btn-c1 mlr10">
-                    編輯
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="b-btn-s3 b-btn-c3 mlr10"
-                  >
-                    刪除
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
               <tr>
-                <td colSpan={7} className="border px-3 py-4 text-center text-gray-500">
-                  尚無資料
-                </td>
+                <th>📋 標題</th>
+                <th>📝 內容</th>
+                <th>🏷️ 標籤</th>
+                <th>🔗 連結</th>
+                <th>📊 狀態</th>
+                <th>📅 建立時間</th>
+                <th>⚙️ 操作</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <div className="marquee-title" title={item.title}>
+                      {item.title || "-"}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="marquee-content" title={item.content}>
+                      {item.content || "-"}
+                    </div>
+                  </td>
+                  <td>
+                    {item.tag ? (
+                      <span
+                        className="marquee-tag"
+                        style={{
+                          backgroundColor: item.tag.backgroundColor,
+                          color: item.tag.textColor,
+                        }}
+                      >
+                        {item.tag.name}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#9ca3af" }}>無標籤</span>
+                    )}
+                  </td>
+                  <td>
+                    {item.link ? (
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="marquee-link"
+                      >
+                        🔗 查看
+                      </a>
+                    ) : (
+                      <span style={{ color: "#9ca3af" }}>無連結</span>
+                    )}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge ${
+                        item.isActive ? "status-active" : "status-inactive"
+                      }`}
+                    >
+                      {item.isActive ? "✅ 啟用" : "❌ 停用"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="date-info">
+                      {format(new Date(item.createdAt), "yyyy-MM-dd HH:mm")}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => router.push(`/admin/marquee/${item.id}/edit`)} 
+                        className="btn-edit"
+                      >
+                        ✏️ 編輯
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="btn-delete"
+                      >
+                        🗑️ 刪除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* 無資料顯示 */}
+          {items.length === 0 && (
+            <div className="no-data">
+              <div className="no-data-icon">🎯</div>
+              <div className="no-data-text">尚無跑馬燈資料</div>
+              <div className="no-data-hint">點擊上方「新增跑馬燈」按鈕開始建立您的第一個跑馬燈</div>
+            </div>
+          )}
+        </div>
       )}
     </div>
-    </div>
   );
-  
 }

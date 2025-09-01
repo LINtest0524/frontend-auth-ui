@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/hooks/use-user-store";
 import dayjs from "dayjs";
+import "@/styles/pages/users.css";
 
 interface ProductVariant {
   id: number;
@@ -407,7 +408,6 @@ export default function ProductListPage() {
     if (totalPages <= 1 || totalCount === 0) return null;
 
     const pages = [];
-    const maxVisible = 5;
 
     if (totalPages <= 10) {
       for (let i = 1; i <= totalPages; i++) {
@@ -435,32 +435,30 @@ export default function ProductListPage() {
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15">
-        <p>
-          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
-        </p>
+      <div className="pagination">
+        <div className="pagination-info">
+          第 {page} 頁，共 {totalPages} 頁（總計 {totalCount} 筆商品）
+        </div>
 
-        <div className="tables_munber">
+        <div className="pagination-buttons">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className=""
+            className="pagination-btn"
           >
-            上一頁
+            ⬅️ 上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>
+              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
                 ...
               </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setPage(p as number)}
-                className={`${
-                  page === p ? "pagehover" : ""
-                }`}
+                className={`pagination-btn ${page === p ? "active" : ""}`}
               >
                 {p}
               </button>
@@ -470,9 +468,9 @@ export default function ProductListPage() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className=""
+            className="pagination-btn"
           >
-            下一頁
+            下一頁 ➡️
           </button>
         </div>
       </div>
@@ -480,297 +478,350 @@ export default function ProductListPage() {
   };
 
   return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
-        <h1>商品管理</h1>
-
-        <div className="b-ibox-s">
+    <div className="users-container">
+      {/* 頁面標題區域 */}
+      <div className="users-header">
+        <h1>🛍️ 商品管理</h1>
+        <div className="users-header-actions">
           {(currentUser?.role === "SUPER_ADMIN" || 
             currentUser?.role === "GLOBAL_ADMIN" || 
             currentUser?.role === "AGENT_OWNER") && (
-            <div className="w100 mb15">
-              <button
-                onClick={() => router.push("/admin/products/new")}
-                className="b-btn-s2 b-btn-c4"
-              >
-                新增商品
-              </button>
-            </div>
+            <button
+              onClick={() => router.push("/admin/products/new")}
+              className="btn-search"
+              style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}
+            >
+              ➕ 新增商品
+            </button>
           )}
-
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="b-search-btn w100"
-          >
-            篩選
-            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
-          </button>
-
-          {isFilterOpen && (
-            <>
-              <div className="b-search-box fl1 w100 mt15">
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="product-name">商品名稱</label>
-                  <input 
-                    type="text" 
-                    placeholder="商品名稱" 
-                    id="product-name" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)} 
-                    className="w60" 
-                  />
-                </div>
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="product-sku">SKU</label>
-                  <input 
-                    type="text" 
-                    placeholder="SKU" 
-                    id="product-sku" 
-                    value={sku} 
-                    onChange={(e) => setSku(e.target.value)} 
-                    className="w60" 
-                  />
-                </div>
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="status-select">狀態</label>
-                  <select 
-                    id="status-select" 
-                    value={status} 
-                    onChange={(e) => setStatus(e.target.value)} 
-                    className="w60"
-                  >
-                    <option value="">狀態（全部）</option>
-                    <option value="ACTIVE">上架</option>
-                    <option value="INACTIVE">下架</option>
-                    <option value="OUT_OF_STOCK">缺貨</option>
-                  </select>
-                </div>
-                
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="featured-select">精選</label>
-                  <select 
-                    id="featured-select" 
-                    value={featured} 
-                    onChange={(e) => setFeatured(e.target.value)} 
-                    className="w60"
-                  >
-                    <option value="">精選（全部）</option>
-                    <option value="true">是</option>
-                    <option value="false">否</option>
-                  </select>
-                </div>
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="visible-select">顯示</label>
-                  <select 
-                    id="visible-select" 
-                    value={visible} 
-                    onChange={(e) => setVisible(e.target.value)} 
-                    className="w60"
-                  >
-                    <option value="">顯示（全部）</option>
-                    <option value="true">顯示</option>
-                    <option value="false">隱藏</option>
-                  </select>
-                </div>
-
-                <div className="w50 fd1 mb25">
-                  <div className="b-form-group-2 fl4 w100 mb10">
-                    <label htmlFor="date-select-1">建立時間</label>
-                    <div className="w70 fl4">
-                      <input 
-                        type="date" 
-                        id="date-select-1" 
-                        value={createdFrom} 
-                        onChange={(e) => setCreatedFrom(e.target.value)} 
-                        className="date-select flex1" 
-                      />
-                      <span className="dateto">到</span>
-                      <input 
-                        type="date" 
-                        value={createdTo} 
-                        onChange={(e) => setCreatedTo(e.target.value)} 
-                        className="date-select flex1" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="b-form-group-2 w100 fl4">
-                    <div className="b-date-fast fl4 w70 ml132">
-                      <button onClick={() => quickSetDate("today")}>今日</button>
-                      <button onClick={() => quickSetDate("yesterday")}>昨日</button>
-                      <button onClick={() => quickSetDate("7days")}>近七日</button>
-                      <button onClick={() => quickSetDate("thisMonth")}>本月</button>
-                      <button onClick={() => quickSetDate("lastMonth")}>上月</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="fl4 w100 b-btnbox">
-                  <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
-                  <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
-                </div>
-              </div>
-            </>
-          )}
+          <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
+            📦 管理商品資料、庫存與狀態
+          </div>
         </div>
       </div>
 
-      {loading && <p>載入中...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <button
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="filter-toggle"
+        >
+          <span>🔍 篩選條件</span>
+          <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+        </button>
 
-      {!loading && hasSearched && (
-        <>
-          <div className="b-ibox">
-            <div className="b-ibox-s">
-              <div className="w100 fo5 mb15">
-                <div className="w50 fl4">
-                  <label htmlFor="page-limit">每頁&nbsp;</label>
-                  <input
-                    type="number"
-                    id="page-limit"
-                    value={inputLimit}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (!isNaN(val)) setInputLimit(val);
-                    }}
-                    min={1}
-                    className="txtbox1 mr20"
-                  />
-                  <button
-                    onClick={() => {
-                      const validLimit = Math.max(1, inputLimit);
-                      setLimit(validLimit);
-                    }}
-                    className="ml10 b-btn-s2 b-btn-c4"
-                  >
-                    顯示筆數
-                  </button>
-                </div>
+        {isFilterOpen && (
+          <div className="filter-content">
+            <div className="filter-grid">
+              <div className="form-group">
+                <label htmlFor="product-name" className="form-label">商品名稱</label>
+                <input 
+                  type="text" 
+                  id="product-name"
+                  placeholder="請輸入商品名稱" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  className="form-input" 
+                />
               </div>
 
-              <table className="b-table-box admin-table mb15">
-                <thead>
-                  <tr>
-                    <th onClick={() => toggleSort("id")}>ID{getArrow("id")}</th>
-                    <th>圖片</th>
-                    <th>SKU</th>
-                    <th onClick={() => toggleSort("name")}>商品名稱{getArrow("name")}</th>
-                    <th>分類</th>
-                    <th onClick={() => toggleSort("price")}>價格{getArrow("price")}</th>
-                    <th onClick={() => toggleSort("stock_quantity")}>庫存{getArrow("stock_quantity")}</th>
-                    <th>狀態</th>
-                    <th>精選</th>
-                    <th>顯示</th>
-                    <th>所屬公司</th>
-                    <th onClick={() => toggleSort("created_at")}>建立時間{getArrow("created_at")}</th>
-                    <th className="th-last">操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.id}</td>
-                      <td>
-                        {(() => {
-                          const displayImage = getProductDisplayImage(product);
-                          return displayImage ? (
-                            <img 
-                              src={`http://localhost:3001${displayImage}`} 
-                              alt={product.name}
-                              style={{width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", margin: "0 auto", display: "block"}}
-                            />
-                          ) : (
-                            <div style={{width: "48px", height: "48px", backgroundColor: "#f0f0f0", borderRadius: "4px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center"}}>
-                              📦
-                            </div>
-                          );
-                        })()}
-                      </td>
-                      <td style={{fontFamily: "monospace", fontSize: "12px"}}>{product.sku}</td>
-                      <td>
-                        <div style={{fontWeight: "500"}}>{product.name}</div>
-                        {product.variants && product.variants.length > 0 && (
-                          <div style={{fontSize: "11px", color: "#6c757d", marginTop: "2px"}}>
-                            {product.variants.length} 個變體
-                          </div>
-                        )}
-                      </td>
-                      <td>{product.category?.name || "-"}</td>
-                      <td style={{textAlign: "right"}}>
-                        {getPriceDisplay(product)}
-                      </td>
-                      <td style={{textAlign: "center"}}>
-                        {getStockDisplay(product)}
-                      </td>
-                      <td>
-                        <span style={{color: getStatusColor(product.status)}}>
-                          {getStatusText(product.status)}
-                        </span>
-                      </td>
-                      <td style={{textAlign: "center"}}>
-                        {product.is_featured ? "⭐" : "-"}
-                      </td>
-                      <td>
-                        <span style={{color: product.is_visible ? "#28a745" : "#6c757d"}}>
-                          {product.is_visible ? "顯示" : "隱藏"}
-                        </span>
-                      </td>
-                      <td>{product.company?.name || "-"}</td>
-                      <td>{product.created_at ? new Date(product.created_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                      <td>
-                        <div style={{display: "flex", gap: "8px", flexWrap: "wrap"}}>
-                          <button
-                            onClick={() => router.push(`/admin/products/${product.id}`)}
-                            className="b-btn-s3 b-btn-c2"
-                          >
-                            查看
-                          </button>
-                          
-                          {(currentUser?.role === "SUPER_ADMIN" || 
-                            currentUser?.role === "GLOBAL_ADMIN" || 
-                            currentUser?.role === "AGENT_OWNER") && (
-                            <button
-                              onClick={() => router.push(`/admin/products/edit/${product.id}`)}
-                              className="b-btn-s3 b-btn-c4"
-                            >
-                              編輯
-                            </button>
-                          )}
+              <div className="form-group">
+                <label htmlFor="product-sku" className="form-label">SKU</label>
+                <input 
+                  type="text" 
+                  id="product-sku"
+                  placeholder="請輸入 SKU" 
+                  value={sku} 
+                  onChange={(e) => setSku(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
 
-                          {(currentUser?.role === "SUPER_ADMIN" || 
-                            currentUser?.role === "GLOBAL_ADMIN" || 
-                            currentUser?.role === "AGENT_OWNER" || 
-                            currentUser?.role === "AGENT_SUPPORT") && (
-                            <button
-                              onClick={() => handleDelete(product.id)}
-                              className={`b-btn-s3 b-btn-c3 ${
-                                deletingId === product.id ? "opacity-50 pointer-events-none" : ""
-                              }`}
-                            >
-                              {deletingId === product.id ? "刪除中..." : "刪除"}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="form-group">
+                <label htmlFor="status-select" className="form-label">商品狀態</label>
+                <select 
+                  id="status-select" 
+                  value={status} 
+                  onChange={(e) => setStatus(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部狀態</option>
+                  <option value="ACTIVE">🟢 上架</option>
+                  <option value="INACTIVE">🔴 下架</option>
+                  <option value="OUT_OF_STOCK">⚠️ 缺貨</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="featured-select" className="form-label">精選商品</label>
+                <select 
+                  id="featured-select" 
+                  value={featured} 
+                  onChange={(e) => setFeatured(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部</option>
+                  <option value="true">⭐ 是</option>
+                  <option value="false">➖ 否</option>
+                </select>
+              </div>
 
-              {!loading && hasSearched && products.length === 0 && (
-                <div className="b-no-information w100 fd5">
-                  <img src="/no-information.webp" alt="無資料" className="mb25" />
-                  <p>查無資料</p>
+              <div className="form-group">
+                <label htmlFor="visible-select" className="form-label">前台顯示</label>
+                <select 
+                  id="visible-select" 
+                  value={visible} 
+                  onChange={(e) => setVisible(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部</option>
+                  <option value="true">👁️ 顯示</option>
+                  <option value="false">🙈 隱藏</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="filter-row">
+              <div className="form-group date-range-group">
+                <label htmlFor="created-date-from" className="form-label">建立時間範圍</label>
+                <div className="date-inputs">
+                  <input 
+                    type="date" 
+                    id="created-date-from"
+                    value={createdFrom} 
+                    onChange={(e) => setCreatedFrom(e.target.value)} 
+                    className="form-input" 
+                  />
+                  <span className="date-separator">至</span>
+                  <input 
+                    type="date" 
+                    value={createdTo} 
+                    onChange={(e) => setCreatedTo(e.target.value)} 
+                    className="form-input" 
+                  />
                 </div>
-              )}
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("7days")} className="btn-quick-date">近七日</button>
+                  <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
+                </div>
+              </div>
+            </div>
 
-              {renderPagination()}
+            <div className="filter-actions">
+              <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
+              <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
             </div>
           </div>
-        </>
+        )}
+      </div>
+
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
+
+      {error && (
+        <div className="content-section" style={{ padding: '20px', textAlign: 'center', color: '#dc2626' }}>
+          ❌ {error}
+        </div>
+      )}
+
+      {!loading && hasSearched && (
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                  setPage(1);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
+
+            <div className="pagination-info">
+              共 {totalCount} 筆商品
+            </div>
+          </div>
+
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th onClick={() => toggleSort("id")}>
+                  ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                </th>
+                <th>商品資訊</th>
+                <th>分類</th>
+                <th onClick={() => toggleSort("price")}>
+                  價格 <span className={`sort-icon ${sortKey === "price" ? "active" : ""}`}>{getArrow("price")}</span>
+                </th>
+                <th onClick={() => toggleSort("stock_quantity")}>
+                  庫存 <span className={`sort-icon ${sortKey === "stock_quantity" ? "active" : ""}`}>{getArrow("stock_quantity")}</span>
+                </th>
+                <th>狀態</th>
+                <th>設定</th>
+                <th onClick={() => toggleSort("created_at")}>
+                  建立時間 <span className={`sort-icon ${sortKey === "created_at" ? "active" : ""}`}>{getArrow("created_at")}</span>
+                </th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td>#{product.id}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {(() => {
+                        const displayImage = getProductDisplayImage(product);
+                        return displayImage ? (
+                          <img 
+                            src={`http://localhost:3001${displayImage}`} 
+                            alt={product.name}
+                            style={{width: "56px", height: "56px", objectFit: "cover", borderRadius: "8px", flexShrink: 0}}
+                          />
+                        ) : (
+                          <div style={{width: "56px", height: "56px", backgroundColor: "#f3f4f6", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0}}>
+                            📦
+                          </div>
+                        );
+                      })()}
+                      <div>
+                        <div style={{fontWeight: "600", color: "#1f2937", marginBottom: "4px"}}>{product.name}</div>
+                        <div style={{fontFamily: "monospace", fontSize: "12px", color: "#6b7280", marginBottom: "2px"}}>SKU: {product.sku}</div>
+                        {product.variants && product.variants.length > 0 && (
+                          <div style={{fontSize: "11px", color: "#8b5cf6", fontWeight: "500"}}>
+                            🔄 {product.variants.length} 個變體
+                          </div>
+                        )}
+                        {product.company && (
+                          <div style={{fontSize: "11px", color: "#6b7280"}}>
+                            🏢 {product.company.name}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="status-badge" style={{
+                      background: product.category ? '#e0f2fe' : '#f3f4f6',
+                      color: product.category ? '#0277bd' : '#6b7280'
+                    }}>
+                      {product.category?.name || "未分類"}
+                    </span>
+                  </td>
+                  <td style={{textAlign: "right"}}>
+                    {getPriceDisplay(product)}
+                  </td>
+                  <td style={{textAlign: "center"}}>
+                    {getStockDisplay(product)}
+                  </td>
+                  <td>
+                    <span className={`status-badge ${
+                      product.status === 'ACTIVE' ? 'status-active' : 
+                      product.status === 'OUT_OF_STOCK' ? 'status-banned' : 'status-inactive'
+                    }`}>
+                      {product.status === 'ACTIVE' ? '🟢 上架' : 
+                       product.status === 'OUT_OF_STOCK' ? '⚠️ 缺貨' : '🔴 下架'}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                      {product.is_featured && (
+                        <span className="featured-badge">⭐ 精選</span>
+                      )}
+                      <span style={{fontSize: '11px', color: product.is_visible ? '#059669' : '#6b7280'}}>
+                        {product.is_visible ? '👁️ 顯示' : '🙈 隱藏'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{fontSize: "12px", color: "#6b7280"}}>
+                      📅 {product.created_at ? new Date(product.created_at).toLocaleString("zh-TW", { 
+                        timeZone: "Asia/Taipei", 
+                        hour12: false,
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : "未知"}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        onClick={() => router.push(`/admin/products/${product.id}`)}
+                        className="btn-view"
+                      >
+                        👁️ 查看
+                      </button>
+                      
+                      {(currentUser?.role === "SUPER_ADMIN" || 
+                        currentUser?.role === "GLOBAL_ADMIN" || 
+                        currentUser?.role === "AGENT_OWNER") && (
+                        <button
+                          onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+                          className="btn-edit"
+                        >
+                          ✏️ 編輯
+                        </button>
+                      )}
+
+                      {(currentUser?.role === "SUPER_ADMIN" || 
+                        currentUser?.role === "GLOBAL_ADMIN" || 
+                        currentUser?.role === "AGENT_OWNER" || 
+                        currentUser?.role === "AGENT_SUPPORT") && (
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className={`btn-delete ${
+                            deletingId === product.id ? "opacity-50 pointer-events-none" : ""
+                          }`}
+                          disabled={deletingId === product.id}
+                        >
+                          {deletingId === product.id ? "🗑️ 刪除中..." : "🗑️ 刪除"}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* 無資料顯示 */}
+          {!loading && hasSearched && products.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的商品資料</p>
+            </div>
+          )}
+
+          {/* 分頁控制 */}
+          {renderPagination()}
+        </div>
       )}
     </div>
   );

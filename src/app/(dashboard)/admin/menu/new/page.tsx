@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import '@/styles/pages/menu-form.css'
 
 interface MenuItem {
   id: number
@@ -160,171 +161,284 @@ export default function NewMenuPage() {
   }
 
   if (initializing) {
-    return <div className="b-ibox"><p>載入中...</p></div>
+    return (
+      <div className="menu-form-container">
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>新增選單</h1>
+    <div className="menu-form-container">
+      {/* 頁面標題區域 */}
+      <div className="menu-form-header">
+        <h1>➕ 新增選單</h1>
+      </div>
 
-      <div className="b-ibox-s">
-        <form onSubmit={handleSubmit} className="w100">
-          {/* 公司選擇 - 根據角色顯示不同界面 */}
-          {canSelectCompany ? (
-            <div className="b-form-group-1 w100 fl4">
-              <label htmlFor="company_id">公司</label>
-              <select
-                id="company_id"
-                name="company_id"
-                className="w70"
-                value={formData.company_id}
-                onChange={handleChange}
-                required
-              >
-                <option value={1}>公司 A</option>
-                <option value={2}>公司 B</option>
-              </select>
+      {/* 表單內容 */}
+      <div className="menu-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本設定
             </div>
-          ) : (
-            <div className="b-form-group-1 w100 fl4">
-              <label>公司</label>
-              <div className="w70" style={{ padding: '8px 12px', background: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                {currentUser?.company?.name || `公司 ${userCompanyId}`}
+            
+            <div className="form-grid">
+              {/* 公司選擇 - 根據角色顯示不同界面 */}
+              {canSelectCompany ? (
+                <div className="form-group">
+                  <label htmlFor="company_id" className="form-label">🏢 公司</label>
+                  <div className="enhanced-select">
+                    <select
+                      id="company_id"
+                      name="company_id"
+                      className="form-select"
+                      value={formData.company_id}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value={1}>公司 A</option>
+                      <option value={2}>公司 B</option>
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label className="form-label">🏢 公司</label>
+                  <div className="company-display">
+                    🏢 {currentUser?.company?.name || `公司 ${userCompanyId}`}
+                  </div>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="parent_id" className="form-label">📁 父選單</label>
+                <div className="enhanced-select">
+                  <select
+                    id="parent_id"
+                    name="parent_id"
+                    className="form-select"
+                    value={formData.parent_id}
+                    onChange={handleChange}
+                  >
+                    <option value="">無 (頂級選單)</option>
+                    {parentMenus.map(menu => (
+                      <option key={menu.id} value={menu.id} className={menu.parent_id ? 'parent-menu-option level-2' : 'parent-menu-option level-1'}>
+                        {menu.parent_id ? `　└ ${menu.title}` : menu.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-hint">
+                  選擇此選單的父級選單，留空則為頂級選單
+                </div>
               </div>
             </div>
-          )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="parent_id">父選單</label>
-            <select
-              id="parent_id"
-              name="parent_id"
-              className="w70"
-              value={formData.parent_id}
-              onChange={handleChange}
-            >
-              <option value="">無 (頂級選單)</option>
-              {parentMenus.map(menu => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.parent_id ? `　└ ${menu.title}` : menu.title}
-                </option>
-              ))}
-            </select>
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="title" className="form-label required">📋 選單標題</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  className="form-input"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  placeholder="請輸入選單標題"
+                />
+                <div className="form-hint">
+                  顯示在選單中的文字，建議簡潔明瞭
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="title">選單標題 *</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              className="w70"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              placeholder="請輸入選單標題"
-            />
+          {/* 連結設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🔗</span>
+              連結設定
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="url" className="form-label">🔗 連結網址</label>
+                <input
+                  type="text"
+                  id="url"
+                  name="url"
+                  className="form-input"
+                  value={formData.url}
+                  onChange={handleChange}
+                  placeholder="https://example.com 或 /page 或 /products/loans"
+                />
+                <div className="form-hint">
+                  可以輸入完整網址 (https://...) 或站內路徑 (/page)，留空則為純分類選單
+                </div>
+                {formData.url && (
+                  <div className="url-preview">
+                    🔗 預覽：{formData.url}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">🪟 開啟方式</label>
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="target_blank"
+                    name="target_blank"
+                    checked={formData.target_blank}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="target_blank">在新視窗開啟</label>
+                </div>
+                <div className="form-hint">
+                  勾選後點擊選單會在新分頁開啟，適用於外部連結
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="url">連結網址</label>
-            <input
-              type="text"
-              id="url"
-              name="url"
-              className="w70"
-              value={formData.url}
-              onChange={handleChange}
-              placeholder="https://example.com 或 /page 或 /products/loans"
-            />
-            <small style={{ color: '#666', marginLeft: '132px', display: 'block', marginTop: '5px' }}>
-              可以輸入完整網址 (https://...) 或站內路徑 (/page)
-            </small>
+          {/* 外觀設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🎨</span>
+              外觀設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="icon" className="form-label">🎨 圖示 CSS 類別</label>
+                <input
+                  type="text"
+                  id="icon"
+                  name="icon"
+                  className="form-input"
+                  value={formData.icon}
+                  onChange={handleChange}
+                  placeholder="例如: fas fa-home, bi bi-house"
+                />
+                <div className="form-hint">
+                  支援 Font Awesome、Bootstrap Icons 等圖示庫
+                </div>
+                {formData.icon && (
+                  <div className="icon-preview">
+                    <i className={formData.icon}></i>
+                    圖示預覽：{formData.icon}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="sort_order" className="form-label">🔢 排序</label>
+                <div className="number-input-group">
+                  <input
+                    type="number"
+                    id="sort_order"
+                    name="sort_order"
+                    className="form-input"
+                    value={formData.sort_order}
+                    onChange={handleChange}
+                    min="0"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="sort-order-preview">
+                  💡 數字越小排序越前面，相同層級的選單會依此排序
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="target_blank">在新視窗開啟</label>
-            <input
-              type="checkbox"
-              id="target_blank"
-              name="target_blank"
-              checked={formData.target_blank}
-              onChange={handleChange}
-              className="new-checkbox"
-            />
+          {/* 顯示設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📱</span>
+              顯示設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="device_type" className="form-label">📱 顯示裝置</label>
+                <div className="enhanced-select">
+                  <select
+                    id="device_type"
+                    name="device_type"
+                    className="form-select"
+                    value={formData.device_type}
+                    onChange={handleChange}
+                  >
+                    <option value="both">桌面 + 手機</option>
+                    <option value="desktop">僅桌面</option>
+                    <option value="mobile">僅手機</option>
+                  </select>
+                </div>
+                <div className="device-type-preview">
+                  <span className={`device-badge device-${formData.device_type}`}>
+                    {formData.device_type === 'desktop' ? '🖥️ 桌面' : 
+                     formData.device_type === 'mobile' ? '📱 手機' : '📱🖥️ 全部'}
+                  </span>
+                </div>
+                <div className="form-hint">
+                  選擇此選單在哪些裝置上顯示
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="status" className="form-label">📊 狀態</label>
+                <div className="enhanced-select">
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleChange}
+                  >
+                    <option value="active">啟用</option>
+                    <option value="inactive">停用</option>
+                  </select>
+                </div>
+                <div className="status-preview">
+                  <span className={`status-badge status-${formData.status}`}>
+                    {formData.status === 'active' ? '✅ 啟用' : '❌ 停用'}
+                  </span>
+                </div>
+                <div className="form-hint">
+                  停用的選單不會在前台顯示
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="icon">圖示 CSS 類別</label>
-            <input
-              type="text"
-              id="icon"
-              name="icon"
-              className="w70"
-              value={formData.icon}
-              onChange={handleChange}
-              placeholder="例如: fas fa-home"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="sort_order">排序</label>
-            <input
-              type="number"
-              id="sort_order"
-              name="sort_order"
-              className="w70"
-              value={formData.sort_order}
-              onChange={handleChange}
-              min="0"
-              placeholder="數字越小排序越前面"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="device_type">顯示裝置</label>
-            <select
-              id="device_type"
-              name="device_type"
-              className="w70"
-              value={formData.device_type}
-              onChange={handleChange}
-            >
-              <option value="both">桌面 + 手機</option>
-              <option value="desktop">僅桌面</option>
-              <option value="mobile">僅手機</option>
-            </select>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="status">狀態</label>
-            <select
-              id="status"
-              name="status"
-              className="w70"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <option value="active">啟用</option>
-              <option value="inactive">停用</option>
-            </select>
-          </div>
-
-          <div className="fl4 w100 b-btnbox">
-            <button
-              type="submit"
-              disabled={loading}
-              className="b-btn-s2 b-btn-c4 mr20"
-            >
-              {loading ? '建立中...' : '建立選單'}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/admin/menu')}
-              className="b-btn-s2 b-btn-c1"
-            >
-              取消
-            </button>
+          {/* 操作按鈕 */}
+          <div className="form-section">
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => router.push('/admin/menu')}
+                className="btn-secondary"
+                disabled={loading}
+              >
+                <span>↩️</span>
+                返回
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+              >
+                <span>✨</span>
+                {loading ? '建立中...' : '建立選單'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

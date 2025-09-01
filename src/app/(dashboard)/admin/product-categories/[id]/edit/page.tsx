@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUserStore } from '@/hooks/use-user-store';
+import '@/styles/pages/news-form.css';
 
 interface Category {
   id: number;
@@ -160,11 +161,11 @@ export default function EditProductCategoryPage() {
 
   if (initialLoading) {
     return (
-      <div className="b-ibox">
-        <h1>編輯商品分類</h1>
-        <div className="b-ibox-s">
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            載入中...
+      <div className="news-form-container">
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">載入中...</div>
           </div>
         </div>
       </div>
@@ -172,145 +173,228 @@ export default function EditProductCategoryPage() {
   }
 
   return (
-    <div className="b-ibox">
-      <h1>編輯商品分類</h1>
-
-      <div className="b-ibox-s">
-        <form onSubmit={handleSubmit} className="w100">
-          
-          {/* 基本資訊 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>分類名稱</label>
-            <input
-              type="text"
-              name="name"
-              className="w70"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="請輸入分類名稱"
-              required
-            />
+    <div className="news-form-container">
+      {/* 載入遮罩 */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">正在更新分類...</div>
           </div>
+        </div>
+      )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>URL 別名 (Slug)</label>
-            <input
-              type="text"
-              name="slug"
-              className="w70"
-              value={formData.slug}
-              onChange={handleInputChange}
-              placeholder="URL 友善的名稱"
-              required
-            />
-          </div>
+      {/* 頁面標題區域 */}
+      <div className="news-form-header">
+        <h1>✏️ 編輯商品分類</h1>
+      </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>父分類</label>
-            <select
-              name="parent_id"
-              className="w70"
-              value={formData.parent_id}
-              onChange={handleInputChange}
-            >
-              <option value="">無 (頂層分類)</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>描述</label>
-            <textarea
-              name="description"
-              className="w70"
-              rows={3}
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="請輸入分類描述"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>排序</label>
-            <input
-              type="number"
-              name="sort_order"
-              className="w70"
-              value={formData.sort_order}
-              onChange={handleInputChange}
-              min="0"
-              placeholder="數字越小排序越前面"
-            />
-          </div>
-
-          {/* 狀態設定 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label>狀態設定</label>
-            <div className="w70" style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-              <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
+      {/* 表單內容 */}
+      <div className="news-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本資訊
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="name" className="form-label required">🏷️ 分類名稱</label>
                 <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
+                  type="text"
+                  id="name"
+                  name="name"
+                  className="form-input"
+                  value={formData.name}
                   onChange={handleInputChange}
-                  style={{marginRight: '8px'}}
+                  placeholder="請輸入分類名稱"
+                  required
                 />
-                啟用狀態
-              </label>
-              <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}}>
+                <div className="form-hint">
+                  分類名稱將顯示在商品管理和前台頁面中
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="slug" className="form-label required">🔗 分類代碼</label>
                 <input
-                  type="checkbox"
-                  name="is_visible"
-                  checked={formData.is_visible}
+                  type="text"
+                  id="slug"
+                  name="slug"
+                  className="form-input"
+                  value={formData.slug}
                   onChange={handleInputChange}
-                  style={{marginRight: '8px'}}
+                  placeholder="請輸入分類代碼（用於 URL）"
+                  required
                 />
-                前台顯示
-              </label>
+                <div className="form-hint">
+                  將用於 URL 路徑，建議使用英文或數字
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="parent_id" className="form-label">📁 父分類</label>
+                <div className="enhanced-select">
+                  <select
+                    id="parent_id"
+                    name="parent_id"
+                    className="form-select"
+                    value={formData.parent_id}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">無 (頂層分類)</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-hint">
+                  選擇父分類可建立階層式分類結構
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description" className="form-label">📝 分類描述</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  className="form-textarea"
+                  rows={3}
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="請輸入分類描述（選填）"
+                />
+                <div className="form-hint">
+                  描述會顯示在分類頁面中，幫助用戶了解此分類的內容
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* 設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>⚙️</span>
+              分類設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="status" className="form-label">📊 分類狀態</label>
+                <div className="enhanced-select">
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.is_active ? 'ACTIVE' : 'INACTIVE'}
+                    onChange={(e) => {
+                      const isActive = e.target.value === 'ACTIVE';
+                      setFormData(prev => ({ ...prev, is_active: isActive }));
+                    }}
+                  >
+                    <option value="ACTIVE">✅ 啟用</option>
+                    <option value="INACTIVE">❌ 停用</option>
+                  </select>
+                </div>
+                <div className="status-preview">
+                  <span className={`status-badge status-${formData.is_active ? 'active' : 'inactive'}`}>
+                    {formData.is_active ? '✅ 啟用' : '❌ 停用'}
+                  </span>
+                </div>
+                <div className="form-hint">
+                  停用的分類將不會顯示在前台頁面中
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="visibility" className="form-label">👁️ 前台顯示</label>
+                <div className="enhanced-select">
+                  <select
+                    id="visibility"
+                    name="visibility"
+                    className="form-select"
+                    value={formData.is_visible ? 'VISIBLE' : 'HIDDEN'}
+                    onChange={(e) => {
+                      const isVisible = e.target.value === 'VISIBLE';
+                      setFormData(prev => ({ ...prev, is_visible: isVisible }));
+                    }}
+                  >
+                    <option value="VISIBLE">👁️ 顯示</option>
+                    <option value="HIDDEN">🙈 隱藏</option>
+                  </select>
+                </div>
+                <div className="status-preview">
+                  <span className={`status-badge status-${formData.is_visible ? 'active' : 'inactive'}`}>
+                    {formData.is_visible ? '👁️ 顯示' : '🙈 隱藏'}
+                  </span>
+                </div>
+                <div className="form-hint">
+                  控制此分類是否在前台頁面中顯示
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="sort_order" className="form-label">🔢 排序順序</label>
+                <input
+                  type="number"
+                  id="sort_order"
+                  name="sort_order"
+                  className="form-input"
+                  value={formData.sort_order}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  min="0"
+                />
+                <div className="form-hint">
+                  數字越小排序越前面，相同數字按建立時間排序
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 錯誤訊息 */}
           {error && (
-            <div className="b-form-group-1 w100 fl4">
-              <label></label>
-              <div className="w70" style={{
-                backgroundColor: '#f8d7da',
-                color: '#721c24',
-                padding: '12px',
-                borderRadius: '4px',
-                border: '1px solid #f5c6cb'
+            <div className="form-section">
+              <div className="error-message" style={{
+                backgroundColor: '#fee2e2',
+                color: '#991b1b',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid #fecaca',
+                fontSize: '14px',
+                fontWeight: '500'
               }}>
-                {error}
+                ❌ {error}
               </div>
             </div>
           )}
 
-          {/* 按鈕區域 */}
-          <div className="b-form-group-1 w100 fl4">
-            <label></label>
-            <div className="w70">
-              <button
-                type="submit"
-                disabled={loading}
-                className="b-btn-s2 b-btn-c4 mr20"
-              >
-                {loading ? '更新中...' : '更新分類'}
-              </button>
-              
+          {/* 操作按鈕 */}
+          <div className="form-section">
+            <div className="form-actions">
               <button
                 type="button"
                 onClick={() => router.push('/admin/product-categories')}
-                className="b-btn-s2 b-btn-c1"
+                className="btn-secondary"
+                disabled={loading}
               >
-                取消
+                <span>↩️</span>
+                返回列表
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+              >
+                <span>💾</span>
+                {loading ? '更新中...' : '更新分類'}
               </button>
             </div>
           </div>
-
         </form>
       </div>
     </div>

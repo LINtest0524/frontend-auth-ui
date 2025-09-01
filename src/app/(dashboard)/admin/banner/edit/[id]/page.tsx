@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import '@/styles/pages/banner-form.css'
 
 const API_BASE = 'http://localhost:3001'
 
@@ -20,6 +21,7 @@ export default function EditBannerPage() {
   })
 
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [desktopFile, setDesktopFile] = useState<File | null>(null)
   const [mobileFile, setMobileFile] = useState<File | null>(null)
 
@@ -57,7 +59,13 @@ export default function EditBannerPage() {
   }
 
   const handleSubmit = async () => {
+    if (!form.title.trim()) {
+      alert('請輸入標題')
+      return
+    }
+
     try {
+      setSubmitting(true)
       const token = localStorage.getItem('token')
 
       // 如果有圖片要上傳，先處理
@@ -97,139 +105,262 @@ export default function EditBannerPage() {
 
       if (!res.ok) throw new Error('更新失敗')
 
-      alert('  更新成功')
+      alert('更新成功')
       router.push('/admin/banner')
     } catch (err: any) {
-      alert(`    ${err.message}`)
+      alert(`更新失敗：${err.message}`)
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  if (loading) return <div>讀取中...</div>
+  if (loading) {
+    return (
+      <div className="banner-form-container">
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="b-ibox">
-      <h1>編輯 Banner</h1>
+    <div className="banner-form-container">
+      {/* 頁面標題區域 */}
+      <div className="banner-form-header">
+        <h1>✏️ 編輯 Banner</h1>
+      </div>
 
-      <div className="b-ibox-s">
-
-        <div className="b-form-group-2 w100 fl4 mb25">
-          <label>標題</label>
-          <input
-            name="title"
-            value={form.title}
-            placeholder="標題"
-            onChange={handleChange}
-            className="w70"
-          />
-        </div>
-
-        <div className="w50 fd1 mb25">
-          <div className="b-form-group-2 fl4 w100">
-            <label htmlFor="date-select-10">活動時間</label>
-            <div className="w70 fl4">
+      {/* 表單內容 */}
+      <div className="banner-form-content">
+        {/* 基本設定區塊 */}
+        <div className="form-section">
+          <div className="section-title">
+            <span>📋</span>
+            基本設定
+          </div>
+          
+          <div className="form-grid single-column">
+            <div className="form-group">
+              <label htmlFor="title" className="form-label required">📝 Banner 標題</label>
               <input
-                type="datetime-local"
-                id="date-select-10"
-                name="start_time"
-                value={form.start_time}
-                className="date-select flex1"
+                type="text"
+                id="title"
+                name="title"
+                className="form-input"
+                value={form.title}
                 onChange={handleChange}
+                placeholder="請輸入 Banner 標題"
+                required
               />
-              <span className="dateto">到</span>
-              <input
-                type="datetime-local"
-                name="end_time"
-                value={form.end_time}
-                className="date-select flex1"
-                onChange={handleChange}
-              />
+              <div className="form-hint">
+                此標題用於後台管理識別，不會在前台顯示
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="sort" className="form-label">🔢 顯示排序</label>
+              <div className="sort-input-group">
+                <input
+                  type="number"
+                  id="sort"
+                  name="sort"
+                  className="form-input"
+                  value={form.sort === 0 ? '' : form.sort}
+                  onChange={handleChange}
+                  placeholder="請輸入排序數字"
+                  min="0"
+                />
+                <div className="form-hint">
+                  數字越大排序越前面，相同數字按建立時間排序
+                </div>
+                {form.sort > 0 && (
+                  <div className="sort-preview">
+                    📊 排序權重：{form.sort}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-
-
-        <div className="b-form-group-2 fl4 w50 mb25">
-          <label htmlFor="status-select-22">狀態</label>
-
-          <select
-            name="status"
-            id="status-select-22"
-            value={form.status}
-            className="w70"
-            onChange={handleChange}
-          >
-            <option value="ACTIVE">啟用</option>
-            <option value="INACTIVE">停用</option>
-          </select>
+        {/* 時間設定區塊 */}
+        <div className="form-section">
+          <div className="section-title">
+            <span>⏰</span>
+            顯示時間設定
+          </div>
+          
+          <div className="form-grid single-column">
+            <div className="form-group">
+              <label className="form-label">📅 顯示時間範圍</label>
+              <div className="datetime-range">
+                <input
+                  type="datetime-local"
+                  name="start_time"
+                  value={form.start_time}
+                  onChange={handleChange}
+                  className="form-input datetime-input"
+                />
+                <span className="datetime-separator">至</span>
+                <input
+                  type="datetime-local"
+                  name="end_time"
+                  value={form.end_time}
+                  onChange={handleChange}
+                  className="form-input datetime-input"
+                />
+              </div>
+              <div className="form-hint">
+                設定 Banner 的顯示時間範圍，超出時間範圍將自動隱藏
+              </div>
+            </div>
+          </div>
         </div>
 
-
-        <div className="b-form-group-2 w50 fl4 mb25">
-          <label htmlFor="sort">排序</label>
-          <input
-            type="number"
-            id="sort"
-            name="sort"
-            value={form.sort === 0 ? '' : form.sort}
-            placeholder="請輸入排序數字 - 數字越大越前面"
-            className="border p-2 w-full w70"
-            onChange={handleChange}
-          />
+        {/* 狀態設定區塊 */}
+        <div className="form-section">
+          <div className="section-title">
+            <span>📊</span>
+            狀態設定
+          </div>
+          
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="status" className="form-label">📊 顯示狀態</label>
+              <div className="enhanced-select">
+                <select
+                  id="status"
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  className="form-select"
+                >
+                  <option value="ACTIVE">啟用</option>
+                  <option value="INACTIVE">停用</option>
+                </select>
+              </div>
+              <div className="form-hint">
+                停用的 Banner 不會在前台顯示
+              </div>
+              <div className="status-selector">
+                <div className={`status-option ${form.status === 'ACTIVE' ? 'active' : 'inactive'}`}>
+                  {form.status === 'ACTIVE' ? '✅ 啟用狀態' : '❌ 停用狀態'}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* 圖片設定區塊 */}
+        <div className="form-section">
+          <div className="section-title">
+            <span>🖼️</span>
+            圖片設定
+          </div>
+          
+          <div className="file-upload-group">
+            {/* 桌面版圖片 */}
+            <div className={`file-upload-section ${desktopFile ? 'has-file' : ''}`}>
+              <div className="form-group">
+                <label className="form-label">🖥️ 桌面版圖片</label>
+                <div className="file-input-wrapper">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setDesktopFile(e.target.files?.[0] || null)}
+                    className="file-input"
+                  />
+                  <button type="button" className="file-input-button">
+                    📁 選擇桌面版圖片
+                  </button>
+                </div>
+                {desktopFile && (
+                  <div className="file-info">
+                    📄 已選擇：{desktopFile.name} ({(desktopFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </div>
+                )}
+                <div className="form-hint">
+                  建議尺寸：1920x600px，支援 JPG、PNG、WebP 格式
+                </div>
+              </div>
+              
+              {form.desktop_image_url && (
+                <div className="image-preview">
+                  <div className="image-preview-label">🖥️ 當前桌面版圖片預覽</div>
+                  <img
+                    src={getImageUrl(form.desktop_image_url)}
+                    alt="桌面版 Banner"
+                    className="preview-image"
+                  />
+                  <div className="image-info">點擊圖片可放大查看</div>
+                </div>
+              )}
+            </div>
 
-
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="img-pc">桌機圖片</label>
-          <input type="file" className="pt3 w70" accept="image/*" onChange={(e) => setDesktopFile(e.target.files?.[0] || null)} />
+            {/* 手機版圖片 */}
+            <div className={`file-upload-section ${mobileFile ? 'has-file' : ''}`}>
+              <div className="form-group">
+                <label className="form-label">📱 手機版圖片</label>
+                <div className="file-input-wrapper">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setMobileFile(e.target.files?.[0] || null)}
+                    className="file-input"
+                  />
+                  <button type="button" className="file-input-button">
+                    📁 選擇手機版圖片
+                  </button>
+                </div>
+                {mobileFile && (
+                  <div className="file-info">
+                    📄 已選擇：{mobileFile.name} ({(mobileFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </div>
+                )}
+                <div className="form-hint">
+                  建議尺寸：750x400px，支援 JPG、PNG、WebP 格式
+                </div>
+              </div>
+              
+              {form.mobile_image_url && (
+                <div className="image-preview">
+                  <div className="image-preview-label">📱 當前手機版圖片預覽</div>
+                  <img
+                    src={getImageUrl(form.mobile_image_url)}
+                    alt="手機版 Banner"
+                    className="preview-image"
+                  />
+                  <div className="image-info">點擊圖片可放大查看</div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25 ml132">
-          <img
-            src={getImageUrl(form.desktop_image_url)}
-            className="b-banner-img"
-          />
+        {/* 操作按鈕 */}
+        <div className="form-section">
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={() => router.push('/admin/banner')}
+              className="btn-secondary"
+              disabled={submitting}
+            >
+              <span>↩️</span>
+              返回列表
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="btn-primary"
+            >
+              <span>💾</span>
+              {submitting ? '更新中...' : '更新 Banner'}
+            </button>
+          </div>
         </div>
-
-
-
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="img-pc">手機圖片</label>
-          <input type="file" className="pt3 w70" accept="image/*" onChange={(e) => setMobileFile(e.target.files?.[0] || null)} />
-        </div>
-
-        <div className="b-form-group-2 w50 fl4 mb25 ml132">
-          <img
-            src={getImageUrl(form.mobile_image_url)}
-            className="b-banner-img"
-          />
-        </div>
-
-
-
-        <div className="fl4 w100 b-btnbox">
-          <button
-            onClick={handleSubmit}
-            className="b-btn-s2 b-btn-c4 mr20"
-          >
-            更新
-          </button>
-
-          <button
-          type="button"
-            onClick={() => router.push('/admin/banner')}
-            className="b-btn-s2 b-btn-c1 mr20"
-          >
-            返回
-          </button>
-        </div>
-
-
-
-
-
-
       </div>
     </div>
   )

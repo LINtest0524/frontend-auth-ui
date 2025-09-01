@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import dayjs from "dayjs";
 import Image from 'next/image'
 import { format } from 'date-fns'
+import '@/styles/pages/users.css'
 
 interface VerificationRecord {
   id: number
@@ -35,20 +36,14 @@ export default function IdVerificationAdminPage() {
   const [createdTo, setCreatedTo] = useState("")
 
 
-  const [hasSearched, setHasSearched] = useState(false);
-
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // 初始化時設定最近3天的日期範圍
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // 初始化時載入近3天資料，但不設定日期欄位的值
   useEffect(() => {
-    const today = dayjs();
-    const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
-    const todayStr = today.format("YYYY-MM-DD");
-    
-    setCreatedFrom(threeDaysAgo);
-    setCreatedTo(todayStr);
-    setHasSearched(true);
+    fetchRecords();
   }, []);
 
   const clearFilter = () => {
@@ -57,9 +52,11 @@ export default function IdVerificationAdminPage() {
     setCreatedFrom("");
     setType("");
     setCreatedTo("");
+    setPage(1);
     setTotalPages(1);
     setTotalCount(0);
-    setHasSearched(false);
+    setRecords([]);
+    setIsInitialLoad(true);
   };
 
 
@@ -100,7 +97,9 @@ export default function IdVerificationAdminPage() {
     };
 
 
-  const fetchRecords = async () => {
+  const fetchRecords = useCallback(async (forceUserSearch = false) => {
+    const actualIsInitialLoad = forceUserSearch ? false : isInitialLoad;
+    
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -110,17 +109,33 @@ export default function IdVerificationAdminPage() {
       if (username) params.append("username", username);
       if (type) params.append("type", type);
       if (status) params.append("status", status);
-      if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-      if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      
+      // 處理日期條件
+      if (actualIsInitialLoad) {
+        // 初始載入時使用近3日條件，但不影響日期欄位顯示
+        const today = dayjs();
+        const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
+        const todayStr = today.format("YYYY-MM-DD");
+        params.append("createdFrom", threeDaysAgo + " 00:00:00");
+        params.append("createdTo", todayStr + " 23:59:59");
+      } else {
+        // 用戶查詢時，只有設定日期時才加入日期篩選
+        if (createdFrom) {
+          params.append("createdFrom", createdFrom + " 00:00:00");
         }
-      );
+        
+        if (createdTo) {
+          params.append("createdTo", createdTo + " 23:59:59");
+        }
+      }
+
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin?${params.toString()}`;
+
+      const res = await fetch(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await res.json();
       setRecords(Array.isArray(data.data) ? data.data : []);
@@ -140,7 +155,7 @@ export default function IdVerificationAdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, limit, isInitialLoad, username, type, status, createdFrom, createdTo]);
 
 
   const handleReview = async (
@@ -182,11 +197,10 @@ export default function IdVerificationAdminPage() {
     }
   }
 
+  // 當分頁或每頁顯示數量改變時重新載入
   useEffect(() => {
-    if (hasSearched) {
-      fetchRecords()
-    }
-  }, [limit, page, hasSearched])
+    fetchRecords()
+  }, [page, limit])
 
   const renderPagination = () => {
     if (totalPages <= 1 || totalCount === 0) return null
@@ -205,16 +219,43 @@ export default function IdVerificationAdminPage() {
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15 mt-4">
-        <p>目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）</p>
-        <div className="tables_munber">
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>上一頁</button>
+      <div className="pagination">
+        <div className="pagination-info">
+          第 {page} 頁，共 {totalPages} 頁（總計 {totalCount} 筆資料）
+        </div>
+
+        <div className="pagination-buttons">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="pagination-btn"
+          >
+            ⬅️ 上一頁
+          </button>
+
           {pages.map((p, idx) =>
-            p === '...'
-              ? <span key={`ellipsis-${idx}`}>...</span>
-              : <button key={`page-${p}`} onClick={() => setPage(p as number)} className={page === p ? 'pagehover' : ''}>{p}</button>
+            p === "..." ? (
+              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p as number)}
+                className={`pagination-btn ${page === p ? "active" : ""}`}
+              >
+                {p}
+              </button>
+            )
           )}
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>下一頁</button>
+
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="pagination-btn"
+          >
+            下一頁 ➡️
+          </button>
         </div>
       </div>
     )
@@ -222,233 +263,346 @@ export default function IdVerificationAdminPage() {
 
 
   const handleSearch = () => {
-    setHasSearched(true);
-    setPage(1)  
-    fetchRecords()  
+    setIsInitialLoad(false);
+    setPage(1);
+    fetchRecords(true);
   }
 
 
   return (
-    <div className="b-bigbox-all w100">
-
-      <div className="b-ibox mb30">
-
-        <h1>身分驗證審核</h1>
-
-        <div className="b-ibox-s">
-
-
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="b-search-btn w100"
-          >
-            篩選
-            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
-          </button>
-
-
-
-          {isFilterOpen && (
-            <>
-
-              <div className="b-search-box fl1 w100 mt15">
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="username28">帳號</label>
-                  <input type="text" placeholder="帳號" id="username28" value={username} onChange={(e) => setUsername(e.target.value)} className="w60" />
-                </div>
-
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="status-select-28">類型</label>
-                  <select id="status-select-28" value={type} onChange={(e) => setType(e.target.value)} className="w60">
-                    <option value="">全部類型</option>
-                    <option value="ID_CARD">身分證驗證</option>
-                    <option value="BANK_ACCOUNT">銀行帳戶驗證</option>
-                  </select>
-                </div>
-
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="status-select-29">狀態</label>
-                  <select id="status-select-29" value={status} onChange={(e) => setStatus(e.target.value)} className="w60">
-                  <option value="">全部狀態</option>
-                  <option value="PENDING">未處理</option>
-                  <option value="PROCESSING">待處理</option>
-                  <option value="APPROVED">已通過</option>
-                  <option value="REJECTED">資料有誤</option>
-                  </select>
-                </div>
-
-
-                <div className="w50 fd1 mb25">
-
-                  <div className="b-form-group-2 fl4 w100 mb10">
-                    <label htmlFor="date-select-29">申請時間</label>
-                    <div className="w70 fl4">
-                      <input type="date" id="date-select-29" value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className="date-select flex1" />
-                      <span className="dateto">到</span>
-                      <input type="date" value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className="date-select flex1" />
-                    </div>
-                  </div>
-
-                  <div className="b-form-group-2 w100 fl4">
-                    <div className="b-date-fast fl4 w70 ml132">
-                      <button onClick={() => quickSetDate("today", "created")}>今日</button>
-                      <button onClick={() => quickSetDate("yesterday", "created")}>昨日</button>
-                      <button onClick={() => quickSetDate("3days", "created")}>近三日</button>
-                      <button onClick={() => quickSetDate("thisMonth", "created")}>本月</button>
-                      <button onClick={() => quickSetDate("lastMonth", "created")}>上月</button>
-                    </div>
-                  </div>
-
-                </div>
-
-
-
-                <div className="fl4 w100 b-btnbox">
-                  <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
-                  <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
-                </div>
-
-
-              </div>
-
-            </>
-          )}
-
+    <div className="users-container">
+      {/* 頁面標題區域 */}
+      <div className="users-header">
+        <h1>🔍 驗證審核</h1>
+        <div className="users-header-actions">
+          <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
+            📊 管理用戶驗證申請與審核狀態
+          </div>
         </div>
       </div>
 
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <button
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="filter-toggle"
+        >
+          <span>🔍 篩選條件</span>
+          <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+        </button>
 
+        {isFilterOpen && (
+          <div className="filter-content">
+            <div className="filter-grid">
+              <div className="form-group">
+                <label htmlFor="username-search" className="form-label">帳號</label>
+                <input 
+                  type="text" 
+                  id="username-search"
+                  placeholder="請輸入帳號" 
+                  value={username} 
+                  onChange={(e) => setUsername(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
 
+              <div className="form-group">
+                <label htmlFor="type-select" className="form-label">驗證類型</label>
+                <select 
+                  id="type-select" 
+                  value={type} 
+                  onChange={(e) => setType(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部類型</option>
+                  <option value="ID_CARD">🆔 身分證驗證</option>
+                  <option value="BANK_ACCOUNT">🏦 銀行帳戶驗證</option>
+                </select>
+              </div>
 
+              <div className="form-group">
+                <label htmlFor="status-select" className="form-label">審核狀態</label>
+                <select 
+                  id="status-select" 
+                  value={status} 
+                  onChange={(e) => setStatus(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部狀態</option>
+                  <option value="PENDING">⏳ 未處理</option>
+                  <option value="PROCESSING">🔄 待處理</option>
+                  <option value="APPROVED">✅ 已通過</option>
+                  <option value="REJECTED">❌ 資料有誤</option>
+                </select>
+              </div>
+            </div>
 
-
-        {loading && <p>載入中...</p>}
-
-        
-
-        {!loading && hasSearched && (
-          <>
-
-
-            <div className="b-ibox">
-
-              <div className="b-ibox-s">
-
-                <div className="w100 fo5 mb15">
-
-
-                  <div className="w50 fl4">
-                    <label htmlFor="page11">每頁&nbsp;</label>
-                    <input
-                      type="number"
-                      id="page11"
-                      value={inputLimit}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (!isNaN(val)) setInputLimit(val);
-                      }}
-                      min={1}
-                      className="txtbox1 mr20"
-                    />
-                    <button
-                      onClick={() => {
-                        const validLimit = Math.max(1, inputLimit);
-                        setLimit(validLimit);
-                      }}
-                      className="ml10 b-btn-s2 b-btn-c4"
-                    >
-                      顯示筆數
-                    </button>
-                  </div>
-                
+            <div className="filter-row">
+              <div className="form-group date-range-group">
+                <label htmlFor="created-date-from" className="form-label">申請時間範圍</label>
+                <div className="date-inputs">
+                  <input 
+                    type="date" 
+                    id="created-date-from"
+                    value={createdFrom} 
+                    onChange={(e) => setCreatedFrom(e.target.value)} 
+                    className="form-input" 
+                  />
+                  <span className="date-separator">至</span>
+                  <input 
+                    type="date" 
+                    value={createdTo} 
+                    onChange={(e) => setCreatedTo(e.target.value)} 
+                    className="form-input" 
+                  />
                 </div>
-
-            
-
-             
-
-
-                    <table className="b-table-box admin-table mb15">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>帳號</th>
-                          <th>類型</th>
-                          <th>申請時間</th>
-                          <th>圖片</th>
-                          <th>狀態</th>
-                          <th>備註</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {records.map((rec) => (
-                          <tr key={rec.id} className="text-center bg-white even:bg-gray-50">
-                            <td>{rec.id}</td>
-                            <td>{rec.username}</td>
-                            <td>{rec.type === 'ID_CARD' ? '身分證驗證' : '銀行帳戶驗證'}</td>
-                            <td>{format(new Date(rec.createdAt), 'yyyy-MM-dd HH:mm:ss')}</td>
-                            <td>
-                              <button className="text-blue-600 underline text-sm" onClick={() => setPreviewImages(rec.images)}>預覽</button>
-                            </td>
-                            <td>
-                              <select defaultValue={rec.status} onChange={(e) => handleReview(rec.id, e.target.value as 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED', notes[rec.id] || '')} className="border px-2 py-1 rounded">
-                                <option value="PENDING">未處理</option>
-                                <option value="PROCESSING">待處理</option>
-                                <option value="APPROVED">已通過</option>
-                                <option value="REJECTED">資料有誤</option>
-                              </select>
-                            </td>
-                            <td>
-                              <input 
-                                value={notes[rec.id] || ''} 
-                                placeholder="備註..." 
-                                className="border px-2 py-1 rounded w-60" 
-                                onChange={(e) => handleNoteChange(rec.id, e.target.value)}
-                                onBlur={() => saveNote(rec.id)}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                      
-             
-                    
-             
-
-                  {!loading && hasSearched && records.length === 0 && (
-                    <div className="b-no-information w100 fd5">
-                      <img src="/no-information.webp" alt="無資料" className="mb25" />
-                      <p>查無資料</p>
-                    </div>
-                  )}
-
-            {!loading && renderPagination()}
-
-            {previewImages && (
- 
-                <div className="b-lightbox-1">
-                  <h2 className="mb15">圖片預覽</h2>
-                  <div className="b-id-imgbox mb25">
-                    {previewImages.map((url, i) => (
-                      <Image key={i} src={url} alt={`preview-${i}`} width={300} height={400} className="b-id-img" />
-                    ))}
-                  </div>
-                  <button onClick={() => setPreviewImages(null)} className="b-id-imgbox-X">X</button>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today", "created")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday", "created")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days", "created")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetDate("thisMonth", "created")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth", "created")} className="btn-quick-date">上月</button>
                 </div>
-      
-            )}
+              </div>
+            </div>
 
+            <div className="filter-actions">
+              <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
+              <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                  setPage(1);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
+
+            <div className="export-control">
+              <div style={{ color: '#666', fontSize: '14px' }}>
+                📋 身份驗證管理系統
+              </div>
+            </div>
+
+            <div className="pagination-info">
+              共 {totalCount} 筆申請
             </div>
           </div>
 
-        </>
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>申請人</th>
+                <th>驗證類型</th>
+                <th>申請時間</th>
+                <th>證件圖片</th>
+                <th>審核狀態</th>
+                <th>備註</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((rec) => (
+                <tr key={rec.id}>
+                  <td>#{rec.id}</td>
+                  <td>
+                    <div className="user-info">
+                      <div className="user-username">{rec.username}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="login-info">
+                      {rec.type === 'ID_CARD' ? '🆔 身分證驗證' : '🏦 銀行帳戶驗證'}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="login-info">
+                      📅 {format(new Date(rec.createdAt), 'yyyy/MM/dd HH:mm')}
+                    </div>
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => setPreviewImages(rec.images)}
+                      className="status-toggle status-active"
+                      style={{ fontSize: '12px', padding: '4px 8px' }}
+                    >
+                      🖼️ 預覽圖片
+                    </button>
+                  </td>
+                  <td>
+                    <select 
+                      defaultValue={rec.status} 
+                      onChange={(e) => handleReview(rec.id, e.target.value as 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED', notes[rec.id] || '')} 
+                      className={`status-toggle ${
+                        rec.status === "APPROVED" ? "status-active" : 
+                        rec.status === "PENDING" ? "status-inactive" : 
+                        rec.status === "PROCESSING" ? "status-inactive" : "blacklist-yes"
+                      }`}
+                      style={{ fontSize: '12px', padding: '4px 8px' }}
+                    >
+                      <option value="PENDING">⏳ 未處理</option>
+                      <option value="PROCESSING">🔄 待處理</option>
+                      <option value="APPROVED">✅ 已通過</option>
+                      <option value="REJECTED">❌ 資料有誤</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input 
+                      value={notes[rec.id] || ''} 
+                      placeholder="輸入備註..." 
+                      className="form-input"
+                      style={{ fontSize: '12px', padding: '4px 8px', width: '150px' }}
+                      onChange={(e) => handleNoteChange(rec.id, e.target.value)}
+                      onBlur={() => saveNote(rec.id)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* 無資料顯示 */}
+          {!loading && records.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的身份驗證申請</p>
+            </div>
+          )}
+
+          {/* 分頁控制 */}
+          {renderPagination()}
+        </div>
       )}
 
+      {/* 圖片預覽彈窗 */}
+      {previewImages && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => setPreviewImages(null)}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '20px',
+              borderBottom: '1px solid #eee',
+              paddingBottom: '15px'
+            }}>
+              <h2 style={{ margin: 0, color: '#333', fontSize: '18px' }}>🖼️ 證件圖片預覽</h2>
+              <button 
+                onClick={() => setPreviewImages(null)}
+                style={{
+                  background: '#ff4757',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '30px',
+                  height: '30px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '15px', 
+              justifyContent: 'center',
+              minWidth: '300px'
+            }}>
+              {previewImages.map((url, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    border: '2px solid #ddd', 
+                    borderRadius: '8px', 
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <Image 
+                    src={url} 
+                    alt={`證件圖片-${i + 1}`} 
+                    width={300} 
+                    height={400} 
+                    style={{ objectFit: 'contain', display: 'block' }}
+                  />
+                  <div style={{
+                    padding: '8px',
+                    backgroundColor: '#f8f9fa',
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    證件圖片 {i + 1}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-
   )
 }

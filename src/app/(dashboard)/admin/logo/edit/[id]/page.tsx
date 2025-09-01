@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import '@/styles/pages/logo-form.css'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -131,109 +132,242 @@ export default function LogoEditPage() {
     }
   }
 
+  const handleFileSelect = (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      alert('只接受 JPG / PNG / WEBP / GIF 圖片')
+      return
+    }
+    setImage(file)
+    setPreview(URL.createObjectURL(file))
+  }
+
+  const handleRemoveImage = () => {
+    setImage(null)
+    setPreview('')
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
+  }
+
+  const handleKeepCurrentImage = () => {
+    setImage(null)
+    setPreview('')
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
+  }
+
   if (fetchLoading) {
     return (
-      <div className="b-ibox">
-        <h1>編輯 LOGO</h1>
-        <div className="b-ibox-s">載入中...</div>
+      <div className="logo-form-container">
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>編輯 LOGO</h1>
+    <div className="logo-form-container">
+      {/* 頁面標題區域 */}
+      <div className="logo-form-header">
+        <h1>✏️ 編輯 LOGO</h1>
+      </div>
 
-      <div className="b-ibox-s">
-        <form onSubmit={handleSubmit} className="w100">
-          
-          <div className="b-form-group-1 w100 fl4">
-            <label>LOGO 標題</label>
-            <input
-              type="text"
-              className="w70"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="請輸入 LOGO 標題"
-              required
-            />
-          </div>
-
-          <div className="b-form-group-2 w50 fl4 mb10">
-            <label htmlFor="logo-img">LOGO 圖片</label>
-            <input
-              type="file"
-              id="logo-img"
-              className="pt3 w70"
-              ref={imageInputRef}
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={e => {
-                const file = e.target.files?.[0] || null
-                if (file && !ACCEPTED_TYPES.includes(file.type)) {
-                  alert('只接受 JPG / PNG / WEBP / GIF 圖片')
-                  return
-                }
-                setImage(file)
-                setPreview(file ? URL.createObjectURL(file) : '')
-              }}
-            />
-            <div className="mt5 text-sm text-gray-600">
-              如不選擇新圖片，將保持原有圖片
+      {/* 表單內容 */}
+      <div className="logo-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本設定
             </div>
-          </div>
-
-          <div className="b-form-group-2 w50 fl4 mb25 ml132">
-            {preview ? (
-              <img
-                src={preview}
-                alt="新 LOGO 預覽"
-                className="b-banner-img"
-                style={{ maxWidth: '200px', maxHeight: '100px', objectFit: 'contain' }}
-              />
-            ) : currentImageUrl ? (
-              <div>
-                <div className="mb5 text-sm">目前的 LOGO：</div>
-                <img
-                  src={`${API_BASE}${currentImageUrl}`}
-                  alt="目前 LOGO"
-                  className="b-banner-img"
-                  style={{ maxWidth: '200px', maxHeight: '100px', objectFit: 'contain' }}
-                />
-              </div>
-            ) : null}
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>狀態</label>
-            <div className="w70">
-              <label className="b-checkbox">
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="title" className="form-label required">📋 LOGO 標題</label>
                 <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
+                  type="text"
+                  id="title"
+                  className="form-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="請輸入 LOGO 標題"
+                  required
                 />
-                啟用 LOGO
-              </label>
+                <div className="form-hint">
+                  為您的 LOGO 設定一個容易識別的標題
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="fl4 w100 b-btnbox">
-            <button
-              type="submit"
-              disabled={loading}
-              className="b-btn-s2 b-btn-c4 mr20"
-            >
-              {loading ? '更新中...' : '更新送出'}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push('/admin/logo')}
-              className="b-btn-s2 b-btn-c1"
-            >
-              取消
-            </button>
+          {/* 圖片管理區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🖼️</span>
+              圖片管理
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group po-r">
+                <label className="form-label">🖼️ LOGO 圖片</label>
+                
+                {/* 目前圖片顯示 */}
+                {currentImageUrl && !preview && (
+                  <div className="image-preview-container">
+                    <div className="image-preview">
+                      <div style={{ marginBottom: '12px', color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>
+                        📷 目前的 LOGO
+                      </div>
+                      <img 
+                        src={`${API_BASE}${currentImageUrl}`} 
+                        alt="目前 LOGO" 
+                      />
+                      <div className="image-actions">
+                        <button
+                          type="button"
+                          className="btn-change-image"
+                          onClick={() => imageInputRef.current?.click()}
+                        >
+                          🔄 更換圖片
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 新圖片預覽 */}
+                {preview && (
+                  <div className="image-preview-container">
+                    <div className="image-preview">
+                      <div style={{ marginBottom: '12px', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
+                        ✨ 新的 LOGO 預覽
+                      </div>
+                      <img src={preview} alt="新 LOGO 預覽" />
+                      <div className="image-info">
+                        📄 {image?.name} ({((image?.size || 0) / 1024).toFixed(1)} KB)
+                      </div>
+                      <div className="image-actions">
+                        <button
+                          type="button"
+                          className="btn-change-image"
+                          onClick={() => imageInputRef.current?.click()}
+                        >
+                          🔄 更換圖片
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-remove-image"
+                          onClick={handleKeepCurrentImage}
+                        >
+                          ↩️ 保持原圖
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 上傳區域 (當沒有目前圖片時) */}
+                {!currentImageUrl && !preview && (
+                  <div 
+                    className="file-upload-area"
+                    onClick={() => imageInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.add('dragover')
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('dragover')
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.remove('dragover')
+                      const file = e.dataTransfer.files[0]
+                      if (file) handleFileSelect(file)
+                    }}
+                  >
+                    <div className="file-upload-icon">📁</div>
+                    <div className="file-upload-text">點擊選擇圖片或拖拽到此處</div>
+                    <div className="file-upload-hint">支援 JPG、PNG、WEBP、GIF 格式</div>
+                  </div>
+                )}
+
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  className="file-input-hidden"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileSelect(file)
+                  }}
+                />
+                
+                <div className="form-hint">
+                  {currentImageUrl 
+                    ? '如不選擇新圖片，將保持原有圖片。建議上傳高品質的 LOGO 圖片，檔案大小不超過 5MB'
+                    : '建議上傳高品質的 LOGO 圖片，檔案大小不超過 5MB'
+                  }
+                </div>
+              </div>
+            </div>
           </div>
 
+          {/* 狀態設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📊</span>
+              狀態設定
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label className="form-label">📊 LOGO 狀態</label>
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                  />
+                  <label htmlFor="isActive">啟用 LOGO</label>
+                </div>
+                <div className="status-preview">
+                  <span className={`status-badge ${isActive ? 'status-active' : 'status-inactive'}`}>
+                    {isActive ? '✅ 啟用' : '❌ 停用'}
+                  </span>
+                </div>
+                <div className="form-hint">
+                  停用的 LOGO 不會在前台顯示
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 操作按鈕 */}
+          <div className="form-section">
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => router.push('/admin/logo')}
+                className="btn-secondary"
+                disabled={loading}
+              >
+                <span>↩️</span>
+                返回
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+              >
+                <span>💾</span>
+                {loading ? '更新中...' : '更新 LOGO'}
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     </div>

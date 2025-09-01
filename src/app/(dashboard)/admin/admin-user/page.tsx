@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/hooks/use-user-store";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/user";
+import "@/styles/pages/admin-user.css";
 
 const roleMap: Record<string, string> = {
   SUPER_ADMIN: "超級管理員",
@@ -137,32 +138,42 @@ export default function AdminUserListPage() {
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15">
-        <p>
-          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
-        </p>
+      <div className="pagination">
+        <div className="pagination-info">
+          第 {page} 頁，共 {totalPages} 頁（總計 {totalCount} 筆資料）
+        </div>
 
-        <div className="tables_munber">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-            上一頁
+        <div className="pagination-buttons">
+          <button 
+            onClick={() => setPage((p) => Math.max(1, p - 1))} 
+            disabled={page === 1}
+            className="pagination-btn"
+          >
+            ⬅️ 上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>...</span>
+              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
+                ...
+              </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setPage(p as number)}
-                className={page === p ? "pagehover" : ""}
+                className={`pagination-btn ${page === p ? "active" : ""}`}
               >
                 {p}
               </button>
             )
           )}
 
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-            下一頁
+          <button 
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
+            disabled={page === totalPages}
+            className="pagination-btn"
+          >
+            下一頁 ➡️
           </button>
         </div>
       </div>
@@ -170,98 +181,165 @@ export default function AdminUserListPage() {
   };
 
   return (
-    <div className="b-ibox">
-      <h1>管理員列表</h1>
-
-      <div className="b-ibox-s">
-
-        {canModify && (
-          <button onClick={() => router.push("/admin/admin-user/new")} className="b-btn-s2 b-btn-c4 mb15">
-            新增管理員
-          </button>
-        )}
-
-        <div className="w100 fo5 mb15">
-          <div className="w50 fl4">
-            <label htmlFor="page11">每頁&nbsp;</label>
-            <input
-              type="number"
-              id="page11"
-              value={inputLimit}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                if (!isNaN(val)) setInputLimit(val);
-              }}
-              min={1}
-              className="txtbox1 mr20"
-            />
-            <button
-              onClick={() => {
-                const validLimit = Math.max(1, inputLimit);
-                setLimit(validLimit);
-              }}
-              className="ml10 b-btn-s2 b-btn-c4"
+    <div className="admin-user-container">
+      {/* 頁面標題區域 */}
+      <div className="admin-user-header">
+        <h1>👥 管理員列表</h1>
+        <div className="admin-user-header-actions">
+          {canModify && (
+            <button 
+              onClick={() => router.push("/admin/admin-user/new")} 
+              className="btn-primary"
             >
-              顯示筆數
+              ✨ 新增管理員
             </button>
-          </div>
+          )}
+        </div>
+      </div>
 
-          <div className="w50 fl6">
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <div className="filter-grid">
+          <div className="form-group">
+            <label htmlFor="username-search" className="form-label">帳號搜尋</label>
             <input
               type="text"
-              placeholder="帳號"
+              id="username-search"
+              placeholder="請輸入帳號"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="max150 mr20"
+              className="form-input"
             />
-            <button onClick={handleSearch} className="b-btn-s2 b-btn-c4">
-              查詢
-            </button>
           </div>
         </div>
 
-        {loading ? (
-          <p>載入中...</p>
-        ) : (
-          <table className="b-table-box admin-table mb15">
+        <div className="filter-actions">
+          <button onClick={handleSearch} className="btn-search">
+            🔍 查詢
+          </button>
+        </div>
+      </div>
+
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
+            <div className="pagination-info">
+              共 {totalCount} 筆資料
+            </div>
+          </div>
+
+          {/* 現代化表格 */}
+          <table className="modern-table">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>帳號</th>
+                <th>帳號資訊</th>
                 <th>角色</th>
                 <th>狀態</th>
-                <th>上次登入時間</th>
-                <th>上次登入IP</th>
+                <th>登入資訊</th>
                 <th>創建人</th>
-                {canSeeActions && <th className="th-last">操作</th>}
+                {canSeeActions && <th>操作</th>}
               </tr>
             </thead>
             <tbody>
               {adminUsers.map((admin) => (
                 <tr key={admin.id}>
-                  <td>{admin.id}</td>
-                  <td>{admin.username}</td>
-                  <td>{roleMap[admin.role || ""] ?? admin.role ?? "-"}</td>
-                  <td>{statusMap[admin.status]}</td>
-                  <td>{admin.last_login_at ? new Date(admin.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                  <td>{admin.last_login_ip || "-"}</td>
-                  <td>{admin.created_by?.username || "-"}</td>
+                  <td>#{admin.id}</td>
+                  <td>
+                    <div className="user-info">
+                      <div className="user-username">{admin.username}</div>
+                      <div className="user-id">ID: {admin.id}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`role-badge ${
+                      admin.role === "SUPER_ADMIN" ? "role-super-admin" :
+                      admin.role === "GLOBAL_ADMIN" ? "role-global-admin" :
+                      admin.role === "AGENT_OWNER" ? "role-agent-owner" :
+                      admin.role === "AGENT_SUPPORT" ? "role-agent-support" :
+                      "role-user"
+                    }`}>
+                      {roleMap[admin.role || ""] ?? admin.role ?? "-"}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${
+                      admin.status === "ACTIVE" ? "status-active" :
+                      admin.status === "INACTIVE" ? "status-inactive" :
+                      "status-banned"
+                    }`}>
+                      {statusMap[admin.status]}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="login-info">
+                      <div>🕒 {admin.last_login_at ? new Date(admin.last_login_at).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "未曾登入"}</div>
+                      <div>🌐 {admin.last_login_ip || "無記錄"}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="created-by">
+                      👤 {admin.created_by?.username || "系統"}
+                    </div>
+                  </td>
                   {canSeeActions && (
-                    <td className="fl4">
+                    <td>
                       {canModify ? (
-                        <>
-                          <button onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)} className="b-btn-s3 b-btn-c1 mlr10">
-                            編輯
+                        <div className="action-buttons">
+                          <button 
+                            onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)} 
+                            className="btn-edit"
+                          >
+                            ✏️ 編輯
                           </button>
-                          <button onClick={() => router.push(`/admin/admin-user/${admin.id}/reset-password`)} className="b-btn-s3 b-btn-c2 mlr10">
-                            重設密碼
+                          <button 
+                            onClick={() => router.push(`/admin/admin-user/${admin.id}/reset-password`)} 
+                            className="btn-reset"
+                          >
+                            🔑 重設密碼
                           </button>
-                          <button onClick={() => handleDelete(admin.id)} className="b-btn-s3 b-btn-c3 mlr10">
-                            刪除
+                          <button 
+                            onClick={() => handleDelete(admin.id)} 
+                            className="btn-delete"
+                          >
+                            🗑️ 刪除
                           </button>
-                        </>
+                        </div>
                       ) : (
-                        <span>僅限代理商與超級管理員</span>
+                        <div className="no-permission">
+                          僅限代理商與超級管理員
+                        </div>
                       )}
                     </td>
                   )}
@@ -269,17 +347,19 @@ export default function AdminUserListPage() {
               ))}
             </tbody>
           </table>
-        )}
 
-        {!loading && hasSearched && adminUsers.length === 0 && (
-          <div className="b-no-information w100 fd5">
-            <img src="/no-information.webp" alt="無資料" className="mb25" />
-            <p>查無資料</p>
-          </div>
-        )}
+          {/* 無資料顯示 */}
+          {!loading && hasSearched && adminUsers.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的管理員</p>
+            </div>
+          )}
 
-        {renderPagination()}
-      </div>
+          {/* 分頁控制 */}
+          {renderPagination()}
+        </div>
+      )}
     </div>
   );
 }

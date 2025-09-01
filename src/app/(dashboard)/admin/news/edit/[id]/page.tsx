@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import SunEditor from '@/components/SunEditor'
+import '@/styles/pages/news-form.css'
 
 type NewsDetail = {
   id: number
@@ -24,7 +25,10 @@ export default function EditNewsPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [fetchLoading, setFetchLoading] = useState(true)
+  const [preview, setPreview] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
   const newsId = params.id
   
   const [formData, setFormData] = useState({
@@ -67,6 +71,11 @@ export default function EditNewsPage() {
               return taiwanTime.toISOString().slice(0, 16);
             })(),
           })
+          
+          // 如果有現有圖片，設定預覽
+          if (news.image_url) {
+            setPreview(`${process.env.NEXT_PUBLIC_API_BASE}${news.image_url}`)
+          }
         } else {
           alert('無法載入新聞資料')
           router.push('/admin/news')
@@ -91,14 +100,29 @@ export default function EditNewsPage() {
     }))
   }
 
+  const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, summary: e.target.value }))
+  }
+
   const handleEditorChange = (content: string) => {
     setFormData(prev => ({ ...prev, content }))
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
+  const handleFileSelect = (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      alert('只接受 JPG / PNG / WEBP 圖片')
+      return
+    }
+    setSelectedFile(file)
+    setPreview(URL.createObjectURL(file))
+    
+    // 自動上傳
+    handleImageUpload(file)
+  }
+
+  const handleImageUpload = async (file: File) => {
     setUploading(true)
     try {
       const token = localStorage.getItem('token')
@@ -124,6 +148,16 @@ export default function EditNewsPage() {
       alert('圖片上傳失敗')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null)
+    setPreview('')
+    setFormData(prev => ({ ...prev, image_url: '' }))
+    setUploading(false)
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
     }
   }
 
@@ -160,189 +194,309 @@ export default function EditNewsPage() {
 
   if (fetchLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-600">載入中...</p>
+      <div className="news-form-container">
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">載入新聞資料中...</div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">編輯最新消息</h1>
-        <button
-          onClick={() => router.push('/admin/news')}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          返回列表
-        </button>
+    <div className="news-form-container">
+      {/* 載入遮罩 */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">正在更新新聞...</div>
+          </div>
+        </div>
+      )}
+
+      {/* 頁面標題區域 */}
+      <div className="news-form-header">
+        <h1>✏️ 編輯最新消息</h1>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 標題 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              標題 *
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 摘要 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              摘要 *
-            </label>
-            <textarea
-              name="summary"
-              value={formData.summary}
-              onChange={handleInputChange}
-              required
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 內容 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              內容 (富文本編輯器) *
-            </label>
-            <div className="border border-gray-300 rounded-md">
-              <SunEditor
-                value={formData.content}
-                onChange={handleEditorChange}
-                placeholder="請輸入新聞內容..."
-                height="400px"
-              />
+      {/* 表單內容 */}
+      <div className="news-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本資訊
             </div>
-            <small className="text-gray-500 text-sm mt-1 block">
-              提示：SunEditor 專業級富文本編輯器，支援豐富的格式化功能、圖片上傳、表格、程式碼等
-            </small>
-          </div>
-
-          {/* 圖片上傳 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              圖片
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={uploading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {uploading && <p className="text-sm text-blue-600 mt-1">上傳中...</p>}
-            {formData.image_url && (
-              <div className="mt-2">
-                <img
-                  src={`${process.env.NEXT_PUBLIC_API_BASE}${formData.image_url}`}
-                  alt="預覽"
-                  className="max-w-xs h-auto rounded"
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="title" className="form-label required">📰 新聞標題</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  className="form-input"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="請輸入新聞標題"
                 />
-                <button
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
-                  className="mt-2 text-sm text-red-600 hover:text-red-800"
-                >
-                  移除圖片
-                </button>
+                <div className="form-hint">
+                  建議標題簡潔明瞭，能夠吸引讀者注意
+                </div>
               </div>
-            )}
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 分類 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                分類
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="GENERAL">一般消息</option>
-                <option value="ANNOUNCEMENT">重要公告</option>
-                <option value="PROMOTION">優惠活動</option>
-                <option value="UPDATE">系統更新</option>
-              </select>
-            </div>
-
-            {/* 狀態 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                狀態
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="DRAFT">草稿</option>
-                <option value="ACTIVE">已發布</option>
-                <option value="INACTIVE">未發布</option>
-              </select>
+              <div className="form-group">
+                <label htmlFor="summary" className="form-label required">📝 新聞摘要</label>
+                <textarea
+                  id="summary"
+                  name="summary"
+                  className="form-textarea"
+                  rows={3}
+                  value={formData.summary}
+                  onChange={handleSummaryChange}
+                  placeholder="請輸入新聞摘要，可以使用 Enter 換行"
+                  required
+                />
+                <div className="form-hint">
+                  摘要會顯示在新聞列表中，建議控制在 100-200 字內
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 發布時間 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              發布時間
-            </label>
-            <input
-              type="datetime-local"
-              name="publish_date"
-              value={formData.publish_date}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* 內容編輯區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>✏️</span>
+              內容編輯
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label className="form-label required">📄 新聞內容</label>
+                <div className="editor-container">
+                  <SunEditor
+                    value={formData.content}
+                    onChange={handleEditorChange}
+                    placeholder="請輸入新聞內容..."
+                    height="400px"
+                  />
+                </div>
+                <div className="form-hint">
+                  支援豐富的格式化功能、圖片上傳、表格、程式碼等
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* 置頂 */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="is_featured"
-              checked={formData.is_featured}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label className="ml-2 block text-sm text-gray-900">
-              設為置頂
-            </label>
+          {/* 圖片設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🖼️</span>
+              圖片設定
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group po-r">
+                <label className="form-label">🖼️ 新聞圖片</label>
+                
+                {!preview ? (
+                  <div 
+                    className="file-upload-area"
+                    onClick={() => imageInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.add('dragover')
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('dragover')
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.remove('dragover')
+                      const file = e.dataTransfer.files[0]
+                      if (file) handleFileSelect(file)
+                    }}
+                  >
+                    <div className="file-upload-icon">📁</div>
+                    <div className="file-upload-text">點擊選擇圖片或拖拽到此處</div>
+                    <div className="file-upload-hint">支援 JPG、PNG、WebP 格式，建議尺寸 1200x630 像素</div>
+                  </div>
+                ) : (
+                  <div className="image-preview-container">
+                    <div className="image-preview">
+                      <img src={preview} alt="新聞預覽" />
+                      <div className="image-info">
+                        📄 {selectedFile?.name || '現有圖片'} {selectedFile && `(${((selectedFile?.size || 0) / 1024).toFixed(1)} KB)`}
+                      </div>
+                      {uploading && (
+                        <div className="upload-status">
+                          ⏳ 上傳中...
+                        </div>
+                      )}
+                      <div className="image-actions">
+                        <button
+                          type="button"
+                          className="btn-change-image"
+                          onClick={() => imageInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          🔄 更換圖片
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-remove-image"
+                          onClick={handleRemoveImage}
+                          disabled={uploading}
+                        >
+                          🗑️ 移除圖片
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* 隱藏的檔案輸入元素 */}
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  className="file-input-hidden"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileSelect(file)
+                  }}
+                />
+                
+                <div className="form-hint">
+                  建議上傳高品質的新聞圖片，檔案大小不超過 5MB
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* 提交按鈕 */}
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => router.push('/admin/news')}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
-            >
-              {loading ? '更新中...' : '更新'}
-            </button>
+          {/* 分類與狀態區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📊</span>
+              分類與狀態
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="category" className="form-label">📂 新聞分類</label>
+                <div className="enhanced-select">
+                  <select
+                    id="category"
+                    name="category"
+                    className="form-select"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                  >
+                    <option value="GENERAL">📰 一般消息</option>
+                    <option value="ANNOUNCEMENT">📢 重要公告</option>
+                    <option value="PROMOTION">🎉 優惠活動</option>
+                    <option value="UPDATE">🔄 系統更新</option>
+                  </select>
+                </div>
+                <div className="form-hint">
+                  選擇適合的分類有助於用戶快速找到相關內容
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="status" className="form-label">📊 發布狀態</label>
+                <div className="enhanced-select">
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="DRAFT">📝 草稿</option>
+                    <option value="ACTIVE">✅ 已發布</option>
+                    <option value="INACTIVE">❌ 未發布</option>
+                  </select>
+                </div>
+                <div className="status-preview">
+                  <span className={`status-badge status-${formData.status.toLowerCase()}`}>
+                    {formData.status === 'DRAFT' ? '📝 草稿' : 
+                     formData.status === 'ACTIVE' ? '✅ 已發布' : '❌ 未發布'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 發布設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>⏰</span>
+              發布設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="publish_date" className="form-label">⏰ 發布時間</label>
+                <input
+                  type="datetime-local"
+                  id="publish_date"
+                  name="publish_date"
+                  className="form-input"
+                  value={formData.publish_date}
+                  onChange={handleInputChange}
+                />
+                <div className="form-hint">
+                  設定新聞的發布時間，可以預約未來發布
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">📌 特殊設定</label>
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="is_featured"
+                    name="is_featured"
+                    checked={formData.is_featured}
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="is_featured">設為置頂新聞</label>
+                </div>
+                <div className="form-hint">
+                  置頂新聞會優先顯示在新聞列表頂部
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 操作按鈕 */}
+          <div className="form-section">
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => router.push('/admin/news')}
+                className="btn-secondary"
+                disabled={loading}
+              >
+                <span>↩️</span>
+                返回
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+              >
+                <span>💾</span>
+                {loading ? '更新中...' : '更新新聞'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

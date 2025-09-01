@@ -1,0 +1,383 @@
+/* Logo管理頁面現代化樣式 */
+
+.logo-admin-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
+  width: 100%;
+}
+
+.logo-admin-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+}
+
+.logo-admin-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-admin-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+}
+
+.content-section {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.table-controls {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.table-info {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modern-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.modern-table th:hover {
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.modern-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background: #f8fafc;
+  transform: scale(1.001);
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 60px;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.logo-preview:hover img {
+  transform: scale(1.1);
+}
+
+.logo-preview-placeholder {
+  color: #9ca3af;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+}
+
+.logo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.logo-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.logo-id {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.company-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.company-name {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.company-code {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.date-info {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-edit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.no-data img {
+  max-width: 200px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.no-data p {
+  font-size: 16px;
+  margin: 0;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.loading-spinner div {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .logo-admin-container {
+    padding: 16px;
+  }
+  
+  .logo-admin-header {
+    padding: 24px;
+  }
+  
+  .logo-admin-header h1 {
+    font-size: 24px;
+  }
+  
+  .modern-table {
+    font-size: 14px;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .logo-preview {
+    width: 60px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-admin-header-actions {
+    width: 100%;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .action-buttons {
+    gap: 4px;
+  }
+  
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-section {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* 表格行懸停效果 */
+.modern-table tbody tr:hover .logo-preview {
+  border-color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+}

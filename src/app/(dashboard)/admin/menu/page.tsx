@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import '@/styles/pages/menu-admin.css'
 
 interface MenuItem {
   id: number
@@ -200,41 +201,67 @@ export default function MenuManagePage() {
 
   // 渲染選單項目
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
-    const indent = '　'.repeat(level) // 使用全形空格來表示層級
     const rows = []
     
     // 主項目行
     rows.push(
-      <tr key={item.id}>
-        <td>{indent}{item.title}</td>
-        <td>{item.url || '-'}</td>
+      <tr key={item.id} className={`menu-level-${level + 1}`}>
+        <td className={level > 0 ? `menu-indent-${level}` : ''}>
+          <div className="menu-title">
+            {level > 0 && <span className="menu-level-indicator"></span>}
+            {item.title}
+          </div>
+        </td>
         <td>
-          <span className={item.status === 'active' ? 'status-active' : 'status-inactive'}>
-            {item.status === 'active' ? '啟用' : '停用'}
+          {item.url ? (
+            <div className="menu-url" title={item.url}>
+              {item.url}
+            </div>
+          ) : (
+            <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>無連結</span>
+          )}
+        </td>
+        <td>
+          <span className={`status-badge ${item.status === 'active' ? 'status-active' : 'status-inactive'}`}>
+            {item.status === 'active' ? '✅ 啟用' : '❌ 停用'}
           </span>
         </td>
-        <td>{item.device_type}</td>
-        <td>{item.sort_order}</td>
-        <td>第 {level + 1} 層</td>
-        <td className="fl4">
-          <button
-            onClick={() => router.push(`/admin/menu/edit/${item.id}`)}
-            className="b-btn-s3 b-btn-c1 mlr10"
-          >
-            編輯
-          </button>
-          <button
-            onClick={() => handleToggleStatus(item.id, item.status)}
-            className={`b-btn-s3 ${item.status === 'active' ? 'b-btn-c2' : 'b-btn-c4'} mlr10`}
-          >
-            {item.status === 'active' ? '停用' : '啟用'}
-          </button>
-          <button
-            onClick={() => handleDelete(item.id)}
-            className="b-btn-s3 b-btn-c3 mlr10"
-          >
-            刪除
-          </button>
+        <td>
+          <span className={`device-type-badge device-${item.device_type}`}>
+            {item.device_type === 'desktop' ? '🖥️ 桌面' : 
+             item.device_type === 'mobile' ? '📱 手機' : '📱🖥️ 全部'}
+          </span>
+        </td>
+        <td>
+          <span className="sort-order">{item.sort_order}</span>
+        </td>
+        <td>
+          <span className="level-badge">第 {level + 1} 層</span>
+        </td>
+        <td>
+          <div className="action-buttons">
+            <button
+              onClick={() => router.push(`/admin/menu/edit/${item.id}`)}
+              className="btn-edit"
+              title="編輯選單"
+            >
+              ✏️ 編輯
+            </button>
+            <button
+              onClick={() => handleToggleStatus(item.id, item.status)}
+              className={`btn-toggle ${item.status === 'active' ? 'deactivate' : 'activate'}`}
+              title={item.status === 'active' ? '停用選單' : '啟用選單'}
+            >
+              {item.status === 'active' ? '⏸️ 停用' : '▶️ 啟用'}
+            </button>
+            <button
+              onClick={() => handleDelete(item.id)}
+              className="btn-delete"
+              title="刪除選單"
+            >
+              🗑️ 刪除
+            </button>
+          </div>
         </td>
       </tr>
     )
@@ -250,100 +277,87 @@ export default function MenuManagePage() {
   }
 
   if (loading || selectedCompany === null) {
-    return <div className="b-ibox"><p>載入中...</p></div>
+    return (
+      <div className="menu-admin-container">
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>選單管理</h1>
-      
-      <div className="b-ibox-s">
-        <div className="w100 fo5 mb15">
-          <div className="w50 fl4">
-            {/* 只有超級管理員和全域管理員可以選擇公司 */}
-            {canSelectCompany && (
-              <>
-                <label htmlFor="companySelect">管理公司&nbsp;</label>
-                <select
-                  id="companySelect"
-                  value={selectedCompany}
-                  onChange={(e) => setSelectedCompany(Number(e.target.value))}
-                  className="txtbox1 mr20"
-                >
-                  <option value={1}>公司 A</option>
-                  <option value={2}>公司 B</option>
-                </select>
-              </>
-            )}
-            
-            {/* 代理商老闆顯示自己的公司名稱 */}
-            {role === "AGENT_OWNER" && (
-              <span className="mr20">
-                管理公司：{currentUser?.company?.name || `公司 ${userCompanyId}`}
-              </span>
-            )}
-          </div>
+    <div className="menu-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="menu-header">
+        <h1>選單管理</h1>
+        
+        <div className="menu-header-actions">
+          {/* 只有超級管理員和全域管理員可以選擇公司 */}
+          {canSelectCompany && (
+            <div className="company-selector">
+              <label htmlFor="companySelect">🏢 管理公司</label>
+              <select
+                id="companySelect"
+                value={selectedCompany}
+                onChange={(e) => setSelectedCompany(Number(e.target.value))}
+              >
+                <option value={1}>公司 A</option>
+                <option value={2}>公司 B</option>
+              </select>
+            </div>
+          )}
           
-          <div className="w50 fl6">
-            <button
-              onClick={() => router.push('/admin/menu/new')}
-              className="b-btn-s2 b-btn-c4"
-            >
-              新增選單
-            </button>
-          </div>
+          {/* 代理商老闆顯示自己的公司名稱 */}
+          {role === "AGENT_OWNER" && (
+            <div className="company-info">
+              🏢 管理公司：{currentUser?.company?.name || `公司 ${userCompanyId}`}
+            </div>
+          )}
+          
+          <button
+            onClick={() => router.push('/admin/menu/new')}
+            className="btn-primary"
+          >
+            ➕ 新增選單
+          </button>
         </div>
+      </div>
 
-        {menus.length === 0 ? (
-          <div className="b-no-information w100 fd5">
-            <img src="/no-information.webp" alt="無資料" className="mb25" />
+      {/* 內容區域 */}
+      {menus.length === 0 ? (
+        <div className="content-section">
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
             <p>尚未建立任何選單</p>
             <button
               onClick={() => router.push('/admin/menu/new')}
-              className="b-btn-s2 b-btn-c4 mt15"
+              className="btn-primary"
             >
-              建立第一個選單
+              🚀 建立第一個選單
             </button>
           </div>
-        ) : (
-          <table className="b-table-box admin-table mb15">
+        </div>
+      ) : (
+        <div className="content-section">
+          <table className="modern-table">
             <thead>
               <tr>
-                <th>選單標題</th>
-                <th>連結</th>
-                <th>狀態</th>
-                <th>裝置類型</th>
-                <th>排序</th>
-                <th>層級</th>
-                <th className="th-last">操作</th>
+                <th>📋 選單標題</th>
+                <th>🔗 連結</th>
+                <th>📊 狀態</th>
+                <th>📱 裝置類型</th>
+                <th>🔢 排序</th>
+                <th>📶 層級</th>
+                <th>⚙️ 操作</th>
               </tr>
             </thead>
             <tbody>
               {buildMenuTree(menus).map(item => renderMenuItem(item)).flat()}
             </tbody>
           </table>
-        )}
-      </div>
-      
-      <style jsx>{`
-        .status-active {
-          background: #d4edda;
-          color: #155724;
-          padding: 0.25rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.8rem;
-          font-weight: 500;
-        }
-
-        .status-inactive {
-          background: #f8d7da;
-          color: #721c24;
-          padding: 0.25rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.8rem;
-          font-weight: 500;
-        }
-      `}</style>
+        </div>
+      )}
     </div>
   )
 }

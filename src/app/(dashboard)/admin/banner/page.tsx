@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import '@/styles/pages/banner-admin.css'
 
 type Banner = {
   id: number
@@ -76,52 +77,80 @@ export default function BannerListPage() {
   }
 
   return (
+    <div className="banner-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="banner-admin-header">
+        <h1>🖼️ Banner 管理</h1>
+        <div className="banner-admin-header-actions">
+          <Link href="/admin/banner/new" className="btn-primary">
+            <span>✨</span>
+            新增 Banner
+          </Link>
+        </div>
+      </div>
 
-    <div className="b-ibox">
+      {/* 內容區域 */}
+      <div className="content-section">
+        {/* 表格控制區域 */}
+        <div className="table-controls">
+          <div className="table-info">
+            共 {banners.length} 個 Banner
+          </div>
+        </div>
 
-      <h1>Banner 管理列表</h1>
-
-      <div className="b-ibox-s">
-
-
-        <table className="b-table-box admin-table mb15">
+        {/* 現代化表格 */}
+        <table className="modern-table">
           <thead>
             <tr>
-              <th>標題</th>
-              <th>排序</th>
-              <th>開放時間</th>
-              <th>圖片(網站)</th>
-              <th>圖片(手機)</th>
-              <th>是否顯示</th>
-              <th className="th-last">管理</th>
+              <th>📋 Banner 資訊</th>
+              <th>🔢 排序</th>
+              <th>⏰ 開放時間</th>
+              <th>🖥️ 桌面圖片</th>
+              <th>📱 手機圖片</th>
+              <th>📊 狀態</th>
+              <th>⚙️ 操作</th>
             </tr>
           </thead>
           <tbody>
             {banners.map((banner) => (
               <tr key={banner.id}>
-                <td>{banner.title}</td>
-                <td>{banner.sort}</td>
                 <td>
-                  {formatDateTime(banner.start_time)} ~<br />
-                  {formatDateTime(banner.end_time)}
+                  <div className="banner-info">
+                    <div className="banner-title">{banner.title}</div>
+                    <div className="banner-id">ID: #{banner.id}</div>
+                  </div>
+                </td>
+                <td>
+                  <span className="sort-badge">{banner.sort}</span>
+                </td>
+                <td>
+                  <div className="time-info">
+                    <div className="time-start">
+                      🟢 {formatDateTime(banner.start_time)}
+                    </div>
+                    <div className="time-end">
+                      🔴 {formatDateTime(banner.end_time)}
+                    </div>
+                  </div>
                 </td>
                 <td>
                   <button
-                    className="text-blue-600 underline text-sm"
+                    className="image-preview-btn"
                     onClick={() => setPreviewImage(`${API_BASE}${banner.desktop_image_url}`)}
                   >
+                    <span>🖥️</span>
                     預覽
                   </button>
                 </td>
                 <td>
                   <button
-                    className="text-blue-600 underline text-sm"
+                    className="image-preview-btn"
                     onClick={() => setPreviewImage(`${API_BASE}${banner.mobile_image_url}`)}
                   >
+                    <span>📱</span>
                     預覽
                   </button>
                 </td>
-
                 <td>
                   <button
                     onClick={async () => {
@@ -143,31 +172,28 @@ export default function BannerListPage() {
                           )
                         )
                       } catch (err) {
-                        alert('    無法切換狀態')
+                        alert('無法切換狀態')
                         console.error(err)
                       }
                     }}
-                    className={`text-xs px-2 py-0.5 rounded font-bold ${
-                      banner.status === 'ACTIVE'
-                        ? 'b-btn-s3 b-btn-c4'
-                        : 'b-btn-s3 b-btn-c3'
+                    className={`status-toggle ${
+                      banner.status === 'ACTIVE' ? 'status-active' : 'status-inactive'
                     }`}
                   >
-                    {banner.status === 'ACTIVE' ? 'ON' : 'OFF'}
+                    {banner.status === 'ACTIVE' ? '✅ 啟用' : '❌ 停用'}
                   </button>
                 </td>
-
-
-
-                <td className="border px-2 py-1 text-center">
-                  <div className="inline-flex gap-2 fl4">
-                    <Link href={`/admin/banner/edit/${banner.id}`}>
-                      <button className="b-btn-s3 b-btn-c1 mlr10">編輯</button>
+                <td>
+                  <div className="action-buttons">
+                    <Link href={`/admin/banner/edit/${banner.id}`} className="btn-edit">
+                      <span>✏️</span>
+                      編輯
                     </Link>
                     <button
-                      className="b-btn-s3 b-btn-c3"
+                      className="btn-delete"
                       onClick={() => handleDelete(banner.id)}
                     >
+                      <span>🗑️</span>
                       刪除
                     </button>
                   </div>
@@ -176,21 +202,37 @@ export default function BannerListPage() {
             ))}
           </tbody>
         </table>
+        
+        {/* 無資料顯示 */}
+        {banners.length === 0 && (
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
+            <p>目前沒有 Banner 資料</p>
+          </div>
+        )}
       </div>
 
+      {/* 圖片預覽彈窗 */}
       {previewImage && (
-        <div className="b-lightbox-1">
-          <h2 className="mb15">圖片預覽</h2>
-          <div className="b-id-imgbox mb25">
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
+            <div className="image-preview-header">
+              <h2 className="image-preview-title">🖼️ 圖片預覽</h2>
+              <button 
+                onClick={() => setPreviewImage(null)} 
+                className="image-preview-close"
+              >
+                ✕
+              </button>
+            </div>
             <Image 
               src={previewImage} 
               alt="預覽圖片" 
-              width={400} 
-              height={400} 
-              className="b-id-img object-contain" 
+              width={800} 
+              height={600} 
+              className="image-preview-img" 
             />
           </div>
-          <button onClick={() => setPreviewImage(null)} className="b-id-imgbox-X">X</button>
         </div>
       )}
     </div>

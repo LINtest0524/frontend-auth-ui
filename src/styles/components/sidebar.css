@@ -1,7 +1,20 @@
-.sidebar-box{
+/* 現代化側邊欄樣式 */
+.sidebar-box {
     display: flex;
-    background: #2f4050;
-    min-width: 220px;
+    background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+    min-width: 260px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.sidebar-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
 }
 
 .sidebar-box nav {
@@ -10,163 +23,371 @@
     display: flex;
     flex-direction: column;
     font-size: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
-
-.sidebar-box nav>a, .sidebar-box nav>div , .sidebar-subitem{
-    color: #a7b1c2;
+.sidebar-box nav::-webkit-scrollbar {
+    width: 6px;
 }
 
+.sidebar-box nav::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-.sidebar-box nav>a, .sidebar-box nav>div>button {
-    color: #b8c1ce;
-    padding: 14px 20px 14px 25px;
+.sidebar-box nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar-box nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-box nav > a, 
+.sidebar-box nav > div, 
+.sidebar-subitem {
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+}
+
+.sidebar-box nav > a, 
+.sidebar-box nav > div > button {
+    color: #cbd5e1;
+    padding: 16px 24px;
     cursor: pointer;
     text-align: left;
     width: 100%;
     font-size: 14px;
+    font-weight: 500;
     display: flex;
     align-items: center;
+    border: none;
+    background: none;
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 2px 12px;
+    border-radius: 12px;
 }
 
-/* 這是a標籤用 */
-
-
-.sidebar-item.active, .sidebar-item:hover{
-    background-color: #293846;
-    color: #fff;
+.sidebar-box nav > a:hover,
+.sidebar-box nav > div > button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    transform: translateX(4px);
 }
 
-.sidebar-item.expanded{
-    background-color: #293846;
-    color: #fff;
+.sidebar-item.active {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    transform: translateX(4px);
 }
 
+.sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 2px;
+}
+
+.sidebar-item.expanded {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
 
 .sidebar-submenu {
-  max-height: 0;
-  overflow: hidden;
-  transition: all 0.2s ease;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 0 12px;
+    border-radius: 0 0 12px 12px;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-submenu.open {
-  max-height: 500px; /* 根據實際情況調整 */
+    max-height: 600px;
+    padding: 8px 0;
 }
 
 .sidebar-submenu:not(.open) {
-  pointer-events: none;
+    pointer-events: none;
 }
 
-.sidebar-fd{
+.sidebar-fd {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
-.sidebar-subitem{
-  display: flex;
-  align-items: center;
-  height: 36px;
-  width: 100%;
-  padding-left: 52px;
-  background-color: #293846;
-  font-size: 14px;
+.sidebar-subitem {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    width: 100%;
+    padding: 10px 20px 10px 48px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 8px;
+    position: relative;
 }
 
-.sidebar-subitem:hover{
-color: #fff;
+.sidebar-subitem::before {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: #64748b;
+    border-radius: 50%;
+    transition: all 0.3s ease;
 }
 
-.sidebar-item .icon{
-  width: 20px;
-  height: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  margin-right: 6px;
+.sidebar-subitem:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
 }
 
-.sidebar-item.i-admin .icon{
-  background-image: url("/icon/i-admin.svg");
-}
-.sidebar-item.i-admin:hover .icon, .sidebar-item.i-admin.active .icon{
-  background-image: url("/icon/i-admin-on.svg");
+.sidebar-subitem:hover::before {
+    background: #ffffff;
+    transform: translateY(-50%) scale(1.2);
 }
 
-.sidebar-item.i-user .icon{
-  background-image: url("/icon/i-user.svg");
-}
-.sidebar-item.i-user:hover .icon, .sidebar-item.i-user.active .icon{
-  background-image: url("/icon/i-user-on.svg");
-}
-
-.sidebar-item.i-banner .icon{
-  background-image: url("/icon/i-banner.svg");
-}
-.sidebar-item.i-banner:hover .icon, .sidebar-item.i-banner.active .icon{
-  background-image: url("/icon/i-banner-on.svg");
+.sidebar-subitem.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.8) 0%, rgba(124, 58, 237, 0.8) 100%);
+    transform: translateX(4px);
 }
 
-.sidebar-item.i-marquee .icon{
-  background-image: url("/icon/i-marquee.svg");
-}
-.sidebar-item.i-marquee:hover .icon, .sidebar-item.i-marquee.active .icon{
-  background-image: url("/icon/i-marquee-on.svg");
+.sidebar-subitem.active::before {
+    background: #ffffff;
+    transform: translateY(-50%) scale(1.3);
 }
 
-.sidebar-item.i-verify .icon{
-  background-image: url("/icon/i-verify.svg");
-}
-.sidebar-item.i-verify:hover .icon, .sidebar-item.i-verify.active .icon{
-  background-image: url("/icon/i-verify-on.svg");
-}
-
-.sidebar-item.i-plan .icon{
-  background-image: url("/icon/i-plan.svg");
-}
-.sidebar-item.i-plan:hover .icon, .sidebar-item.i-plan.active .icon{
-  background-image: url("/icon/i-plan-on.svg");
-}
-
-.sidebar-item.i-log .icon{
-  background-image: url("/icon/i-log.svg");
-}
-.sidebar-item.i-log:hover .icon, .sidebar-item.i-log.active .icon{
-  background-image: url("/icon/i-log-on.svg");
+/* 圖標樣式 */
+.sidebar-item .icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 12px;
+    transition: all 0.3s ease;
+    filter: brightness(0.8);
 }
 
-.sidebar-item.i-dashboard .icon{
-  background-image: url("/icon/i-dashboard.svg");
-}
-.sidebar-item.i-dashboard:hover .icon, .sidebar-item.i-dashboard.active .icon{
-  background-image: url("/icon/i-dashboard-on.svg");
-}
-
-.sidebar-item.i-modules .icon{
-  background-image: url("/icon/i-modules.svg");
-}
-.sidebar-item.i-modules:hover .icon, .sidebar-item.i-modules.active .icon{
-  background-image: url("/icon/i-modules-on.svg");
+.sidebar-item:hover .icon,
+.sidebar-item.active .icon,
+.sidebar-item.expanded .icon {
+    filter: brightness(1.2);
+    transform: scale(1.1);
 }
 
-
-.sidebar-item .i-arrow{
-  width: 13px;
-  height: 13px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  margin-left: auto;
-  background-image: url("/icon/i-arrow.svg");
-  transition: transform 0.3s ease;
+.sidebar-item.i-admin .icon {
+    background-image: url("/icon/i-admin.svg");
+}
+.sidebar-item.i-admin:hover .icon, 
+.sidebar-item.i-admin.active .icon {
+    background-image: url("/icon/i-admin-on.svg");
 }
 
-.sidebar-item.expanded .i-arrow{
-  transform: rotate(90deg);
-  background-image: url("/icon/i-arrow-on.svg");
+.sidebar-item.i-user .icon {
+    background-image: url("/icon/i-user.svg");
+}
+.sidebar-item.i-user:hover .icon, 
+.sidebar-item.i-user.active .icon {
+    background-image: url("/icon/i-user-on.svg");
+}
+
+.sidebar-item.i-banner .icon {
+    background-image: url("/icon/i-banner.svg");
+}
+.sidebar-item.i-banner:hover .icon, 
+.sidebar-item.i-banner.active .icon {
+    background-image: url("/icon/i-banner-on.svg");
+}
+
+.sidebar-item.i-marquee .icon {
+    background-image: url("/icon/i-marquee.svg");
+}
+.sidebar-item.i-marquee:hover .icon, 
+.sidebar-item.i-marquee.active .icon {
+    background-image: url("/icon/i-marquee-on.svg");
+}
+
+.sidebar-item.i-verify .icon {
+    background-image: url("/icon/i-verify.svg");
+}
+.sidebar-item.i-verify:hover .icon, 
+.sidebar-item.i-verify.active .icon {
+    background-image: url("/icon/i-verify-on.svg");
+}
+
+.sidebar-item.i-plan .icon {
+    background-image: url("/icon/i-plan.svg");
+}
+.sidebar-item.i-plan:hover .icon, 
+.sidebar-item.i-plan.active .icon {
+    background-image: url("/icon/i-plan-on.svg");
+}
+
+.sidebar-item.i-log .icon {
+    background-image: url("/icon/i-log.svg");
+}
+.sidebar-item.i-log:hover .icon, 
+.sidebar-item.i-log.active .icon {
+    background-image: url("/icon/i-log-on.svg");
+}
+
+.sidebar-item.i-dashboard .icon {
+    background-image: url("/icon/i-dashboard.svg");
+}
+.sidebar-item.i-dashboard:hover .icon, 
+.sidebar-item.i-dashboard.active .icon {
+    background-image: url("/icon/i-dashboard-on.svg");
+}
+
+.sidebar-item.i-modules .icon {
+    background-image: url("/icon/i-modules.svg");
+}
+.sidebar-item.i-modules:hover .icon, 
+.sidebar-item.i-modules.active .icon {
+    background-image: url("/icon/i-modules-on.svg");
+}
+
+/* 箭頭動畫 */
+.sidebar-item .i-arrow {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-left: auto;
+    background-image: url("/icon/i-arrow.svg");
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.7;
+}
+
+.sidebar-item:hover .i-arrow {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.sidebar-item.expanded .i-arrow {
+    transform: rotate(90deg) scale(1.1);
+    background-image: url("/icon/i-arrow-on.svg");
+    opacity: 1;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .sidebar-box {
+        min-width: 240px;
+    }
+    
+    .sidebar-box nav > a, 
+    .sidebar-box nav > div > button {
+        padding: 14px 20px;
+        font-size: 13px;
+    }
+    
+    .sidebar-item .icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-box {
+        min-width: 220px;
+    }
+    
+    .sidebar-box nav {
+        padding: 16px 0;
+    }
+    
+    .sidebar-box nav > a, 
+    .sidebar-box nav > div > button {
+        padding: 12px 16px;
+        margin: 1px 8px;
+    }
+    
+    .sidebar-subitem {
+        padding: 8px 16px 8px 40px;
+        margin: 0 6px;
+        font-size: 12px;
+    }
+}
+
+/* 動畫效果 */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-item {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+/* 分組分隔線 */
+.sidebar-item:nth-child(3)::after,
+.sidebar-item:nth-child(5)::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+}
+
+/* 滾動條美化 */
+.sidebar-box nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.sidebar-box nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-box nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-box nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.sidebar-box nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 

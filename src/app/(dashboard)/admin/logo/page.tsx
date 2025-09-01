@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import '@/styles/pages/logo-admin.css'
 
 type Logo = {
   id: number
@@ -73,71 +74,116 @@ export default function LogoManagePage() {
   }
 
   if (loading) {
-    return <div className="b-ibox">載入中...</div>
+    return (
+      <div className="logo-admin-container">
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>LOGO 管理</h1>
-      
-      <div className="b-ibox-s">
-        <div className="fl4 w100 mb15">
+    <div className="logo-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="logo-admin-header">
+        <h1>🎨 LOGO 管理</h1>
+        <div className="logo-admin-header-actions">
           <button
             onClick={() => router.push('/admin/logo/new')}
-            className="b-btn-s2 b-btn-c4"
+            className="btn-primary"
           >
+            <span>✨</span>
             新增 LOGO
           </button>
         </div>
+      </div>
 
+      {/* 內容區域 */}
+      <div className="content-section">
+        {/* 表格控制區域 */}
+        <div className="table-controls">
+          <div className="table-info">
+            共 {logos.length} 個 LOGO
+          </div>
+        </div>
 
-        <table className="b-table-box admin-table mb15">
+        {/* 現代化表格 */}
+        <table className="modern-table">
           <thead>
             <tr>
-              <th>預覽</th>
-              <th>標題</th>
-              <th>公司</th>
-              <th>狀態</th>
-              <th>建立時間</th>
-              <th>操作</th>
+              <th>🖼️ 預覽</th>
+              <th>📋 LOGO 資訊</th>
+              <th>🏢 公司</th>
+              <th>📊 狀態</th>
+              <th>📅 建立時間</th>
+              <th>⚙️ 操作</th>
             </tr>
           </thead>
           <tbody>
             {logos.map((logo) => (
-              <tr key={logo.id} className="text-center">
-                <td className="b-td-center">
-                  <div className="fo5p">
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
-                      alt={logo.title}
-                      height={40}
-                      style={{ maxHeight: '40px', objectFit: 'contain' }}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+              <tr key={logo.id}>
+                <td>
+                  <div className="logo-preview">
+                    {logo.image_url ? (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
+                        alt={logo.title}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = '<div class="logo-preview-placeholder">圖片載入失敗</div>';
+                        }}
+                      />
+                    ) : (
+                      <div className="logo-preview-placeholder">
+                        無圖片
+                      </div>
+                    )}
                   </div>
                 </td>
-                <td>{logo.title}</td>
-                <td>{logo.company?.name || '未知'}</td>
                 <td>
-                  <span className={logo.is_active ? 'text-green-600' : 'text-red-600'}>
-                    {logo.is_active ? '啟用' : '停用'}
+                  <div className="logo-info">
+                    <div className="logo-title">{logo.title}</div>
+                    <div className="logo-id">ID: #{logo.id}</div>
+                  </div>
+                </td>
+                <td>
+                  <div className="company-info">
+                    <div className="company-name">{logo.company?.name || '未知公司'}</div>
+                    {logo.company?.code && (
+                      <div className="company-code">{logo.company.code}</div>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <span className={`status-badge ${logo.is_active ? 'status-active' : 'status-inactive'}`}>
+                    {logo.is_active ? '✅ 啟用' : '❌ 停用'}
                   </span>
                 </td>
-                <td>{new Date(logo.createdAt).toLocaleDateString('zh-TW')}</td>
                 <td>
-                  <div className="fl4">
+                  <div className="date-info">
+                    <span>📅</span>
+                    {new Date(logo.createdAt).toLocaleDateString('zh-TW', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })}
+                  </div>
+                </td>
+                <td>
+                  <div className="action-buttons">
                     <button
                       onClick={() => handleEdit(logo)}
-                      className="b-btn-s3 b-btn-c1 mr10"
+                      className="btn-edit"
                     >
+                      <span>✏️</span>
                       編輯
                     </button>
                     <button
                       onClick={() => handleDelete(logo.id)}
-                      className="b-btn-s3 b-btn-c3"
+                      className="btn-delete"
                     >
+                      <span>🗑️</span>
                       刪除
                     </button>
                   </div>
@@ -147,9 +193,11 @@ export default function LogoManagePage() {
           </tbody>
         </table>
         
+        {/* 無資料顯示 */}
         {logos.length === 0 && (
-          <div className="text-center py-8">
-            目前沒有 LOGO 資料
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
+            <p>目前沒有 LOGO 資料</p>
           </div>
         )}
       </div>
