@@ -12,6 +12,7 @@ export default function BannerPage() {
   const [desktopImage, setDesktopImage] = useState<File | null>(null)
   const [mobileImage, setMobileImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
     title: '',
     start_time: '',
@@ -252,10 +253,23 @@ export default function BannerPage() {
                   <div 
                     className="file-upload-area"
                     onClick={() => desktopInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.add('dragover')
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('dragover')
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.remove('dragover')
+                      const file = e.dataTransfer.files[0]
+                      if (file) handleFileSelect(file, 'desktop')
+                    }}
                   >
-                    <div className="file-upload-icon">🖥️</div>
+                    <div className="file-upload-icon">📁</div>
                     <div className="file-upload-text">點擊選擇桌面圖片或拖拽到此處</div>
-                    <div className="file-upload-hint">支援 JPG、PNG、WEBP 格式</div>
+                    <div className="file-upload-hint">支援 JPG、PNG、WEBP 格式，建議尺寸 1920x600 像素</div>
                   </div>
                 ) : (
                   <div className="image-preview-container">
@@ -264,11 +278,17 @@ export default function BannerPage() {
                       <div className="image-info">
                         📄 {desktopImage?.name} ({((desktopImage?.size || 0) / 1024).toFixed(1)} KB)
                       </div>
+                      {uploading && (
+                        <div className="upload-status">
+                          ⏳ 上傳中...
+                        </div>
+                      )}
                       <div className="image-actions">
                         <button
                           type="button"
                           className="btn-change-image"
                           onClick={() => desktopInputRef.current?.click()}
+                          disabled={uploading}
                         >
                           🔄 更換圖片
                         </button>
@@ -276,6 +296,7 @@ export default function BannerPage() {
                           type="button"
                           className="btn-remove-image"
                           onClick={() => handleRemoveImage('desktop')}
+                          disabled={uploading}
                         >
                           🗑️ 移除圖片
                         </button>
@@ -318,10 +339,23 @@ export default function BannerPage() {
                   <div 
                     className="file-upload-area"
                     onClick={() => mobileInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.add('dragover')
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('dragover')
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      e.currentTarget.classList.remove('dragover')
+                      const file = e.dataTransfer.files[0]
+                      if (file) handleFileSelect(file, 'mobile')
+                    }}
                   >
-                    <div className="file-upload-icon">📱</div>
+                    <div className="file-upload-icon">📁</div>
                     <div className="file-upload-text">點擊選擇手機圖片或拖拽到此處</div>
-                    <div className="file-upload-hint">支援 JPG、PNG、WEBP 格式</div>
+                    <div className="file-upload-hint">支援 JPG、PNG、WEBP 格式，建議尺寸 750x400 像素</div>
                   </div>
                 ) : (
                   <div className="image-preview-container">
@@ -330,11 +364,17 @@ export default function BannerPage() {
                       <div className="image-info">
                         📄 {mobileImage?.name} ({((mobileImage?.size || 0) / 1024).toFixed(1)} KB)
                       </div>
+                      {uploading && (
+                        <div className="upload-status">
+                          ⏳ 上傳中...
+                        </div>
+                      )}
                       <div className="image-actions">
                         <button
                           type="button"
                           className="btn-change-image"
                           onClick={() => mobileInputRef.current?.click()}
+                          disabled={uploading}
                         >
                           🔄 更換圖片
                         </button>
@@ -342,6 +382,7 @@ export default function BannerPage() {
                           type="button"
                           className="btn-remove-image"
                           onClick={() => handleRemoveImage('mobile')}
+                          disabled={uploading}
                         >
                           🗑️ 移除圖片
                         </button>
@@ -376,18 +417,18 @@ export default function BannerPage() {
                 type="button"
                 onClick={() => router.push('/admin/banner')}
                 className="btn-secondary"
-                disabled={loading}
+                disabled={loading || uploading}
               >
                 <span>↩️</span>
                 返回
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploading}
                 className="btn-primary"
               >
                 <span>💾</span>
-                {loading ? '建立中...' : '建立 Banner'}
+                {loading ? '建立中...' : uploading ? '上傳中...' : '建立 Banner'}
               </button>
             </div>
           </div>

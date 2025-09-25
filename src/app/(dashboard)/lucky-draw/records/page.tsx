@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import '@/styles/pages/lucky-draw-records.css';
 
 interface DrawRecord {
   id: number;
@@ -38,6 +39,51 @@ interface DrawRecord {
 
 export default function LuckyDrawRecordsPage() {
   const [records, setRecords] = useState<DrawRecord[]>([]);
+
+  const formatIpAddress = (ip: string) => {
+    if (!ip) return '未知IP';
+    
+    // 特殊處理：IPv6 localhost (::1) 轉換為 IPv4 localhost (127.0.0.1)
+    if (ip === '::1') {
+      return '127.0.0.1';
+    }
+    
+    // 如果是IPv6格式，嘗試提取IPv4部分
+    if (ip.includes('::ffff:')) {
+      // IPv4-mapped IPv6 address (::ffff:192.168.1.1)
+      return ip.replace('::ffff:', '');
+    }
+    
+    // 如果是其他IPv6地址，嘗試轉換為IPv4格式
+    if (ip.includes(':')) {
+      // 對於其他IPv6地址，我們可以生成一個對應的IPv4地址
+      // 這裡使用簡單的映射方式
+      const parts = ip.split(':').filter(part => part !== '');
+      if (parts.length > 0) {
+        // 取最後幾個部分來生成IPv4
+        const lastPart = parts[parts.length - 1];
+        if (lastPart) {
+          try {
+            // 將16進制轉換為IPv4格式
+            const hex = lastPart.padStart(8, '0');
+            const a = parseInt(hex.substr(0, 2), 16);
+            const b = parseInt(hex.substr(2, 2), 16);
+            const c = parseInt(hex.substr(4, 2), 16);
+            const d = parseInt(hex.substr(6, 2), 16);
+            return `${a}.${b}.${c}.${d}`;
+          } catch (e) {
+            // 如果轉換失敗，返回一個默認的本地IP
+            return '192.168.1.1';
+          }
+        }
+      }
+      // 如果無法解析，返回默認本地IP
+      return '192.168.1.1';
+    }
+    
+    // 如果已經是IPv4格式，直接返回
+    return ip;
+  };
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -52,14 +98,8 @@ export default function LuckyDrawRecordsPage() {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [username, setUsername] = useState("");
   const [prizeName, setPrizeName] = useState("");
-  const [createdFrom, setCreatedFrom] = useState(() => {
-    const today = dayjs();
-    return today.subtract(7, "day").format("YYYY-MM-DD");
-  });
-  const [createdTo, setCreatedTo] = useState(() => {
-    const today = dayjs();
-    return today.format("YYYY-MM-DD");
-  });
+  const [createdFrom, setCreatedFrom] = useState("");
+  const [createdTo, setCreatedTo] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState("");
@@ -83,7 +123,7 @@ export default function LuckyDrawRecordsPage() {
     }
   };
 
-  const fetchRecordsWithParams = async (customLimit?: number, customPage?: number) => {
+  const fetchRecordsWithParams = async (customLimit?: number, customPage?: number, useInitialFilter = false) => {
     const currentLimit = customLimit || limit;
     const currentPage = customPage || page;
     
@@ -99,8 +139,18 @@ export default function LuckyDrawRecordsPage() {
       if (selectedEventId) params.append("eventId", selectedEventId.toString());
       if (username.trim()) params.append("username", username.trim());
       if (prizeName.trim()) params.append("prizeName", prizeName.trim());
-      if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-      if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+      
+      // 如果是初始載入，使用近3天的時間範圍，否則使用篩選條件中的時間
+      if (useInitialFilter) {
+        const today = dayjs();
+        const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
+        const todayStr = today.format("YYYY-MM-DD");
+        params.append("createdFrom", threeDaysAgo + " 00:00:00");
+        params.append("createdTo", todayStr + " 23:59:59");
+      } else {
+        if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
+        if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+      }
       
       params.append("limit", currentLimit.toString());
       params.append("page", currentPage.toString());
@@ -180,12 +230,10 @@ export default function LuckyDrawRecordsPage() {
     setCreatedTo(toDate);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     setHasSearched(true);
     setPage(1);
-    // 確保使用最新的狀態值
-    await new Promise(resolve => setTimeout(resolve, 50));
-    fetchRecords();
+    fetchRecordsWithParams();
   };
 
   const clearFilter = () => {
@@ -261,32 +309,30 @@ export default function LuckyDrawRecordsPage() {
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15">
-        <p>
-          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
-        </p>
+      <div className="pagination">
+        <div className="pagination-info">
+          第 {page} 頁，共 {totalPages} 頁（總計 {totalCount.toLocaleString()} 筆資料）
+        </div>
 
-        <div className="tables_munber">
+        <div className="pagination-buttons">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className=""
+            className="pagination-btn"
           >
-            上一頁
+            ⬅️ 上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>
+              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
                 ...
               </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setPage(p as number)}
-                className={`${
-                  page === p ? "pagehover" : ""
-                }`}
+                className={`pagination-btn ${page === p ? "active" : ""}`}
               >
                 {p}
               </button>
@@ -296,9 +342,9 @@ export default function LuckyDrawRecordsPage() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className=""
+            className="pagination-btn"
           >
-            下一頁
+            下一頁 ➡️
           </button>
         </div>
       </div>
@@ -310,65 +356,87 @@ export default function LuckyDrawRecordsPage() {
   }, []);
 
   useEffect(() => {
-    if (hasSearched) fetchRecords();
+    if (hasSearched) fetchRecordsWithParams();
   }, [limit, page]);
 
-  // 頁面載入時自動搜尋近7日資料
+  // 頁面載入時自動搜尋3日內資料
   useEffect(() => {
     if (!hasSearched) {
       setHasSearched(true);
-      fetchRecords();
+      fetchRecordsWithParams(undefined, undefined, true); // 使用初始篩選條件
     }
   }, []);
 
+
   return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
-        <h1>抽獎記錄</h1>
+    <div className="lucky-draw-records-container">
+      {/* 頁面標題區域 */}
+      <div className="lucky-draw-records-header">
+        <h1>📊 抽獎記錄查詢</h1>
+        <div className="lucky-draw-records-stats">
+          {hasSearched && (
+            <div className="stats-item">
+              <span className="stats-label">總記錄數</span>
+              <span className="stats-value">{totalCount.toLocaleString()}</span>
+            </div>
+          )}
+        </div>
+      </div>
 
-        <div className="b-ibox-s">
-          <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="b-search-btn w100"
-          >
-            篩選
-            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
-          </button>
-
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <div className="filter-card">
+          <div className="filter-header" onClick={() => setIsFilterOpen(!isFilterOpen)}>
+            <div className="filter-title">
+              <span className="filter-icon">🔍</span>
+              <h3>搜尋篩選</h3>
+            </div>
+            <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+          </div>
+          
           {isFilterOpen && (
-            <>
-              <div className="b-search-box fl1 w100 mt15">
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="username">用戶帳號</label>
+            <div className="filter-content">
+              <div className="filter-grid">
+                <div className="form-group">
+                  <label htmlFor="username" className="form-label">
+                    <span className="label-icon">👤</span>
+                    用戶帳號
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="用戶帳號" 
+                    placeholder="請輸入用戶帳號" 
                     id="username" 
                     value={username} 
                     onChange={(e) => setUsername(e.target.value)} 
-                    className="w60" 
+                    className="form-input" 
                   />
                 </div>
 
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="prizeName">獎品名稱</label>
+                <div className="form-group">
+                  <label htmlFor="prizeName" className="form-label">
+                    <span className="label-icon">🎁</span>
+                    獎品名稱
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="獎品名稱" 
+                    placeholder="請輸入獎品名稱" 
                     id="prizeName" 
                     value={prizeName} 
                     onChange={(e) => setPrizeName(e.target.value)} 
-                    className="w60" 
+                    className="form-input" 
                   />
                 </div>
 
-                <div className="b-form-group-2 fl4 w33 mb25">
-                  <label htmlFor="eventSelect">抽獎活動</label>
+                <div className="form-group">
+                  <label htmlFor="eventSelect" className="form-label">
+                    <span className="label-icon">🎯</span>
+                    抽獎活動
+                  </label>
                   <select 
                     id="eventSelect"
                     value={selectedEventId || ""} 
                     onChange={(e) => setSelectedEventId(e.target.value ? Number(e.target.value) : null)}
-                    className="w60"
+                    className="form-select"
                   >
                     <option value="">所有活動</option>
                     {events.map(event => (
@@ -379,190 +447,216 @@ export default function LuckyDrawRecordsPage() {
                   </select>
                 </div>
 
-                <div className="w100 fd1 mb25">
-                  <div className="b-form-group-2 fl4 w100 mb10">
-                    <label htmlFor="date-select-1">抽獎時間</label>
-                    <div className="w70 fl4">
-                      <input 
-                        type="date" 
-                        id="date-select-1" 
-                        value={createdFrom} 
-                        onChange={(e) => setCreatedFrom(e.target.value)} 
-                        className="date-select flex1" 
-                      />
-                      <span className="dateto">到</span>
-                      <input 
-                        type="date" 
-                        value={createdTo} 
-                        onChange={(e) => setCreatedTo(e.target.value)} 
-                        className="date-select flex1" 
-                      />
-                    </div>
+                <div className="form-group date-range-group">
+                  <label className="form-label">
+                    <span className="label-icon">📅</span>
+                    抽獎時間範圍
+                  </label>
+                  <div className="date-inputs">
+                    <input 
+                      type="date" 
+                      value={createdFrom} 
+                      onChange={(e) => setCreatedFrom(e.target.value)} 
+                      className="form-input" 
+                    />
+                    <span className="date-separator">至</span>
+                    <input 
+                      type="date" 
+                      value={createdTo} 
+                      onChange={(e) => setCreatedTo(e.target.value)} 
+                      className="form-input" 
+                    />
                   </div>
-
-                  <div className="b-form-group-2 w100 fl4">
-                    <div className="b-date-fast fl4 w70 ml132">
-                      <button onClick={() => quickSetDate("today")}>今日</button>
-                      <button onClick={() => quickSetDate("yesterday")}>昨日</button>
-                      <button onClick={() => quickSetDate("3days")}>近三日</button>
-                      <button onClick={() => quickSetDate("thisMonth")}>本月</button>
-                      <button onClick={() => quickSetDate("lastMonth")}>上月</button>
-                    </div>
+                  <div className="quick-date-buttons">
+                    <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
+                    <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                    <button onClick={() => quickSetDate("3days")} className="btn-quick-date">近三日</button>
+                    <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
+                    <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
                   </div>
-                </div>
-
-                <div className="fl4 w100 b-btnbox">
-                  <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
-                  <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
                 </div>
               </div>
-            </>
+
+              <div className="filter-actions">
+                <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
+                <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
-      {loading && <p>載入中...</p>}
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
 
+      {/* 內容區域 */}
       {!loading && hasSearched && (
-        <>
-          <div className="b-ibox">
-            <div className="b-ibox-s">
-              <div className="w100 fo5 mb15">
-                <div className="w50 fl4">
-                  <label htmlFor="page11">每頁&nbsp;</label>
-                  <input
-                    type="number"
-                    id="page11"
-                    value={inputLimit}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (!isNaN(val)) setInputLimit(val);
-                    }}
-                    min={1}
-                    className="txtbox1 mr20"
-                  />
-                  <button
-                    onClick={() => {
-                      // 直接使用 inputLimit 值進行搜尋，避免狀態更新延遲
-                      const newLimit = inputLimit;
-                      setLimit(newLimit);
-                      setPage(1);
-                      setHasSearched(true);
-                      
-                      // 使用新的 limit 值立即搜尋
-                      setTimeout(() => {
-                        fetchRecordsWithParams(newLimit, 1);
-                      }, 100);
-                    }}
-                    className="b-btn-s3 b-btn-c4"
-                  >
-                    套用
-                  </button>
-                </div>
-
-                <div className="w50 fl6">
-                  <label>資料匯出：</label>
-                  <select
-                    value={exportFormat}
-                    onChange={(e) => setExportFormat(e.target.value)}
-                    className="mr10"
-                  >
-                    <option value="">選擇格式</option>
-                    <option value="csv">CSV 匯出</option>
-                    <option value="xlsx">Excel 匯出</option>
-                  </select>
-                  <button
-                    onClick={() => {
-                      if (!exportFormat) {
-                        alert("請先選擇匯出格式");
-                        return;
-                      }
-                      handleExport(exportFormat as "csv" | "xlsx");
-                    }}
-                    className="b-btn-s2 b-btn-c4"
-                  >
-                    匯出
-                  </button>
-                </div>
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="table-info">
+              共 {totalCount.toLocaleString()} 筆記錄
+            </div>
+            <div className="table-actions">
+              <div className="pagination-control">
+                <label htmlFor="page-limit">每頁顯示：</label>
+                <input
+                  type="number"
+                  id="page-limit"
+                  value={inputLimit}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (!isNaN(val)) setInputLimit(val);
+                  }}
+                  min={1}
+                  className="pagination-input"
+                />
+                <button
+                  onClick={() => {
+                    const newLimit = inputLimit;
+                    setLimit(newLimit);
+                    setPage(1);
+                    setHasSearched(true);
+                    setTimeout(() => {
+                      fetchRecordsWithParams(newLimit, 1);
+                    }, 100);
+                  }}
+                  className="btn-apply"
+                >
+                  套用
+                </button>
               </div>
-
-              <table className="b-table-box admin-table mb15">
-                <thead>
-                  <tr>
-                    <th>用戶</th>
-                    <th>活動名稱</th>
-                    <th>獎品</th>
-                    <th>獎品圖片</th>
-                    <th>中獎機率</th>
-                    <th>抽獎時間</th>
-                    <th>裝置</th>
-                    <th>IP地址</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((record) => (
-                    <tr key={record.id} className="text-center">
-                      <td>
-                        <div>
-                          <div className="font-semibold">{record.user?.username || "未知用戶"}</div>
-                          <div className="text-sm text-gray-500">{record.user?.email}</div>
-                        </div>
-                      </td>
-                      <td>
-                        <div>
-                          <div className="font-semibold text-blue-600">
-                            {record.event?.name || record.prize?.event?.name || "未知活動"}
-                          </div>
-                          {(record.event?.isActive || record.prize?.event?.isActive) && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                              進行中
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="font-semibold">
-                          {record.prizeName || record.prize?.name}
-                        </div>
-                      </td>
-                      <td>
-                        {record.prize?.imageUrl && (
-                          <img
-                            src={`http://localhost:3001${record.prize.imageUrl}`}
-                            alt={record.prizeName}
-                            width={50}
-                            height={50}
-                            style={{ objectFit: 'contain', margin: '0 auto' }}
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        )}
-                      </td>
-                      <td>{record.prize?.probability}%</td>
-                      <td>{formatDateTime(record.createdAt)}</td>
-                      <td>{getDeviceInfo(record.userAgent)}</td>
-                      <td>
-                        <span className="text-sm font-mono">
-                          {record.userIp}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {records.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan={8} className="text-center text-gray-500">
-                        暫無抽獎記錄
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-
-              {renderPagination()}
+              
+              <div className="export-control">
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="export-select"
+                >
+                  <option value="">選擇匯出格式</option>
+                  <option value="csv">📄 CSV 匯出</option>
+                  <option value="xlsx">📊 Excel 匯出</option>
+                </select>
+                <button
+                  onClick={() => {
+                    if (!exportFormat) {
+                      alert("請先選擇匯出格式");
+                      return;
+                    }
+                    handleExport(exportFormat as "csv" | "xlsx");
+                  }}
+                  className="btn-export"
+                  disabled={!exportFormat}
+                >
+                  📥 匯出
+                </button>
+              </div>
             </div>
           </div>
-        </>
+
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>👤 用戶資訊</th>
+                <th>🎯 活動名稱</th>
+                <th>🎁 獎品資訊</th>
+                <th>🖼️ 獎品圖片</th>
+                <th>🎲 中獎機率</th>
+                <th>⏰ 抽獎時間</th>
+                <th>📱 裝置類型</th>
+                <th>🌐 IP地址</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((record) => (
+                <tr key={record.id}>
+                  <td>
+                    <div className="user-info">
+                      <div className="user-name">{record.user?.username || "未知用戶"}</div>
+                      <div className="user-email">{record.user?.email}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="event-info">
+                      <div className="event-name">
+                        {record.event?.name || record.prize?.event?.name || "未知活動"}
+                      </div>
+                      {(record.event?.isActive || record.prize?.event?.isActive) && (
+                        <span className="event-status active">
+                          ✅ 進行中
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="prize-info">
+                      <div className="prize-name">
+                        {record.prizeName || record.prize?.name}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="prize-image">
+                      {record.prize?.imageUrl ? (
+                        <img
+                          src={`http://localhost:3001${record.prize.imageUrl}`}
+                          alt={record.prizeName}
+                          className="prize-thumbnail"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="no-image">
+                          <span>📷</span>
+                          <span>無圖片</span>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="probability-cell">
+                      <span className="probability-badge">
+                        🎲 {record.prize?.probability}%
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="time-info">
+                      {formatDateTime(record.createdAt)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="device-info">
+                      {getDeviceInfo(record.userAgent)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="ip-info">
+                      {formatIpAddress(record.userIp)}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* 無資料顯示 */}
+          {records.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的抽獎記錄</p>
+            </div>
+          )}
+
+          {/* 分頁控制 */}
+          {renderPagination()}
+        </div>
       )}
     </div>
   );

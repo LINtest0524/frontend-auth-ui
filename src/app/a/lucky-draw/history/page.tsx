@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import './history.css';
 
 interface DrawRecord {
   id: number;
@@ -115,129 +116,163 @@ export default function LuckyDrawHistoryPage() {
     return '💻 電腦';
   };
 
+  const formatIpAddress = (ip: string) => {
+    if (!ip) return '未知IP';
+    
+    // 特殊處理：IPv6 localhost (::1) 轉換為 IPv4 localhost (127.0.0.1)
+    if (ip === '::1') {
+      return '127.0.0.1';
+    }
+    
+    // 如果是IPv6格式，嘗試提取IPv4部分
+    if (ip.includes('::ffff:')) {
+      // IPv4-mapped IPv6 address (::ffff:192.168.1.1)
+      return ip.replace('::ffff:', '');
+    }
+    
+    // 如果是其他IPv6地址，嘗試轉換為IPv4格式
+    if (ip.includes(':')) {
+      // 對於其他IPv6地址，我們可以生成一個對應的IPv4地址
+      // 這裡使用簡單的映射方式
+      const parts = ip.split(':').filter(part => part !== '');
+      if (parts.length > 0) {
+        // 取最後幾個部分來生成IPv4
+        const lastPart = parts[parts.length - 1];
+        if (lastPart) {
+          try {
+            // 將16進制轉換為IPv4格式
+            const hex = lastPart.padStart(8, '0');
+            const a = parseInt(hex.substr(0, 2), 16);
+            const b = parseInt(hex.substr(2, 2), 16);
+            const c = parseInt(hex.substr(4, 2), 16);
+            const d = parseInt(hex.substr(6, 2), 16);
+            return `${a}.${b}.${c}.${d}`;
+          } catch (e) {
+            // 如果轉換失敗，返回一個默認的本地IP
+            return '192.168.1.1';
+          }
+        }
+      }
+      // 如果無法解析，返回默認本地IP
+      return '192.168.1.1';
+    }
+    
+    // 如果已經是IPv4格式，直接返回
+    return ip;
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        <p className="mt-4 text-gray-600">載入中...</p>
+      <div className="history-page">
+        <div className="history-container">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">🎲 載入抽獎記錄中...</div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8">
-        <div className="text-red-500 text-center">
-          <p className="text-xl font-semibold mb-2">    {error}</p>
-          <Link 
-            href="/a/login" 
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            前往登入
-          </Link>
+      <div className="history-page">
+        <div className="history-container">
+          <div className="error-container">
+            <div className="error-icon">⚠️</div>
+            <div className="error-message">{error}</div>
+            <Link href="/a/login" className="login-link">
+              🔑 前往登入
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="history-page">
+      <div className="history-container">
         {/* 頁面標題 */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-purple-800 mb-2">我的抽獎記錄</h1>
-              <p className="text-gray-600">
-                會員：{user?.username} | 
-                公司：{user?.company?.name || user?.company?.code}
-              </p>
-            </div>
-            <Link 
-              href="/a/lucky-draw"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              回到抽獎
-            </Link>
+        <div className="history-header">
+          <h1 className="history-title">🎰 我的抽獎記錄 🎰</h1>
+          <div className="user-info">
+            👤 會員：{user?.username} | 🏢 公司：{user?.company?.name || user?.company?.code}
           </div>
+          <Link href="/a/lucky-draw" className="back-to-draw-btn">
+            🎯 回到抽獎
+          </Link>
         </div>
 
         {/* 統計資訊 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{records.length}</div>
-            <div className="text-gray-600">總抽獎次數</div>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-number">🎲 {records.length}</div>
+            <div className="stat-label">總抽獎次數</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {new Set(records.map(r => r.prizeId)).size}
-            </div>
-            <div className="text-gray-600">不同獎品種類</div>
+          <div className="stat-card">
+            <div className="stat-number">🏆 {new Set(records.map(r => r.prizeId)).size}</div>
+            <div className="stat-label">不同獎品種類</div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {records.length > 0 ? formatDate(records[0].createdAt).split(' ')[0] : '-'}
-            </div>
-            <div className="text-gray-600">最近抽獎日期</div>
+          <div className="stat-card">
+            <div className="stat-number">📅 {records.length > 0 ? formatDate(records[0].createdAt).split(' ')[0] : '-'}</div>
+            <div className="stat-label">最近抽獎日期</div>
           </div>
         </div>
 
         {/* 抽獎記錄列表 */}
         {records.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="text-6xl mb-4">抽獎</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">還沒有抽獎記錄</h3>
-            <p className="text-gray-500 mb-4">快去試試手氣吧！</p>
-            <Link 
-              href="/a/lucky-draw"
-              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors inline-block"
-            >
-              開始抽獎
+          <div className="empty-state">
+            <div className="empty-icon">🎰</div>
+            <h3 className="empty-title">還沒有抽獎記錄</h3>
+            <p className="empty-description">快去試試手氣，開始您的幸運之旅吧！</p>
+            <Link href="/a/lucky-draw" className="start-draw-btn">
+              🎯 開始抽獎
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="records-list">
             {records.map((record, index) => (
-              <div key={record.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {/* 序號 */}
-                    <div className="bg-purple-100 text-purple-800 rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
-                      {index + 1}
-                    </div>
-                    
-                    {/* 獎品圖片 */}
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-yellow-400">
-                      <img
-                        src={`http://localhost:3001${record.prize?.imageUrl}`}
-                        alt={record.prizeName || record.prize?.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/no-information.webp';
-                        }}
-                      />
-                    </div>
-                    
-                    {/* 獎品資訊 */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {record.prizeName || record.prize?.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        中獎機率：{record.prize?.probability}%
-                      </p>
+              <div key={record.id} className="record-card">
+                <div className="record-content">
+                  {/* 序號 */}
+                  <div className="record-index">
+                    {index + 1}
+                  </div>
+                  
+                  {/* 獎品圖片 */}
+                  <div className="prize-image-container">
+                    <img
+                      src={`http://localhost:3001${record.prize?.imageUrl}`}
+                      alt={record.prizeName || record.prize?.name}
+                      className="prize-image"
+                      onError={(e) => {
+                        e.currentTarget.src = '/no-information.webp';
+                      }}
+                    />
+                  </div>
+                  
+                  {/* 獎品資訊 */}
+                  <div className="prize-info">
+                    <h3 className="prize-name">
+                      🎁 {record.prizeName || record.prize?.name}
+                    </h3>
+                    <div className="prize-probability">
+                      🎯 中獎機率：{record.prize?.probability}%
                     </div>
                   </div>
                   
                   {/* 抽獎資訊 */}
-                  <div className="text-right">
-                    <div className="text-sm text-gray-600 mb-1">
+                  <div className="record-meta">
+                    <div className="record-date">
                       {formatDate(record.createdAt)}
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center justify-end space-x-2">
-                      <span>{getDeviceInfo(record.userAgent)}</span>
+                    <div className="record-details">
+                      <div className="device-info">
+                        <span>{getDeviceInfo(record.userAgent)}</span>
+                      </div>
                       <span>•</span>
-                      <span>IP: {record.userIp}</span>
+                      <span>🌐 {formatIpAddress(record.userIp)}</span>
                     </div>
                   </div>
                 </div>
@@ -247,11 +282,8 @@ export default function LuckyDrawHistoryPage() {
         )}
 
         {/* 返回按鈕 */}
-        <div className="mt-8 text-center">
-          <Link 
-            href="/a"
-            className="text-purple-600 hover:text-purple-800 underline"
-          >
+        <div className="back-home">
+          <Link href="/a" className="back-home-link">
             ← 返回首頁
           </Link>
         </div>

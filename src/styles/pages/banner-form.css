@@ -219,14 +219,163 @@
   color: #374151;
 }
 
+/* 文件上傳區域 */
+.file-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  max-width: 500px;
+}
+
+.file-upload-area:hover {
+  border-color: #4f46e5;
+  background: #f8fafc;
+}
+
+.file-upload-area.dragover {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.file-upload-icon {
+  font-size: 48px;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.file-upload-text {
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.file-upload-hint {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  max-width: 500px;
+  cursor: pointer;
+}
+
+.image-preview-container {
+  margin-top: 16px;
+  max-width: 500px;
+  width: 100%;
+}
+
 /* 圖片預覽 */
 .image-preview {
-  margin-top: 16px;
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: white;
   padding: 16px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.image-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-change-image {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-change-image:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-change-image:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-remove-image {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-image:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.btn-remove-image:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 上傳狀態 */
+.upload-status {
+  padding: 8px 12px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* 狀態預覽 */
+.status-preview {
+  margin-top: 8px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.status-inactive {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .image-preview-label {
@@ -443,6 +592,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import '@/styles/pages/floating-ad-admin.css'
 
 type FloatingAd = {
   id: number
@@ -17,6 +19,7 @@ type FloatingAd = {
 }
 
 export default function FloatingAdListPage() {
+  const router = useRouter()
   const [items, setItems] = useState<FloatingAd[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -88,40 +91,62 @@ export default function FloatingAdListPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">載入中...</div>
+      <div className="floating-ad-admin-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <span>載入浮動廣告資料中...</span>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>浮動廣告管理</h1>
+    <div className="floating-ad-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="floating-ad-admin-header">
+        <h1>🎯 浮動廣告管理</h1>
 
-      <div className="b-ibox-s">
-        <Link
-          href="/admin/floating-ad/new"
-          className="b-btn-s2 b-btn-c4 h32 mb25"
-        >
-          新增廣告
-        </Link>
+        <div className="floating-ad-admin-header-actions">
+          <Link href="/admin/floating-ad/new" className="floating-ad-add-btn">
+            新增廣告
+          </Link>
+        </div>
+      </div>
 
-        {loading ? (
-          <p>載入中...</p>
-        ) : items.length === 0 ? (
-          <p className="ps-err mb15">目前沒有浮動廣告</p>
+
+      {/* 內容區域 */}
+      <div className="content-section">
+        <div className="content-header">
+          <h2 className="content-title">
+            <span>📋</span>
+            廣告列表
+          </h2>
+        </div>
+
+        {items.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🎯</div>
+            <h3 className="empty-title">還沒有浮動廣告</h3>
+            <p className="empty-description">
+              開始創建您的第一個浮動廣告，提升網站的宣傳效果
+            </p>
+            <Link href="/admin/floating-ad/new" className="floating-ad-add-btn">
+              <span>✨</span>
+              立即新增
+            </Link>
+          </div>
         ) : (
-          <table className="b-table-box admin-table mb15">
+          <table className="modern-table">
             <thead>
               <tr>
-                <th>圖片</th>
-                <th>標題</th>
-                <th>連結</th>
-                <th>位置</th>
-                <th>狀態</th>
-                <th>排序</th>
-                <th>建立時間</th>
-                <th className="th-last">操作</th>
+                <th>🖼️ 圖片</th>
+                <th>📝 標題</th>
+                <th>🔗 連結</th>
+                <th>📍 位置</th>
+                <th>⚡ 狀態</th>
+                <th>🔢 排序</th>
+                <th>📅 建立時間</th>
+                <th>⚙️ 操作</th>
               </tr>
             </thead>
             <tbody>
@@ -132,45 +157,65 @@ export default function FloatingAdListPage() {
                       <img
                         src={`${process.env.NEXT_PUBLIC_API_BASE}${item.image_url}`}
                         alt={item.title}
-                        height={40}
-                        className="w-12 h-12 rounded object-cover"
+                        className="ad-image"
                       />
                     ) : (
-                      '無圖片'
+                      <div className="no-image">
+                        📷<br />無圖片
+                      </div>
                     )}
                   </td>
-                  <td>{item.title}</td>
                   <td>
-                    <div className="max-w-xs truncate">
-                      {item.link_url}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {item.target_blank ? '新視窗' : '同視窗'}
+                    <strong>{item.title}</strong>
+                  </td>
+                  <td>
+                    <div className="link-info">
+                      <a 
+                        href={item.link_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="link-url"
+                      >
+                        {item.link_url}
+                      </a>
+                      <span className="link-target">
+                        {item.target_blank ? '🔗 新視窗' : '📄 同視窗'}
+                      </span>
                     </div>
                   </td>
-                  <td>{getPositionText(item.position)}</td>
                   <td>
-                    <span className={`b-btn-s3 ${item.status === 'ACTIVE' ? 'b-btn-c4' : 'b-btn-c3'} w50px`}>
-                      {item.status === 'ACTIVE' ? 'ON' : 'OFF'}
+                    <span className="position-badge">
+                      {getPositionText(item.position)}
                     </span>
                   </td>
-                  <td>{item.sort}</td>
                   <td>
-                    {new Date(item.created_at).toLocaleDateString('zh-TW')}
+                    <span className={`status-badge ${item.status === 'ACTIVE' ? 'status-active' : 'status-inactive'}`}>
+                      {item.status === 'ACTIVE' ? '✅ 啟用' : '⏸️ 停用'}
+                    </span>
                   </td>
                   <td>
-                    <div className="fl4">
-                      <Link
-                        href={`/admin/floating-ad/${item.id}/edit`}
-                        className="b-btn-s3 b-btn-c1 mlr10"
+                    <strong>{item.sort}</strong>
+                  </td>
+                  <td>
+                    {new Date(item.created_at).toLocaleDateString('zh-TW', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })}
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        onClick={() => router.push(`/admin/floating-ad/${item.id}/edit`)}
+                        className="btn-edit"
                       >
-                        編輯
-                      </Link>
+                        ✏️ 編輯
+                      </button>
                       <button
                         onClick={() => handleDelete(item.id, item.title)}
-                        className="b-btn-s3 b-btn-c3 h30 mlr10"
+                        className="btn-delete"
                       >
-                        刪除
+                        🗑️ 刪除
                       </button>
                     </div>
                   </td>

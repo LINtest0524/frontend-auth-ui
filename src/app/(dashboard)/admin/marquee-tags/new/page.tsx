@@ -12,6 +12,7 @@ export default function MarqueeTagCreatePage() {
     name: "",
     backgroundColor: "#3b82f6",
     textColor: "#ffffff",
+    shape: "oval",
     isActive: true,
   });
 
@@ -32,8 +33,6 @@ export default function MarqueeTagCreatePage() {
     
     if (!form.name.trim()) {
       errors.name = '請輸入標籤名稱';
-    } else if (form.name.length < 2) {
-      errors.name = '標籤名稱至少需要2個字符';
     }
     
     if (!form.backgroundColor || !/^#[0-9A-Fa-f]{6}$/.test(form.backgroundColor)) {
@@ -102,6 +101,7 @@ export default function MarqueeTagCreatePage() {
           name: form.name,
           backgroundColor: form.backgroundColor,
           textColor: form.textColor,
+          shape: form.shape,
           isActive: form.isActive,
           companyId,
         }),
@@ -112,7 +112,7 @@ export default function MarqueeTagCreatePage() {
         throw new Error(errorData.message || "建立失敗");
       }
 
-      setSuccess("跑馬燈標籤建立成功！即將跳轉...");
+      setSuccess("標籤建立成功！即將跳轉...");
       setTimeout(() => {
         router.push("/admin/marquee-tags");
       }, 1500);
@@ -130,14 +130,14 @@ export default function MarqueeTagCreatePage() {
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <div className="loading-text">正在建立跑馬燈標籤...</div>
+            <div className="loading-text">正在建立標籤...</div>
           </div>
         </div>
       )}
 
       {/* 頁面標題區域 */}
       <div className="admin-user-form-header">
-        <h1>🏷️ 新增跑馬燈標籤</h1>
+        <h1>🏷️ 新增標籤</h1>
       </div>
 
       {/* 表單內容 */}
@@ -162,14 +162,14 @@ export default function MarqueeTagCreatePage() {
                   value={form.name}
                   onChange={handleChange}
                   className={`form-input ${fieldErrors.name ? 'error' : form.name ? 'success' : ''}`}
-                  placeholder="請輸入標籤名稱（至少2個字符）"
+                  placeholder="請輸入標籤名稱"
                 />
                 {fieldErrors.name && (
                   <div className="field-error">
                     ❌ {fieldErrors.name}
                   </div>
                 )}
-                {!fieldErrors.name && form.name && form.name.length >= 2 && (
+                {!fieldErrors.name && form.name && (
                   <div className="field-success">
                     ✅ 標籤名稱格式正確
                   </div>
@@ -268,6 +268,25 @@ export default function MarqueeTagCreatePage() {
                   選擇標籤的文字顏色，確保與背景顏色有良好對比
                 </div>
               </div>
+
+              <div className="form-group">
+                <label htmlFor="shape" className="form-label required">
+                  標籤形狀
+                </label>
+                <select
+                  id="shape"
+                  name="shape"
+                  value={form.shape}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="oval">🥚 橢圓形</option>
+                  <option value="pentagon">🏠 五邊形</option>
+                </select>
+                <div className="form-help">
+                  選擇標籤的外觀形狀，橢圓形較為圓潤，五邊形較有特色
+                </div>
+              </div>
             </div>
           </div>
 
@@ -296,14 +315,15 @@ export default function MarqueeTagCreatePage() {
               <div
                 style={{
                   display: 'inline-block',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '20px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
+                  padding: form.shape === 'pentagon' ? '6px 5px 10px' : '0.75rem 1.5rem',
+                  borderRadius: form.shape === 'oval' ? '20px' : '0px',
+                  clipPath: form.shape === 'pentagon' ? 'polygon(0% 0%, 100% 0%, 100% 80%, 50% 100%, 0% 80%)' : 'none',
+                  fontSize: '12px',
+                  fontWeight: form.shape === 'pentagon' ? 'normal' : '600',
                   backgroundColor: form.backgroundColor,
                   color: form.textColor,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                  minWidth: '120px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  minWidth: form.shape === 'pentagon' ? 'auto' : '120px',
                   transition: 'all 0.3s ease'
                 }}
               >

@@ -1,0 +1,734 @@
+/* 抽獎獎品管理頁面現代化樣式 - 保持視覺一致性 */
+
+.lucky-draw-prizes-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
+  width: 100%;
+}
+
+.lucky-draw-prizes-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.lucky-draw-prizes-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: sparkle 20s linear infinite;
+  pointer-events: none;
+}
+
+.lucky-draw-prizes-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.lucky-draw-prizes-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled)::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* 篩選區域 */
+.filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-icon {
+  font-size: 20px;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.filter-content {
+  padding: 20px 24px;
+}
+
+.modern-select {
+  width: 100%;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  background: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.modern-select:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.modern-select:hover {
+  border-color: #d1d5db;
+}
+
+/* 內容區域 */
+.content-section {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  animation: slideIn 0.3s ease-out;
+}
+
+.table-controls {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.table-info {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selected-event {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.loading-spinner div {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 表格樣式 */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modern-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.modern-table th:hover {
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.modern-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background: #f8fafc;
+  transform: scale(1.001);
+}
+
+/* 獎品資訊樣式 */
+.prize-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prize-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.prize-id {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 圖片相關樣式 */
+.image-cell {
+  display: flex;
+  justify-content: center;
+}
+
+.image-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.prize-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.prize-thumbnail:hover {
+  border-color: #f59e0b;
+  transform: scale(1.05);
+}
+
+.image-preview-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.image-preview-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
+}
+
+/* 數量和機率樣式 */
+.quantity-cell,
+.probability-cell {
+  text-align: center;
+}
+
+.quantity-badge,
+.probability-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 80px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quantity-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.probability-badge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+/* 操作按鈕 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-edit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-edit::before,
+.btn-delete::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-edit:hover::before,
+.btn-delete:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* 無選擇狀態 */
+.no-selection {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6b7280;
+}
+
+.no-selection-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.no-selection h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px 0;
+}
+
+.no-selection p {
+  font-size: 16px;
+  margin: 0;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* 無資料顯示 */
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.no-data img {
+  max-width: 200px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.no-data p {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+/* 圖片預覽彈窗 */
+.image-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.image-preview-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.image-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.image-preview-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.image-preview-close {
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.image-preview-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.1);
+}
+
+.image-preview-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    transform: translateX(-50px) translateY(-50px);
+  }
+  100% {
+    transform: translateX(50px) translateY(50px);
+  }
+}
+
+/* 表格懸停效果 */
+.modern-table tbody tr:hover .prize-name {
+  color: #f59e0b;
+}
+
+.modern-table tbody tr:hover .quantity-badge {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transform: scale(1.05);
+}
+
+.modern-table tbody tr:hover .probability-badge {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  transform: scale(1.05);
+}
+
+.modern-table tbody tr:hover .prize-thumbnail {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .lucky-draw-prizes-container {
+    padding: 16px;
+  }
+  
+  .lucky-draw-prizes-header {
+    padding: 24px;
+  }
+  
+  .lucky-draw-prizes-header h1 {
+    font-size: 24px;
+  }
+  
+  .modern-table {
+    font-size: 14px;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .prize-thumbnail {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .quantity-badge,
+  .probability-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 60px;
+  }
+  
+  .image-preview-container {
+    gap: 6px;
+  }
+  
+  .no-selection-icon {
+    font-size: 48px;
+  }
+  
+  .no-selection h3 {
+    font-size: 20px;
+  }
+  
+  .no-selection p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lucky-draw-prizes-header-actions {
+    width: 100%;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .action-buttons {
+    gap: 4px;
+  }
+  
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  .prize-name {
+    font-size: 13px;
+  }
+  
+  .prize-id {
+    font-size: 11px;
+  }
+  
+  .prize-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .image-preview-btn {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .filter-content {
+    padding: 16px;
+  }
+  
+  .modern-select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}

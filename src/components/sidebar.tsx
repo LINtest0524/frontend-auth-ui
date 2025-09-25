@@ -29,7 +29,8 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
+    if (pathname?.startsWith("/admin/marquee-tags")) setActiveMenu("tags");
+    else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
@@ -166,39 +167,30 @@ export default function Sidebar() {
       
 
         {/* 跑馬燈管理 */}
-        <div>
-          <button
-            onClick={() => {
-              toggleMenu("marquee");
-              setCurrentActive("marquee");
-            }}
-            className={cn(
-              "sidebar-item i-marquee", 
-              currentActive === "marquee" && "active",
-              activeMenu === "marquee" && "expanded"
-            )}
-          >
-            <span className="icon" />
-            跑馬燈管理
-            <span className="i-arrow"></span>
-          </button>
-          <div className={cn("sidebar-submenu", activeMenu === "marquee" && "open")}>
-            <Link
-              href="/admin/marquee"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/admin/marquee" && currentActive === null && "active")}
-            >
-              跑馬燈列表
-            </Link>
-            <Link
-              href="/admin/marquee-tags"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/admin/marquee-tags" && currentActive === null && "active")}
-            >
-              標籤管理
-            </Link>
-          </div>
-        </div>
+        <Link
+          href="/admin/marquee"
+          onClick={resetMenu}
+          className={cn(
+            "sidebar-item i-marquee",
+            pathname?.startsWith("/admin/marquee") && !pathname?.startsWith("/admin/marquee-tags") && "active"
+          )}
+        >
+          <span className="icon" />
+          跑馬燈管理
+        </Link>
+
+        {/* 標籤管理 */}
+        <Link
+          href="/admin/marquee-tags"
+          onClick={resetMenu}
+          className={cn(
+            "sidebar-item i-modules",
+            pathname?.startsWith("/admin/marquee-tags") && "active"
+          )}
+        >
+          <span className="icon" />
+          標籤管理
+        </Link>
 
         {/* 最新消息管理 */}
         {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
@@ -449,40 +441,26 @@ export default function Sidebar() {
           </div>
         </div>
 
+
+
+
+
         {/* 浮動廣告管理 */}
-        <div>
-          <button
-            onClick={() => {
-              toggleMenu("floating-ad");
-              setCurrentActive("floating-ad");
-            }}
-            className={cn(
-              "sidebar-item i-banner", 
-              currentActive === "floating-ad" && "active",
-              activeMenu === "floating-ad" && "expanded"
-            )}
-          >
-            <span className="icon" />
-            浮動廣告
-            <span className="i-arrow"></span>
-          </button>
-          <div className={cn("sidebar-submenu", activeMenu === "floating-ad" && "open")}>
-            <Link
-              href="/admin/floating-ad"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/admin/floating-ad" && currentActive === null && "active")}
-            >
-              廣告列表
-            </Link>
-            <Link
-              href="/admin/floating-ad/new"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/admin/floating-ad/new" && currentActive === null && "active")}
-            >
-              新增廣告
-            </Link>
-          </div>
-        </div>
+        <Link
+          href="/admin/floating-ad"
+          onClick={resetMenu}
+          className={cn("sidebar-item i-plan", pathname === "/admin/floating-ad" && "active")}
+        >
+          <span className="icon" />
+          浮動廣告管理
+        </Link>
+
+
+
+
+
+
+
 
         {/* 彈窗公告管理 */}
         <div>

@@ -235,14 +235,14 @@ export default function ViewProductPage() {
                 <div className="info-item">
                   <div className="info-label">💵 售價</div>
                   <div className="info-value price">
-                    NT$ {product.price.toLocaleString()}
+                    NT$ {Math.floor(product.price).toLocaleString()}
                   </div>
                 </div>
                 {product.original_price && (
                   <div className="info-item">
                     <div className="info-label">🏷️ 原價</div>
                     <div className="info-value original-price">
-                      NT$ {product.original_price.toLocaleString()}
+                      NT$ {Math.floor(product.original_price).toLocaleString()}
                     </div>
                   </div>
                 )}

@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import "@/styles/pages/users.css";
 
 interface AuditLog {
   id: number;
@@ -41,6 +42,10 @@ export default function AuditLogTable({
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [inputLimit, setInputLimit] = useState(20); // 用於輸入框的值
+  
+  // 篩選展開狀態
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -48,8 +53,6 @@ export default function AuditLogTable({
     try {
       const token = localStorage.getItem("token");
       const params = new URLSearchParams();
-
-
 
       if (target) params.append("target", target);
       if (search) params.append("search", search);
@@ -81,6 +84,13 @@ export default function AuditLogTable({
       setLoading(false);
     }
   };
+
+  // 當分頁或每頁筆數改變時重新載入資料
+  useEffect(() => {
+    if (logs.length > 0 || totalCount > 0) { // 只有在已經有資料的情況下才自動重新載入
+      fetchLogs();
+    }
+  }, [page, limit]);
 
   const clearFilter = () => {
     setSearch("");
@@ -152,31 +162,31 @@ export default function AuditLogTable({
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15">
-        <p>
-          目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）
-        </p>
+      <div className="pagination">
+        <div className="pagination-info">
+          <span>目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）</span>
+        </div>
 
-        <div className="tables_munber">
+        <div className="pagination-buttons">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className=""
+            className="pagination-btn prev"
           >
             上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>
+              <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
                 ...
               </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setPage(p as number)}
-                className={`${
-                  page === p ? "pagehover" : ""
+                className={`pagination-btn ${
+                  page === p ? "active" : ""
                 }`}
               >
                 {p}
@@ -187,7 +197,7 @@ export default function AuditLogTable({
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className=""
+            className="pagination-btn next"
           >
             下一頁
           </button>
@@ -197,127 +207,221 @@ export default function AuditLogTable({
   };
 
   return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
+    <div className="users-container">
+      <div className="users-header">
         <h1>{title}</h1>
-
-        <div className="b-ibox-s">
-          <div className="b-search-box fl1 w100">
-            <div className="b-form-group-2 fl4 w33 mb25">
-              <label>操作關鍵字</label>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="例如：新增、刪除"
-                className="w60"
-              />
-            </div>
-
-            <div className="b-form-group-2 fl4 w33 mb25">
-              <label>使用者帳號</label>
-              <input
-                type="text"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="使用者帳號"
-                className="w60"
-              />
-            </div>
-
-            <div className="b-form-group-2 fl4 w33 mb25">
-              <label>IP 位址</label>
-              <input
-                type="text"
-                value={ipSearch}
-                onChange={(e) => setIpSearch(e.target.value)}
-                placeholder="IP 位址"
-                className="w60"
-              />
-            </div>
-
-            <div className="b-form-group-2 fl4 w100 mb10">
-              <label>時間範圍</label>
-              <div className="w70 fl4">
-                <input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  className="date-select flex1"
-                />
-                <span className="dateto">到</span>
-                <input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                  className="date-select flex1"
-                />
-              </div>
-            </div>
-
-            <div className="b-form-group-2 w100 fl4 mb25">
-              <div className="b-date-fast fl4 w70 ml132">
-                <button onClick={() => quickSetDate("today")}>今日</button>
-                <button onClick={() => quickSetDate("yesterday")}>昨日</button>
-                <button onClick={() => quickSetDate("3days")}>近三日</button>
-                <button onClick={() => quickSetDate("thisMonth")}>本月</button>
-                <button onClick={() => quickSetDate("lastMonth")}>上月</button>
-              </div>
-            </div>
-
-            <div className="fl4 w100 b-btnbox">
-              <button onClick={() => { setPage(1); fetchLogs(); }} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
-              <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {loading && <p>載入中...</p>}
-      {error && <p style={{color: 'red'}}>錯誤：{error}</p>}
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <button
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="filter-toggle"
+        >
+          <span>🔍 篩選條件</span>
+          <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+        </button>
+
+        {isFilterOpen && (
+          <div className="filter-content">
+            <div className="filter-grid">
+              <div className="form-group">
+                <label htmlFor="search-input" className="form-label">操作關鍵字</label>
+                <input
+                  type="text"
+                  id="search-input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="例如：新增、刪除"
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="user-search" className="form-label">使用者帳號</label>
+                <input
+                  type="text"
+                  id="user-search"
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  placeholder="使用者帳號"
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="ip-search" className="form-label">IP 位址</label>
+                <input
+                  type="text"
+                  id="ip-search"
+                  value={ipSearch}
+                  onChange={(e) => setIpSearch(e.target.value)}
+                  placeholder="IP 位址"
+                  className="form-input"
+                />
+              </div>
+            </div>
+            
+            <div className="filter-row">
+              <div className="form-group date-range-group">
+                <label htmlFor="date-from" className="form-label">時間範圍</label>
+                <div className="date-inputs">
+                  <input
+                    type="date"
+                    id="date-from"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    className="form-input"
+                  />
+                  <span className="date-separator">至</span>
+                  <input
+                    type="date"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                    className="form-input"
+                  />
+                </div>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-actions">
+              <button onClick={() => { setPage(1); fetchLogs(); }} className="btn-search">🔍 查詢</button>
+              <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {loading && (
+        <div className="loading">
+          <div className="loading-text">載入中...</div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="error">
+          <p>錯誤：{error}</p>
+        </div>
+      )}
 
       {!loading && !error && logs.length === 0 && (
-        <div className="b-no-information w100 fd5">
-          <img src="/no-information.webp" alt="無資料" className="mb25" />
+        <div className="no-data">
+          <img src="/no-information.webp" alt="無資料" />
           <p>查無資料</p>
         </div>
       )}
 
       {!loading && !error && logs.length > 0 && (
-        <div className="b-ibox">
-          <div className="b-ibox-s">
-            <table className="b-table-box admin-table mb15">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>使用者</th>
-                  <th>IP</th>
-                  <th>裝置平台</th>
-                  <th>操作內容</th>
-                  <th>時間</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => (
-                  <tr key={log.id}>
-                    <td>{log.id}</td>
-                    <td>{log.user?.username || "未知使用者"}</td>
-                    <td>{log.ip}</td>
-                    <td>{log.platform}</td>
-                    <td>{log.action}</td>
-                    <td>
-                      {new Date(log.created_at).toLocaleString("zh-TW", {
-                        timeZone: "Asia/Taipei",
-                        hour12: false,
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {renderPagination()}
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                  setPage(1);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
+            <div className="pagination-info">
+              共 {totalCount} 筆資料
+            </div>
           </div>
+
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>
+                  <div className="fl4">ID</div>
+                </th>
+                <th>
+                  <div className="fl4">使用者</div>
+                </th>
+                <th>
+                  <div className="fl4">IP位址</div>
+                </th>
+                <th>
+                  <div className="fl4">裝置平台</div>
+                </th>
+                <th>
+                  <div className="fl4">操作內容</div>
+                </th>
+                <th>
+                  <div className="fl4">操作時間</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log.id}>
+                  <td>#{log.id}</td>
+                  <td>
+                    <div className="user-info">
+                      <div className="user-name">{log.user?.username || "未知使用者"}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="ip-address">{log.ip}</div>
+                  </td>
+                  <td>
+                    <div className="platform-info">{log.platform}</div>
+                  </td>
+                  <td>
+                    <div className="action-info">
+                      <span className="action-badge">{log.action}</span>
+                    </div>
+                  </td>
+                  <td style={{fontSize: "12px", lineHeight: "1.4"}}>
+                    {new Date(log.created_at).toLocaleString("zh-TW", {
+                      timeZone: "Asia/Taipei",
+                      hour12: false,
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* 無資料顯示 */}
+          {!loading && logs.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的審計記錄</p>
+            </div>
+          )}
+
+          {/* 分頁控制 */}
+          {renderPagination()}
         </div>
       )}
     </div>

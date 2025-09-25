@@ -38,6 +38,12 @@ export default function UserListPage() {
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  // 標籤管理相關狀態
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [availableTags, setAvailableTags] = useState<any[]>([]);
+  const [userTags, setUserTags] = useState<any[]>([]);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+
   const quickSetDate = (type: string, target: "created" | "login") => {
     const today = dayjs();
     let fromDate = "";
@@ -264,6 +270,85 @@ export default function UserListPage() {
     } catch (err) {
       console.error("切換黑名單失敗", err);
     }
+  };
+
+  // 標籤管理功能
+  const fetchAvailableTags = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:3001/admin/marquee-tags`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const tags = await response.json();
+        setAvailableTags(tags.filter((tag: any) => tag.isActive));
+      }
+    } catch (err) {
+      console.error("獲取標籤列表失敗", err);
+    }
+  };
+
+  const fetchUserTags = async (userId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:3001/user/${userId}/tags`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const tags = await response.json();
+        setUserTags(tags);
+      }
+    } catch (err) {
+      console.error("獲取使用者標籤失敗", err);
+      setUserTags([]);
+    }
+  };
+
+  const handleOpenTagModal = async (user: User) => {
+    setSelectedUser(user);
+    setIsTagModalOpen(true);
+    await fetchAvailableTags();
+    await fetchUserTags(user.id);
+  };
+
+  const handleToggleUserTag = async (tagId: number, isAdding: boolean) => {
+    if (!selectedUser) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const method = isAdding ? "POST" : "DELETE";
+      const response = await fetch(`http://localhost:3001/user/${selectedUser.id}/tags/${tagId}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (response.ok) {
+        await fetchUserTags(selectedUser.id);
+        // 更新使用者列表中的標籤顯示
+        fetchUsers();
+      } else {
+        // 處理特定的錯誤狀態
+        if (response.status === 404) {
+          console.warn("標籤關聯不存在，可能已被移除");
+          // 刷新標籤狀態
+          await fetchUserTags(selectedUser.id);
+        } else if (response.status === 409) {
+          console.warn("使用者已擁有此標籤");
+          // 刷新標籤狀態
+          await fetchUserTags(selectedUser.id);
+        } else {
+          console.error("更新使用者標籤失敗", response.statusText);
+        }
+      }
+    } catch (err) {
+      console.error("更新使用者標籤失敗", err);
+    }
+  };
+
+  const closeTagModal = () => {
+    setIsTagModalOpen(false);
+    setSelectedUser(null);
+    setUserTags([]);
   };
 
   const renderPagination = () => {
@@ -554,6 +639,8 @@ export default function UserListPage() {
                 </th>
                 <th>狀態</th>
                 <th>黑名單</th>
+                <th>標籤</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -614,6 +701,38 @@ export default function UserListPage() {
                       {user.is_blacklisted ? "🚫 是" : "✅ 否"}
                     </button>
                   </td>
+                  <td>
+                    <div className="user-tags">
+                      {(user as any).tags?.slice(0, 2).map((tag: any) => (
+                        <span 
+                          key={tag.id} 
+                          className={`user-tag tag-shape-${tag.shape || 'oval'}`}
+                          style={{ 
+                            backgroundColor: tag.backgroundColor, 
+                            color: tag.textColor 
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                      {(user as any).tags?.length > 2 && (
+                        <span className="tag-more">+{(user as any).tags.length - 2}</span>
+                      )}
+                      {!(user as any).tags?.length && (
+                        <span className="no-tags">無標籤</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => handleOpenTagModal(user)} 
+                        className="btn-tag"
+                      >
+                        🏷️ 標籤
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -629,6 +748,89 @@ export default function UserListPage() {
 
           {/* 分頁控制 */}
           {renderPagination()}
+        </div>
+      )}
+
+      {/* 標籤管理彈窗 */}
+      {isTagModalOpen && selectedUser && (
+        <div className="tag-modal-overlay" onClick={closeTagModal}>
+          <div className="tag-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="tag-modal-header">
+              <h3>🏷️ 管理標籤 - {selectedUser.username}</h3>
+              <button onClick={closeTagModal} className="tag-modal-close">✕</button>
+            </div>
+            
+            <div className="tag-modal-body">
+              <div className="tag-section">
+                <h4>📋 可用標籤</h4>
+                <div className="available-tags">
+                  {availableTags.map((tag) => {
+                    const isUserHasTag = userTags.some(userTag => userTag.tagId === tag.id);
+                    return (
+                      <div key={tag.id} className="tag-item">
+                        <span 
+                          className={`tag-preview tag-shape-${tag.shape || 'oval'}`}
+                          style={{ 
+                            backgroundColor: tag.backgroundColor, 
+                            color: tag.textColor 
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                        <button
+                          onClick={() => handleToggleUserTag(tag.id, !isUserHasTag)}
+                          className={`tag-toggle-btn ${isUserHasTag ? 'tag-remove' : 'tag-add'}`}
+                        >
+                          {isUserHasTag ? '➖ 移除' : '➕ 添加'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {availableTags.length === 0 && (
+                  <div className="no-tags-available">
+                    <p>目前沒有可用的標籤</p>
+                    <p>請先到 <a href="/admin/marquee-tags" target="_blank">標籤管理</a> 建立標籤</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="tag-section">
+                <h4>🏷️ 使用者已有標籤</h4>
+                <div className="user-current-tags">
+                  {userTags.length > 0 ? (
+                    userTags.map((tag) => (
+                      <span 
+                        key={tag.id} 
+                        className={`current-tag tag-shape-${tag.shape || 'oval'}`}
+                        style={{ 
+                          backgroundColor: tag.backgroundColor, 
+                          color: tag.textColor 
+                        }}
+                      >
+                        {tag.name}
+                        <button
+                          onClick={() => handleToggleUserTag(tag.tagId, false)}
+                          className="tag-remove-btn"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <p className="no-user-tags">此使用者尚未設定任何標籤</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="tag-modal-footer">
+              <button onClick={closeTagModal} className="btn-secondary">
+                關閉
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

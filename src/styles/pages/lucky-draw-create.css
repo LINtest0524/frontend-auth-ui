@@ -1,0 +1,846 @@
+/* 抽獎獎品新增頁面現代化樣式 - 保持視覺一致性 */
+
+.lucky-draw-create-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
+  width: 100%;
+}
+
+.lucky-draw-create-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.lucky-draw-create-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: sparkle 20s linear infinite;
+  pointer-events: none;
+}
+
+.lucky-draw-create-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.lucky-draw-create-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.breadcrumb-link {
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.breadcrumb-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.breadcrumb-separator {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+.breadcrumb-current {
+  color: white;
+  font-weight: 600;
+}
+
+/* 表單區域 */
+.form-section {
+  animation: slideIn 0.3s ease-out;
+}
+
+.modern-form {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 表單卡片 */
+.form-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.form-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.form-card-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-card-icon {
+  font-size: 20px;
+}
+
+.form-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-card-content {
+  padding: 24px;
+}
+
+/* 表單元素 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.label-icon {
+  font-size: 16px;
+}
+
+.required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.form-input:hover {
+  border-color: #d1d5db;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+.form-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 圖片上傳區域 */
+.image-upload-section {
+  width: 100%;
+}
+
+.image-upload-area {
+  position: relative;
+  width: 100%;
+}
+
+.image-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.image-upload-label {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.image-upload-label:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.02);
+}
+
+.image-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 16px;
+  color: #6b7280;
+}
+
+.upload-icon {
+  font-size: 48px;
+  opacity: 0.7;
+}
+
+.upload-text {
+  text-align: center;
+}
+
+.upload-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.upload-subtitle {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/* 文件上傳區域 */
+.file-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  max-width: 500px;
+}
+
+.file-upload-area:hover {
+  border-color: #4f46e5;
+  background: #f8fafc;
+}
+
+.file-upload-area.dragover {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.file-upload-icon {
+  font-size: 48px;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.file-upload-text {
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.file-upload-hint {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  max-width: 500px;
+  cursor: pointer;
+}
+
+.image-preview-container {
+  margin-top: 16px;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* 圖片預覽 */
+.image-preview {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.image-info {
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.image-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-change-image {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-change-image:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-change-image:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-remove-image {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-image:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.btn-remove-image:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 上傳狀態 */
+.upload-status {
+  padding: 8px 12px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-upload-label:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-upload-label:hover .image-preview {
+  transform: scale(1.05);
+}
+
+.change-image-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+/* 操作按鈕 */
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white !important;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-submit:disabled {
+  background: #9ca3af !important;
+  color: white !important;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* 幸運抽獎專用取消按鈕樣式 */
+.lucky-draw-cancel-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 14px 32px !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-decoration: none !important;
+}
+
+.lucky-draw-cancel-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.btn-cancel {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white !important;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.btn-cancel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+}
+
+.lucky-draw-cancel-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  transition: width 0.3s ease, height 0.3s ease !important;
+}
+
+.lucky-draw-cancel-btn:hover::before {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.btn-submit::before,
+.btn-cancel::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled)::before,
+.btn-cancel:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* 強制按鈕文字顏色 */
+.btn-submit,
+.btn-submit:hover,
+.btn-submit:focus,
+.btn-submit:active,
+.btn-submit:disabled {
+  color: white !important;
+}
+
+.btn-submit span,
+.btn-submit * {
+  color: white !important;
+}
+
+.lucky-draw-cancel-btn,
+.lucky-draw-cancel-btn:hover,
+.lucky-draw-cancel-btn:focus,
+.lucky-draw-cancel-btn:active {
+  color: white !important;
+}
+
+.lucky-draw-cancel-btn span,
+.lucky-draw-cancel-btn * {
+  color: white !important;
+}
+
+.btn-cancel,
+.btn-cancel:hover,
+.btn-cancel:focus,
+.btn-cancel:active {
+  color: white !important;
+}
+
+.btn-cancel span,
+.btn-cancel * {
+  color: white !important;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    transform: translateX(-50px) translateY(-50px);
+  }
+  100% {
+    transform: translateX(50px) translateY(50px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .lucky-draw-create-container {
+    padding: 16px;
+  }
+  
+  .lucky-draw-create-header {
+    padding: 24px;
+  }
+  
+  .lucky-draw-create-header h1 {
+    font-size: 24px;
+  }
+  
+  .modern-form {
+    max-width: 100%;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .form-card-content {
+    padding: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    padding: 20px;
+  }
+  
+  .btn-submit,
+  .btn-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .image-upload-placeholder {
+    height: 150px;
+  }
+  
+  .image-preview-container {
+    height: 150px;
+  }
+  
+  .upload-icon {
+    font-size: 36px;
+  }
+  
+  .upload-title {
+    font-size: 14px;
+  }
+  
+  .upload-subtitle {
+    font-size: 12px;
+  }
+  
+  .lucky-draw-create-breadcrumb {
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lucky-draw-create-header {
+    padding: 20px;
+  }
+  
+  .lucky-draw-create-header h1 {
+    font-size: 20px;
+  }
+  
+  .form-card-header {
+    padding: 16px 20px;
+  }
+  
+  .form-card-header h3 {
+    font-size: 16px;
+  }
+  
+  .form-card-content {
+    padding: 16px;
+  }
+  
+  .form-input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .form-label {
+    font-size: 13px;
+  }
+  
+  .btn-submit,
+  .btn-cancel {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+  
+  .image-upload-placeholder {
+    height: 120px;
+  }
+  
+  .image-preview-container {
+    height: 120px;
+  }
+  
+  .upload-icon {
+    font-size: 32px;
+  }
+  
+  .form-actions {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* 特殊效果 */
+.form-card {
+  position: relative;
+}
+
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b, #d97706, #f59e0b);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-card:hover::before {
+  opacity: 1;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 輸入框焦點效果 */
+.form-input:focus {
+  animation: focusPulse 0.3s ease-out;
+}
+
+@keyframes focusPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 按鈕載入狀態 */
+.btn-submit:disabled {
+  position: relative;
+}
+
+.btn-submit:disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: buttonSpin 1s linear infinite;
+}
+
+@keyframes buttonSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

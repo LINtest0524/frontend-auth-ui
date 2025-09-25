@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import '@/styles/pages/popup-announcement.css'
 
 type PopupAnnouncement = {
   id: number
@@ -79,114 +80,206 @@ export default function PopupAnnouncementPage() {
     return new Date(dateString).toLocaleString('zh-TW')
   }
 
-  if (loading) {
-    return <div className="p-6">載入中...</div>
-  }
-
   return (
-    <div className="b-ibox">
-      <h1>彈窗公告管理</h1>
-
-      <div className="b-ibox-s">
-        <div className="fl4 w100 mb15">
+    <div className="popup-announcement-container">
+      {/* 頁面標題區域 */}
+      <div className="popup-announcement-header">
+        <h1>📢 彈窗公告管理</h1>
+        <div className="popup-announcement-header-actions">
           <Link
             href="/admin/popup-announcement/new"
-            className="b-btn-s2 b-btn-c4 h32 mb25"
+            className="btn-primary"
           >
+            <span>✨</span>
             新增彈窗公告
           </Link>
         </div>
+      </div>
 
-        {loading && <p>載入中...</p>}
+      {/* 內容區域 */}
+      <div className="content-section">
+        {/* 表格控制區域 */}
+        <div className="table-controls">
+          <div className="table-info">
+            共 {announcements.length} 個彈窗公告
+          </div>
+        </div>
 
-        {!loading && announcements.length === 0 ? (
-          <p className="ps-err mb15">目前沒有彈窗公告</p>
-        ) : (
-          !loading && (
-            <table className="b-table-box admin-table mb15">
-              <thead>
-                <tr>
-                  <th>標題</th>
-                  <th>圖片</th>
-                  <th>排序</th>
-                  <th>狀態</th>
-                  <th>生效時間</th>
-                  <th>結束時間</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {announcements.map((item) => (
-                  <tr key={item.id} className="text-center">
-                    <td>{item.title}</td>
-                    <td className="b-td-center">
+        {/* 載入狀態 */}
+        {loading && (
+          <div className="loading-spinner">
+            <div>⏳ 載入中...</div>
+          </div>
+        )}
+
+        {/* 現代化表格 */}
+        {!loading && (
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>📢 公告資訊</th>
+                <th>🖼️ 圖片</th>
+                <th>📝 按鈕文字</th>
+                <th>🔗 按鈕連結</th>
+                <th>📊 排序</th>
+                <th>⚡ 狀態</th>
+                <th>📅 生效時間</th>
+                <th>📅 結束時間</th>
+                <th>⚙️ 操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {announcements.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <div className="announcement-info">
+                      <div className="announcement-title">{item.title}</div>
+                      <div className="announcement-id">ID: #{item.id}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="image-cell">
                       {item.desktop_image_url ? (
-                        <div className="fo5p">
+                        <div className="image-preview-container">
                           <img
                             src={`${process.env.NEXT_PUBLIC_API_BASE}${item.desktop_image_url}`}
                             alt={item.title}
-                            height={40}
+                            className="announcement-thumbnail"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
                           />
                           <button 
                             onClick={() => setPreviewImage(`${process.env.NEXT_PUBLIC_API_BASE}${item.desktop_image_url}`)}
+                            className="image-preview-btn"
                           >
+                            <span>🔍</span>
                             預覽
                           </button>
                         </div>
                       ) : (
-                        <span className="text-gray-400">無圖</span>
+                        <div className="no-image">
+                          <span>📷</span>
+                          <span>無圖片</span>
+                        </div>
                       )}
-                    </td>
-                    <td>{item.sort_order}</td>
-                    <td>
-                      <span className={`b-status ${item.status === 'active' ? 'b-status-active' : 'b-status-inactive'}`}>
-                        {item.status === 'active' ? '啟用' : '停用'}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="button-text-cell">
+                      {item.button_text ? (
+                        <span className="button-text-badge">
+                          {item.button_text}
+                        </span>
+                      ) : (
+                        <span className="no-text">無按鈕文字</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="button-url-cell">
+                      {item.button_url ? (
+                        <a 
+                          href={item.button_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="url-link"
+                        >
+                          🔗 查看連結
+                        </a>
+                      ) : (
+                        <span className="no-url">無連結</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="sort-cell">
+                      <span className="sort-badge">
+                        📊 {item.sort_order}
                       </span>
-                    </td>
-                    <td>{formatDate(item.start_date)}</td>
-                    <td>{formatDate(item.end_date)}</td>
-                    <td>
-                      <div className="fl4">
-                        <Link
-                          href={`/admin/popup-announcement/${item.id}/edit`}
-                          className="b-btn-s3 b-btn-c1 mr10"
-                        >
-                          編輯
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="b-btn-s3 b-btn-c3"
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+                    </div>
+                  </td>
+                  <td>
+                    <div className="status-cell">
+                      <span className={`status-badge ${item.status === 'active' ? 'status-active' : 'status-inactive'}`}>
+                        {item.status === 'active' ? '✅ 啟用' : '❌ 停用'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="date-cell">
+                      {formatDate(item.start_date)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="date-cell">
+                      {formatDate(item.end_date)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <Link
+                        href={`/admin/popup-announcement/${item.id}/edit`}
+                        className="btn-edit"
+                      >
+                        <span>✏️</span>
+                        編輯
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="btn-delete"
+                      >
+                        <span>🗑️</span>
+                        刪除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
 
-        {previewImage && (
-          <div className="b-lightbox-1">
-            <h2 className="mb15">圖片預覽</h2>
-            <div className="b-id-imgbox mb25">
-              <Image 
-                src={previewImage} 
-                alt="預覽圖片" 
-                width={800}
-                height={600}
-                className="b-id-img" 
-              />
-            </div>
-            <button onClick={() => setPreviewImage(null)} className="b-id-imgbox-X">X</button>
+        {/* 無資料顯示 */}
+        {!loading && announcements.length === 0 && (
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
+            <p>目前沒有彈窗公告</p>
+            <Link
+              href="/admin/popup-announcement/new"
+              className="btn-primary"
+              style={{ marginTop: '16px' }}
+            >
+              <span>✨</span>
+              立即新增彈窗公告
+            </Link>
           </div>
         )}
       </div>
+
+      {/* 圖片預覽彈窗 */}
+      {previewImage && (
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
+            <div className="image-preview-header">
+              <h2 className="image-preview-title">🖼️ 彈窗公告圖片預覽</h2>
+              <button 
+                onClick={() => setPreviewImage(null)} 
+                className="image-preview-close"
+              >
+                ✕
+              </button>
+            </div>
+            <Image 
+              src={previewImage} 
+              alt="預覽圖片" 
+              width={800} 
+              height={600} 
+              className="image-preview-img" 
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
+import '@/styles/pages/floating-ad-create.css'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'
 
@@ -156,11 +156,11 @@ export default function FloatingAdEditPage() {
       })
 
       if (response.ok) {
-        alert('  修改成功')
-        window.location.href = '/admin/floating-ad'
+        alert('修改成功')
+        router.push('/admin/floating-ad')
       } else {
         const errorData = await response.json()
-        alert(`    修改失敗: ${errorData.message || '未知錯誤'}`)
+        alert(`修改失敗: ${errorData.message || '未知錯誤'}`)
       }
     } catch (error) {
       console.error('修改錯誤:', error)
@@ -172,142 +172,245 @@ export default function FloatingAdEditPage() {
 
   if (fetching) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">載入中...</div>
+      <div className="floating-ad-create-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <span>載入廣告資料中...</span>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="b-ibox">
-      <h1>編輯浮動廣告</h1>
-
-      <div className="b-ibox-s">
-        {/* 標題 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="title">標題 *</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            required
-            className="pt3 w70"
-            placeholder="請輸入廣告標題"
-          />
+    <div className="floating-ad-create-container">
+      {/* 頁面標題區域 */}
+      <div className="floating-ad-create-header">
+        <h1>🎯 編輯浮動廣告</h1>
+        <div className="floating-ad-create-breadcrumb">
+          <span onClick={() => router.push("/admin/floating-ad")} className="breadcrumb-link">
+            🎯 浮動廣告管理
+          </span>
+          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-current">編輯廣告</span>
         </div>
+      </div>
 
-        {/* 連結網址 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="link_url">連結網址 *</label>
-          <input
-            type="url"
-            id="link_url"
-            name="link_url"
-            value={formData.link_url}
-            onChange={handleInputChange}
-            required
-            className="pt3 w70"
-            placeholder="https://example.com"
-          />
-        </div>
+      {/* 表單區域 */}
+      <div className="form-section">
+        <div className="modern-form">
+          
+          {/* 基本資訊卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">📝</span>
+              <h3>基本資訊</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="title" className="form-label">
+                    <span className="label-icon">🏷️</span>
+                    廣告標題
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="title"
+                    type="text"
+                    name="title"
+                    className="form-input"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="請輸入廣告標題"
+                    required
+                  />
+                </div>
 
-        {/* 圖片上傳 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="img">廣告圖片</label>
-          <input
-            type="file"
-            id="img"
-            className="pt3 w70"
-            ref={imageInputRef}
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleImageChange}
-          />
-        </div>
+                <div className="form-group">
+                  <label htmlFor="link_url" className="form-label">
+                    <span className="label-icon">🔗</span>
+                    連結網址
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="link_url"
+                    type="url"
+                    name="link_url"
+                    className="form-input"
+                    value={formData.link_url}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div className="b-form-group-2 w50 fl4 mb25 ml132">
-          {preview && (
-            <img
-              src={preview}
-              alt="圖片預覽"
-              className="b-banner-img"
-            />
-          )}
-        </div>
+          {/* 圖片上傳卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">🖼️</span>
+              <h3>廣告圖片</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="image-upload-section">
+                <div className="image-upload-area">
+                  <input
+                    type="file"
+                    id="img"
+                    className="image-input"
+                    ref={imageInputRef}
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageChange}
+                  />
+                  <label htmlFor="img" className="image-upload-label">
+                    {preview ? (
+                      <div className="image-preview-container">
+                        <img
+                          src={preview}
+                          alt="廣告圖片預覽"
+                          className="image-preview"
+                        />
+                        <div className="image-overlay">
+                          <span className="change-image-text">
+                            🔄 點擊更換圖片
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="image-upload-placeholder">
+                        <div className="upload-icon">📷</div>
+                        <div className="upload-text">
+                          <div className="upload-title">點擊上傳廣告圖片</div>
+                          <div className="upload-subtitle">支援 JPG、PNG、WEBP 格式</div>
+                        </div>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* 開啟方式 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label>開啟方式</label>
-          <input
-            type="checkbox"
-            name="target_blank"
-            checked={formData.target_blank}
-            onChange={handleInputChange}
-            className="new-checkbox mr10"
-          />
-          <p>在新視窗開啟連結</p>
-        </div>
+          {/* 顯示設定卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">⚙️</span>
+              <h3>顯示設定</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="position" className="form-label">
+                    <span className="label-icon">📍</span>
+                    顯示位置
+                  </label>
+                  <select
+                    id="position"
+                    name="position"
+                    className="form-select"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                  >
+                    <option value="top-right">右上角</option>
+                    <option value="bottom-right">右下角</option>
+                    <option value="top-left">左上角</option>
+                    <option value="bottom-left">左下角</option>
+                  </select>
+                </div>
 
-        {/* 位置 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="position">顯示位置</label>
-          <select
-            id="position"
-            name="position"
-            value={formData.position}
-            onChange={handleInputChange}
-            className="pt3 w70"
-          >
-            <option value="bottom-right">右下角</option>
-            <option value="bottom-left">左下角</option>
-            <option value="top-right">右上角</option>
-            <option value="top-left">左上角</option>
-          </select>
-        </div>
+                <div className="form-group">
+                  <label htmlFor="status" className="form-label">
+                    <span className="label-icon">⚡</span>
+                    狀態
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="ACTIVE">啟用</option>
+                    <option value="INACTIVE">停用</option>
+                  </select>
+                </div>
+              </div>
 
-        {/* 狀態 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="status">狀態</label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleInputChange}
-            className="pt3 w70"
-          >
-            <option value="ACTIVE">啟用</option>
-            <option value="INACTIVE">停用</option>
-          </select>
-        </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">
+                    <span className="label-icon">🚀</span>
+                    開啟方式
+                  </label>
+                  <div className="form-checkbox-group">
+                    <input
+                      type="checkbox"
+                      id="target_blank"
+                      name="target_blank"
+                      className="form-checkbox"
+                      checked={formData.target_blank}
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="target_blank" className="checkbox-label">
+                      在新視窗開啟連結
+                    </label>
+                  </div>
+                </div>
 
-        {/* 排序 */}
-        <div className="b-form-group-2 w50 fl4 mb10">
-          <label htmlFor="sort">排序</label>
-          <input
-            type="number"
-            id="sort"
-            name="sort"
-            value={formData.sort}
-            onChange={handleInputChange}
-            min="0"
-            className="pt3 w70"
-            placeholder="數字越小越前面"
-          />
-        </div>
+                <div className="form-group">
+                  <label htmlFor="sort" className="form-label">
+                    <span className="label-icon">🔢</span>
+                    排序
+                  </label>
+                  <input
+                    id="sort"
+                    type="number"
+                    name="sort"
+                    className="form-input"
+                    value={formData.sort}
+                    onChange={handleInputChange}
+                    placeholder="數字越小越前面"
+                    min="0"
+                  />
+                  <div className="form-hint">
+                    💡 設定廣告顯示的優先順序
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* 按鈕 */}
-        <div className="fl4 w100 b-btnbox">
-          <button
-            onClick={handleSubmit}
-            className="b-btn-s2 b-btn-c4 mr20"
-            disabled={loading}
-          >
-            {loading ? '修改中...' : '送出'}
-          </button>
-          <Link href="/admin/floating-ad" className="b-btn-s2 b-btn-c2 h32">
-            取消
-          </Link>
+          {/* 操作按鈕 */}
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-submit"
+            >
+              {loading ? (
+                <>
+                  <span className="loading-spinner">⏳</span>
+                  修改中...
+                </>
+              ) : (
+                <>
+                  <span>💾</span>
+                  儲存修改
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/floating-ad")}
+              className="floating-ad-cancel-btn"
+            >
+              <span>❌</span>
+              取消
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

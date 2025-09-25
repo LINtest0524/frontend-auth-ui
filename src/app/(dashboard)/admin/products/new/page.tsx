@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from "@/hooks/use-user-store";
 import SunEditor from '@/components/SunEditor'
@@ -41,6 +41,9 @@ export default function NewProductPage() {
 
   const [images, setImages] = useState<string[]>([])
   const [thumbnail, setThumbnail] = useState('')
+  const [preview, setPreview] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
   
   // 運費規則模板相關狀態
   const [shippingTemplates, setShippingTemplates] = useState<any[]>([])
@@ -303,19 +306,27 @@ export default function NewProductPage() {
     }
   }, [variantOptions, useVariants])
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-    setUploadingImages(true);
-    const token = localStorage.getItem("token");
-    const uploadFormData = new FormData();
+  const handleFileSelect = (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      alert('只接受 JPG / PNG / WEBP 圖片')
+      return
+    }
+    setSelectedFile(file)
+    setPreview(URL.createObjectURL(file))
     
-    Array.from(files).forEach(file => {
-      uploadFormData.append("images", file);
-    });
+    // 自動上傳
+    handleImageUpload(file)
+  }
 
+  const handleImageUpload = async (file: File) => {
+    setUploadingImages(true);
     try {
+      const token = localStorage.getItem("token");
+      const uploadFormData = new FormData();
+      uploadFormData.append("images", file);
+
       const res = await fetch("http://localhost:3001/admin/product/upload-images", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -337,6 +348,17 @@ export default function NewProductPage() {
       setUploadingImages(false);
     }
   };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null)
+    setPreview('')
+    setImages([])
+    setThumbnail('')
+    setUploadingImages(false)
+    if (imageInputRef.current) {
+      imageInputRef.current.value = ''
+    }
+  }
 
   const removeImage = (imageUrl: string) => {
     setImages(prev => prev.filter(img => img !== imageUrl));
@@ -764,63 +786,79 @@ export default function NewProductPage() {
 
             {!useVariants && (
               <div className="form-grid single-column">
-                <div className="form-group">
+                <div className="form-group po-r">
                   <label className="form-label">🖼️ 商品圖片</label>
                   
-                  <div className="image-upload-section">
+                  {!preview ? (
                     <div 
-                      className="image-upload-area"
-                      onClick={() => document.getElementById('product-images')?.click()}
+                      className="file-upload-area"
+                      onClick={() => imageInputRef.current?.click()}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        e.currentTarget.classList.add('dragover')
+                      }}
+                      onDragLeave={(e) => {
+                        e.currentTarget.classList.remove('dragover')
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        e.currentTarget.classList.remove('dragover')
+                        const file = e.dataTransfer.files[0]
+                        if (file) handleFileSelect(file)
+                      }}
                     >
-                      <div className="image-upload-icon">📁</div>
-                      <div className="image-upload-text">
-                        {uploadingImages ? '上傳中...' : '點擊選擇圖片或拖拽到此處'}
-                      </div>
-                      <div className="image-upload-hint">
-                        支援 JPG、PNG、WebP 格式，建議尺寸 800x800 像素
+                      <div className="file-upload-icon">📁</div>
+                      <div className="file-upload-text">點擊選擇圖片或拖拽到此處</div>
+                      <div className="file-upload-hint">支援 JPG、PNG、WebP 格式，建議尺寸 800x800 像素</div>
+                    </div>
+                  ) : (
+                    <div className="image-preview-container">
+                      <div className="image-preview">
+                        <img src={preview} alt="商品預覽" />
+                        <div className="image-info">
+                          📄 {selectedFile?.name} ({((selectedFile?.size || 0) / 1024).toFixed(1)} KB)
+                        </div>
+                        {uploadingImages && (
+                          <div className="upload-status">
+                            ⏳ 上傳中...
+                          </div>
+                        )}
+                        <div className="image-actions">
+                          <button
+                            type="button"
+                            className="btn-change-image"
+                            onClick={() => imageInputRef.current?.click()}
+                            disabled={uploadingImages}
+                          >
+                            🔄 更換圖片
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-remove-image"
+                            onClick={handleRemoveImage}
+                            disabled={uploadingImages}
+                          >
+                            🗑️ 移除圖片
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    
-                    <input
-                      type="file"
-                      id="product-images"
-                      style={{ display: 'none' }}
-                      multiple
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImages}
-                    />
-
-                    {images.length > 0 && (
-                      <div className="image-grid">
-                        {images.map((imageUrl, index) => (
-                          <div key={index} className="image-item">
-                            <img
-                              src={`http://localhost:3001${imageUrl}`}
-                              alt={`商品圖片 ${index + 1}`}
-                            />
-                            <button
-                              type="button"
-                              className="image-remove"
-                              onClick={() => removeImage(imageUrl)}
-                            >
-                              ×
-                            </button>
-                            <button
-                              type="button"
-                              className={`image-set-thumbnail ${thumbnail === imageUrl ? 'active' : ''}`}
-                              onClick={() => setThumbnail(imageUrl)}
-                            >
-                              {thumbnail === imageUrl ? '主圖' : '設為主圖'}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  
+                  {/* 隱藏的檔案輸入元素 */}
+                  <input
+                    type="file"
+                    ref={imageInputRef}
+                    className="file-input-hidden"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFileSelect(file)
+                    }}
+                  />
                   
                   <div className="form-hint">
-                    建議上傳高品質的商品圖片，第一張圖片將作為預設主圖顯示
+                    建議上傳高品質的商品圖片，檔案大小不超過 5MB
                   </div>
                 </div>
               </div>

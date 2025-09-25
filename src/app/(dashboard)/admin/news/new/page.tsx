@@ -239,7 +239,7 @@ export default function NewNewsPage() {
               <div className="form-group po-r">
                 <label className="form-label">🖼️ 新聞圖片</label>
                 
-                {console.log('當前 preview 狀態:', preview, '條件 !preview:', !preview)}
+
                 {!preview ? (
                   <div 
                     className="file-upload-area"

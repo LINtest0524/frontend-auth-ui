@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import '@/styles/pages/shipping-rules.css'
 
 interface ShippingRuleItem {
   id?: number
@@ -188,292 +189,301 @@ export default function ShippingRulesPage() {
   }, [])
 
   return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
-        <h1>運費規則管理</h1>
-        
-        <div className="b-ibox-s">
-          <div className="fl4 w100 b-btnbox mb15">
-            <button 
-              onClick={() => {
-                setEditingTemplate(initTemplate())
-                setIsEditing(true)
-              }}
-              className="b-btn-s2 b-btn-c4"
-            >
-              新增運費規則
-            </button>
+    <div className="shipping-rules-container">
+      {/* 載入遮罩 */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">處理中...</div>
           </div>
+        </div>
+      )}
+
+      {/* 頁面標題區域 */}
+      <div className="shipping-rules-header">
+        <h1>🚚 運費規則管理</h1>
+        <div className="shipping-rules-header-actions">
+          <button
+            onClick={() => {
+              setEditingTemplate(initTemplate())
+              setIsEditing(true)
+            }}
+            className="btn-primary"
+          >
+            ✨ 新增運費規則
+          </button>
         </div>
       </div>
 
       {/* 運費規則列表 */}
       {!isEditing && (
-        <div className="b-ibox">
-          <div className="b-ibox-s">
-            <table className="b-table-box admin-table mb15">
-              <thead>
-                <tr>
-                  <th>規則名稱</th>
-                  <th>描述</th>
-                  <th>運送方式</th>
-                  <th>狀態</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {templates.map((template) => (
-                  <tr key={template.id}>
-                    <td>
+        <div className="content-section">
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>規則名稱</th>
+                <th>描述</th>
+                <th>運送方式</th>
+                <th>狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {templates.map((template) => (
+                <tr key={template.id}>
+                  <td>
+                    <div className="rule-name">
                       {template.name}
                       {template.is_default && (
-                        <span style={{color: '#dc3545', fontWeight: 'bold'}}>(預設)</span>
+                        <span className="default-badge">預設</span>
                       )}
-                    </td>
-                    <td>{template.description || '-'}</td>
-                    <td>
-                      <div style={{ fontSize: '14px' }}>
-                        {template.items?.map((item, index) => (
-                          <div key={index} style={{ 
-                            marginBottom: '8px', 
-                            padding: '8px', 
-                            backgroundColor: '#f8f9fa', 
-                            borderRadius: '4px',
-                            border: '1px solid #e9ecef'
-                          }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.method}</div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
-                              運費: ${item.base_fee} | 免運門檻: ${item.free_shipping_threshold}
+                    </div>
+                  </td>
+                  <td>{template.description || '-'}</td>
+                  <td>
+                    <div className="shipping-methods">
+                      {template.items?.map((item, index) => (
+                        <div key={index} className="method-card">
+                          <div className="method-name">
+                            📦 {item.method}
+                          </div>
+                          <div className="method-details">
+                            <div className="fee-info">
+                              運費：<span className="fee-amount">NT$ {Math.floor(item.base_fee)}</span>
+                            </div>
+                            <div className="fee-info">
+                              滿 <span className="threshold-amount">NT$ {Math.floor(item.free_shipping_threshold).toLocaleString()}</span> 免運
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span style={{
-                        background: template.is_active ? '#10b981' : '#ef4444',
-                        color: 'white',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}>
-                        {template.is_active ? '啟用' : '停用'}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-                        {!template.is_default && (
-                          <button
-                            onClick={() => setAsDefault(template.id!)}
-                            className="b-btn-s3 b-btn-c1"
-                            style={{ fontSize: '12px', padding: '4px 8px' }}
-                          >
-                            設為預設
-                          </button>
-                        )}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${template.is_active ? 'active' : 'inactive'}`}>
+                      {template.is_active ? '✅ 啟用' : '❌ 停用'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      {!template.is_default && (
                         <button
-                          onClick={() => {
-                            setEditingTemplate(template)
-                            setIsEditing(true)
-                          }}
-                          className="b-btn-s3 b-btn-c4"
-                          style={{ fontSize: '12px', padding: '4px 8px' }}
+                          onClick={() => setAsDefault(template.id!)}
+                          className="btn-action success"
                         >
-                          編輯
+                          ⭐ 設為預設
                         </button>
-                        <button
-                          onClick={() => {
-                            if (template.is_default) {
-                              alert('無法刪除預設運費規則，請先設定其他規則為預設')
-                              return
-                            }
-                            deleteTemplate(template.id!)
-                          }}
-                          className={`b-btn-s3 ${template.is_default ? 'b-btn-c1' : 'b-btn-c3'}`}
-                          style={{ 
-                            fontSize: '12px', 
-                            padding: '4px 8px',
-                            opacity: template.is_default ? '0.5' : '1',
-                            cursor: template.is_default ? 'not-allowed' : 'pointer'
-                          }}
-                          disabled={template.is_default}
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {templates.length === 0 && (
-              <div className="b-no-information w100 fd5">
-                <img src="/no-information.webp" alt="無資料" className="mb25" />
-                <p>尚未建立任何運費規則</p>
-              </div>
-            )}
-          </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingTemplate(template)
+                          setIsEditing(true)
+                        }}
+                        className="btn-action primary"
+                      >
+                        ✏️ 編輯
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (template.is_default) {
+                            alert('無法刪除預設運費規則，請先設定其他規則為預設')
+                            return
+                          }
+                          deleteTemplate(template.id!)
+                        }}
+                        className="btn-action danger"
+                        disabled={template.is_default}
+                      >
+                        🗑️ 刪除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {templates.length === 0 && (
+            <div className="empty-state">
+              <img src="/no-information.webp" alt="無資料" />
+              <h3>尚未建立任何運費規則</h3>
+              <p>點擊上方「新增運費規則」按鈕開始建立您的第一個運費規則</p>
+            </div>
+          )}
         </div>
       )}
 
       {/* 編輯表單 */}
       {isEditing && editingTemplate && (
-        <div className="b-ibox">
-          <h1>{editingTemplate.id ? '編輯運費規則' : '新增運費規則'}</h1>
+        <div className="form-section">
+          <div className="section-title">
+            <span>✏️</span>
+            {editingTemplate.id ? '編輯運費規則' : '新增運費規則'}
+          </div>
           
-          <div className="b-ibox-s">
-            <div className="b-form-group-1 w100 fl4">
-              <label htmlFor="name">規則名稱</label>
-              <input
-                type="text"
-                id="name"
-                className="w70"
-                value={editingTemplate.name}
-                onChange={(e) => setEditingTemplate({
-                  ...editingTemplate,
-                  name: e.target.value
-                })}
-                placeholder="例：運送規則1"
-                required
-              />
-            </div>
-
-            <div className="b-form-group-1 w100 fl4">
-              <label htmlFor="description">描述</label>
-              <textarea
-                id="description"
-                className="w70"
-                rows={3}
-                value={editingTemplate.description}
-                onChange={(e) => setEditingTemplate({
-                  ...editingTemplate,
-                  description: e.target.value
-                })}
-                placeholder="例：一般商品運送方案"
-              />
-            </div>
-
-            <div className="b-form-group-1 w100 fl4">
-              <label htmlFor="is_default">設為預設規則</label>
-              <input
-                type="checkbox"
-                id="is_default"
-                className="new-checkbox"
-                checked={editingTemplate.is_default}
-                onChange={(e) => setEditingTemplate({
-                  ...editingTemplate,
-                  is_default: e.target.checked
-                })}
-              />
-            </div>
-
-            <div className="b-form-group-1 w100 fl4">
-              <label htmlFor="is_active">啟用此規則</label>
-              <input
-                type="checkbox"
-                id="is_active"
-                className="new-checkbox"
-                checked={editingTemplate.is_active}
-                onChange={(e) => setEditingTemplate({
-                  ...editingTemplate,
-                  is_active: e.target.checked
-                })}
-              />
-            </div>
-
-            <div className="b-form-group-1 w100 fl4">
-              <label>運送方式設定</label>
-              <div style={{ width: '70%' }}>
-                <div className="mb15">
-                  <button
-                    type="button"
-                    onClick={addShippingItem}
-                    className="b-btn-s2 b-btn-c4 mr10"
-                  >
-                    新增運送方式
-                  </button>
+          {/* 基本資訊區塊 */}
+          <div className="form-block">
+            <h3 className="block-title">📋 基本資訊</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="name" className="form-label required">🏷️ 規則名稱</label>
+                <input
+                  type="text"
+                  id="name"
+                  className="form-input"
+                  value={editingTemplate.name}
+                  onChange={(e) => setEditingTemplate({
+                    ...editingTemplate,
+                    name: e.target.value
+                  })}
+                  placeholder="例：運送規則1"
+                  required
+                />
+                <div className="form-hint">
+                  為此運費規則設定一個容易識別的名稱
                 </div>
-                
-                <div>
-                  {editingTemplate.items.map((item, index) => (
-                    <div key={index} style={{ 
-                      border: '1px solid #e9ecef', 
-                      padding: '15px', 
-                      borderRadius: '6px',
-                      background: '#f8f9fa',
-                      marginBottom: '15px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h4 style={{ margin: 0, fontWeight: 'bold', color: '#333' }}>運送方式 {index + 1}</h4>
-                        <button
-                          type="button"
-                          onClick={() => removeShippingItem(index)}
-                          className="b-btn-s3 b-btn-c3"
-                        >
-                          移除
-                        </button>
-                      </div>
-                      
-                      <div className="b-form-group-2 w100 fl4 mb15">
-                        <label>運送方式名稱</label>
-                        <input
-                          type="text"
-                          className="w100"
-                          value={item.method}
-                          onChange={(e) => updateShippingItem(index, 'method', e.target.value)}
-                          placeholder="例：7-11超商取貨"
-                        />
-                      </div>
-                      
-                      <div className="b-form-group-2 w50 fl4 mb15">
-                        <label>基本運費</label>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description" className="form-label">📝 描述</label>
+                <textarea
+                  id="description"
+                  className="form-textarea"
+                  rows={3}
+                  value={editingTemplate.description}
+                  onChange={(e) => setEditingTemplate({
+                    ...editingTemplate,
+                    description: e.target.value
+                  })}
+                  placeholder="例：一般商品運送方案"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 規則設定區塊 */}
+          <div className="form-block">
+            <h3 className="block-title">⚙️ 規則設定</h3>
+            <div className="checkbox-grid">
+              <div className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="is_default"
+                  checked={editingTemplate.is_default}
+                  onChange={(e) => setEditingTemplate({
+                    ...editingTemplate,
+                    is_default: e.target.checked
+                  })}
+                />
+                <label htmlFor="is_default">⭐ 設為預設規則</label>
+              </div>
+
+              <div className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={editingTemplate.is_active}
+                  onChange={(e) => setEditingTemplate({
+                    ...editingTemplate,
+                    is_active: e.target.checked
+                  })}
+                />
+                <label htmlFor="is_active">✅ 啟用此規則</label>
+              </div>
+            </div>
+          </div>
+
+          {/* 運送方式設定區塊 */}
+          <div className="form-block">
+            <div className="shipping-methods-header">
+              <h3 className="block-title">🚚 運送方式設定</h3>
+              <button
+                type="button"
+                onClick={addShippingItem}
+                className="add-method-btn"
+              >
+                ➕ 新增運送方式
+              </button>
+            </div>
+            
+            <div className="shipping-methods-list">
+              {editingTemplate.items.map((item, index) => (
+                <div key={index} className="shipping-method-card">
+                  <div className="method-card-header">
+                    <h4 className="method-title">📦 運送方式 {index + 1}</h4>
+                    <button
+                      type="button"
+                      onClick={() => removeShippingItem(index)}
+                      className="remove-method-btn"
+                    >
+                      🗑️ 移除
+                    </button>
+                  </div>
+                  
+                  <div className="method-fields">
+                    <div className="form-group">
+                      <label className="form-label required">運送方式名稱</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={item.method}
+                        onChange={(e) => updateShippingItem(index, 'method', e.target.value)}
+                        placeholder="例：7-11超商取貨"
+                      />
+                    </div>
+                    
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label className="form-label required">基本運費 (NT$)</label>
                         <input
                           type="number"
-                          className="w80"
-                          value={item.base_fee}
-                          onChange={(e) => updateShippingItem(index, 'base_fee', Number(e.target.value))}
+                          className="form-input"
+                          value={Math.floor(item.base_fee)}
+                          onChange={(e) => updateShippingItem(index, 'base_fee', Math.floor(Number(e.target.value)))}
                           placeholder="60"
                           min="0"
+                          step="1"
                         />
                       </div>
                       
-                      <div className="b-form-group-2 w50 fl4 mb15">
-                        <label>免運門檻</label>
+                      <div className="form-group">
+                        <label className="form-label required">免運門檻 (NT$)</label>
                         <input
                           type="number"
-                          className="w80"
-                          value={item.free_shipping_threshold}
-                          onChange={(e) => updateShippingItem(index, 'free_shipping_threshold', Number(e.target.value))}
+                          className="form-input"
+                          value={Math.floor(item.free_shipping_threshold)}
+                          onChange={(e) => updateShippingItem(index, 'free_shipping_threshold', Math.floor(Number(e.target.value)))}
                           placeholder="399"
                           min="0"
+                          step="1"
                         />
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
+          </div>
 
-            <div className="fl4 w100 b-btnbox">
-              <button
-                onClick={() => saveTemplate(editingTemplate)}
-                disabled={loading}
-                className="b-btn-s2 b-btn-c4 mr20"
-              >
-                {loading ? '儲存中...' : '儲存'}
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditing(false)
-                  setEditingTemplate(null)
-                }}
-                className="b-btn-s2 b-btn-c1"
-              >
-                取消
-              </button>
-            </div>
+          {/* 操作按鈕區塊 */}
+          <div className="form-actions">
+            <button
+              onClick={() => saveTemplate(editingTemplate)}
+              disabled={loading}
+              className="btn-form-primary"
+            >
+              {loading ? '⏳ 儲存中...' : '💾 儲存'}
+            </button>
+            <button
+              onClick={() => {
+                setIsEditing(false)
+                setEditingTemplate(null)
+              }}
+              className="btn-form-secondary"
+            >
+              ❌ 取消
+            </button>
           </div>
         </div>
       )}

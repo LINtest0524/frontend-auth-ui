@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import '@/styles/pages/lucky-draw-event-create.css';
 
 export default function LuckyDrawEventCreatePage() {
   const router = useRouter();
@@ -70,70 +71,157 @@ export default function LuckyDrawEventCreatePage() {
   };
 
   return (
-    <div className="b-ibox">
-      <h1>新增抽獎活動</h1>
+    <div className="lucky-draw-event-create-container">
+      {/* 頁面標題區域 */}
+      <div className="lucky-draw-event-create-header">
+        <h1>🎯 新增抽獎活動</h1>
+        <div className="lucky-draw-event-create-breadcrumb">
+          <span onClick={() => router.push("/lucky-draw/events")} className="breadcrumb-link">
+            🎯 活動管理
+          </span>
+          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-current">新增活動</span>
+        </div>
+      </div>
 
-      <div className="b-ibox-s">
-        <form onSubmit={handleSubmit} className="w100">
+      {/* 表單區域 */}
+      <div className="form-section">
+        <form onSubmit={handleSubmit} className="modern-form">
           
-          <div className="b-form-group-1 w100 fl4">
-            <label>活動名稱</label>
-            <input
-              type="text"
-              className="w70"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="請輸入活動名稱"
-              required
-            />
+          {/* 基本資訊卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">📝</span>
+              <h3>基本資訊</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-group">
+                <label htmlFor="event-name" className="form-label">
+                  <span className="label-icon">🎯</span>
+                  活動名稱
+                  <span className="required">*</span>
+                </label>
+                <input
+                  id="event-name"
+                  type="text"
+                  className="form-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="請輸入抽獎活動名稱"
+                  required
+                />
+                <div className="form-hint">
+                  💡 建議使用具有吸引力的活動名稱
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>開始時間</label>
-            <input
-              type="datetime-local"
-              className="w70"
-              value={formData.startTime}
-              onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-              required
-            />
+          {/* 時間設定卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">⏰</span>
+              <h3>活動時間</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="start-time" className="form-label">
+                    <span className="label-icon">🟢</span>
+                    開始時間
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="start-time"
+                    type="datetime-local"
+                    className="form-input"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    required
+                  />
+                  <div className="form-hint">
+                    💡 設定活動開始的日期和時間
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="end-time" className="form-label">
+                    <span className="label-icon">🔴</span>
+                    結束時間
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="end-time"
+                    type="datetime-local"
+                    className="form-input"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                    required
+                  />
+                  <div className="form-hint">
+                    💡 設定活動結束的日期和時間
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>結束時間</label>
-            <input
-              type="datetime-local"
-              className="w70"
-              value={formData.endTime}
-              onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-              required
-            />
+          {/* 活動設定卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">⚙️</span>
+              <h3>活動設定</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-group">
+                <div className="checkbox-group">
+                  <label htmlFor="active" className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      id="active"
+                      className="modern-checkbox"
+                    />
+                    <span className="checkbox-custom"></span>
+                    <span className="checkbox-text">
+                      <span className="checkbox-icon">✅</span>
+                      立即啟用活動
+                    </span>
+                  </label>
+                  <div className="form-hint">
+                    💡 勾選後活動將立即生效，用戶可以開始參與抽獎
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label htmlFor="active">立即啟用</label>
-            <input
-              type="checkbox"
-              checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              id="active"
-              className="new-checkbox"
-            />
-          </div>
-
-          <div className="fl4 w100 b-btnbox">
+          {/* 操作按鈕 */}
+          <div className="form-actions">
             <button
               type="submit"
               disabled={loading}
-              className="b-btn-s2 b-btn-c4 mr20"
+              className="btn-submit"
             >
-              {loading ? "創建中..." : "創建活動"}
+              {loading ? (
+                <>
+                  <span className="loading-spinner">⏳</span>
+                  創建中...
+                </>
+              ) : (
+                <>
+                  <span>🎯</span>
+                  創建活動
+                </>
+              )}
             </button>
             <button
               type="button"
               onClick={() => router.push("/lucky-draw/events")}
-              className="b-btn-s2 b-btn-c2"
+              className="btn-cancel"
             >
+              <span>❌</span>
               取消
             </button>
           </div>

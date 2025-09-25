@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import '@/styles/pages/lucky-draw-events.css';
 
 interface LuckyDrawEvent {
   id: number;
@@ -94,81 +95,123 @@ export default function LuckyDrawEventsPage() {
   }, []);
 
   return (
-    <div className="b-ibox">
-      <h1>活動管理</h1>
-
-      <div className="b-ibox-s">
-
-      <div className="fl4 w100 mb15">
-        <button 
-          onClick={() => router.push("/lucky-draw/events/new")}
-          className="b-btn-s2 b-btn-c4"
-        >
-          新增活動
-        </button>
+    <div className="lucky-draw-events-container">
+      {/* 頁面標題區域 */}
+      <div className="lucky-draw-events-header">
+        <h1>🎯 抽獎活動管理</h1>
+        <div className="lucky-draw-events-header-actions">
+          <button 
+            onClick={() => router.push("/lucky-draw/events/new")}
+            className="btn-primary"
+          >
+            <span>✨</span>
+            新增活動
+          </button>
+        </div>
       </div>
 
+      {/* 內容區域 */}
+      <div className="content-section">
+        {/* 表格控制區域 */}
+        <div className="table-controls">
+          <div className="table-info">
+            共 {events.length} 個抽獎活動
+          </div>
+        </div>
 
-      
-        {loading && <p>載入中...</p>}
-        
+        {/* 載入狀態 */}
+        {loading && (
+          <div className="loading-spinner">
+            <div>⏳ 載入中...</div>
+          </div>
+        )}
+
+        {/* 現代化表格 */}
         {!loading && (
-          <table className="b-table-box admin-table mb15">
+          <table className="modern-table">
             <thead>
               <tr>
-                <th>活動名稱</th>
-                <th>開始時間</th>
-                <th>結束時間</th>
-                <th>獎品數量</th>
-                <th>狀態</th>
-                <th>操作</th>
+                <th>🎯 活動資訊</th>
+                <th>⏰ 活動時間</th>
+                <th>🎁 獎品數量</th>
+                <th>📊 狀態</th>
+                <th>⚙️ 操作</th>
               </tr>
             </thead>
             <tbody>
               {events.map((event) => (
                 <tr key={event.id}>
-                  <td>{event.name}</td>
-                  <td>{formatDateTime(event.startTime)}</td>
-                  <td>{formatDateTime(event.endTime)}</td>
-                  <td>{event.prizes?.length || 0} 個</td>
                   <td>
-                    <span className={`badge ${event.isActive ? 'badge-success' : 'badge-secondary'}`}>
-                      {event.isActive ? '啟用中' : '未啟用'}
-                    </span>
+                    <div className="event-info">
+                      <div className="event-name">{event.name}</div>
+                      <div className="event-id">ID: #{event.id}</div>
+                    </div>
                   </td>
                   <td>
-                    <div className="fl4">
-                      <button 
-                        onClick={() => handleToggleActive(event.id)}
-                        className={`b-btn-s3 mr10 ${event.isActive ? 'b-btn-c2' : 'b-btn-c4'}`}
-                      >
-                        {event.isActive ? '停用' : '啟用'}
-                      </button>
+                    <div className="time-info">
+                      <div className="time-start">
+                        🟢 {formatDateTime(event.startTime)}
+                      </div>
+                      <div className="time-end">
+                        🔴 {formatDateTime(event.endTime)}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="prize-count">
+                      <span className="prize-badge">
+                        🎁 {event.prizes?.length || 0} 個
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => handleToggleActive(event.id)}
+                      className={`status-toggle ${
+                        event.isActive ? 'status-active' : 'status-inactive'
+                      }`}
+                    >
+                      {event.isActive ? '✅ 啟用中' : '❌ 未啟用'}
+                    </button>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
                       <button 
                         onClick={() => router.push(`/lucky-draw/prizes?eventId=${event.id}`)}
-                        className="b-btn-s3 b-btn-c1 mr10"
+                        className="btn-manage"
                       >
+                        <span>🎁</span>
                         管理獎品
                       </button>
                       <button 
                         onClick={() => handleDelete(event.id, event.name)}
-                        className="b-btn-s3 b-btn-c3"
+                        className="btn-delete"
                       >
+                        <span>🗑️</span>
                         刪除
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {events.length === 0 && !loading && (
-                <tr>
-                  <td colSpan={6} >
-                    暫無活動資料
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
+        )}
+        
+        {/* 無資料顯示 */}
+        {!loading && events.length === 0 && (
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
+            <p>目前沒有抽獎活動</p>
+            <button 
+              onClick={() => router.push("/lucky-draw/events/new")}
+              className="btn-primary"
+              style={{ marginTop: '16px' }}
+            >
+              <span>✨</span>
+              立即新增活動
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -80,14 +80,8 @@ export default function ProductListPage() {
   const [status, setStatus] = useState("");
   const [featured, setFeatured] = useState("");
   const [visible, setVisible] = useState("");
-  const [createdFrom, setCreatedFrom] = useState(() => {
-    const today = dayjs();
-    return today.subtract(30, "day").format("YYYY-MM-DD");
-  });
-  const [createdTo, setCreatedTo] = useState(() => {
-    const today = dayjs();
-    return today.format("YYYY-MM-DD");
-  });
+  const [createdFrom, setCreatedFrom] = useState("");
+  const [createdTo, setCreatedTo] = useState("");
   
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -115,6 +109,10 @@ export default function ProductListPage() {
         const y = today.subtract(1, "day");
         fromDate = y.format("YYYY-MM-DD");
         toDate = y.format("YYYY-MM-DD");
+        break;
+      case "3days":
+        fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
+        toDate = today.format("YYYY-MM-DD");
         break;
       case "7days":
         fromDate = today.subtract(6, "day").format("YYYY-MM-DD");
@@ -171,7 +169,7 @@ export default function ProductListPage() {
     });
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (useInitialFilter = false) => {
     if (!Number.isFinite(limit) || !Number.isFinite(page)) return;
     setLoading(true);
     try {
@@ -183,8 +181,17 @@ export default function ProductListPage() {
       if (featured) params.append("is_featured", featured);
       if (visible) params.append("is_visible", visible);
 
-      if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-      if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+      // 如果是初始載入，使用預設的近3天時間範圍，否則使用篩選條件中的時間
+      if (useInitialFilter) {
+        const today = dayjs();
+        const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
+        const todayStr = today.format("YYYY-MM-DD");
+        params.append("createdFrom", threeDaysAgo + " 00:00:00");
+        params.append("createdTo", todayStr + " 23:59:59");
+      } else {
+        if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
+        if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+      }
 
       params.append("limit", limit.toString());
       params.append("page", page.toString());
@@ -228,11 +235,11 @@ export default function ProductListPage() {
     setProducts((prev) => sortProducts(prev));
   }, [sortKey, sortDirection]);
 
-  // 頁面載入時自動搜尋
+  // 頁面載入時自動搜尋近3天資料
   useEffect(() => {
     if (!hasSearched) {
       setHasSearched(true);
-      fetchProducts();
+      fetchProducts(true); // 使用初始篩選條件
     }
   }, []);
 
@@ -603,6 +610,7 @@ export default function ProductListPage() {
                 <div className="quick-date-buttons">
                   <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
                   <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days")} className="btn-quick-date">近三日</button>
                   <button onClick={() => quickSetDate("7days")} className="btn-quick-date">近七日</button>
                   <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
                   <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
@@ -672,7 +680,7 @@ export default function ProductListPage() {
                 <th onClick={() => toggleSort("id")}>
                   ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
                 </th>
-                <th>商品資訊</th>
+                <th className="w30">商品資訊</th>
                 <th>分類</th>
                 <th onClick={() => toggleSort("price")}>
                   價格 <span className={`sort-icon ${sortKey === "price" ? "active" : ""}`}>{getArrow("price")}</span>

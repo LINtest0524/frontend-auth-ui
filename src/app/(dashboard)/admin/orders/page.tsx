@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import dayjs from 'dayjs'
 import '@/styles/order-detail-modal.css'
+import '@/styles/pages/promotions-admin.css'
 
 interface OrderItem {
   id: number
@@ -41,6 +42,9 @@ interface Order {
   }
 }
 
+type SortKey = "id" | "order_number" | "total_amount" | "created_at" | null;
+type SortDirection = "asc" | "desc" | null;
+
 export default function OrdersManagePage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
@@ -48,14 +52,8 @@ export default function OrdersManagePage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState('')
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('')
-  const [startDate, setStartDate] = useState(() => {
-    const today = dayjs()
-    return today.subtract(2, "day").format("YYYY-MM-DD")
-  })
-  const [endDate, setEndDate] = useState(() => {
-    const today = dayjs()
-    return today.format("YYYY-MM-DD")
-  })
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [productNameFilter, setProductNameFilter] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -64,8 +62,72 @@ export default function OrdersManagePage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [limit, setLimit] = useState(20)
   const [inputLimit, setInputLimit] = useState(20)
+  const [sortKey, setSortKey] = useState<SortKey>("id")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
 
   const currentUser = useUserStore((state) => state.user)
+
+  // 排序處理函數
+  const sortOrders = (data: Order[]) => {
+    if (!sortKey || !sortDirection) return data;
+    return [...data].sort((a, b) => {
+      const getValue = (order: Order) => {
+        if (sortKey === "created_at") {
+          return order[sortKey] ? new Date(order[sortKey]).getTime() : 0;
+        }
+        if (sortKey === "order_number") {
+          return order[sortKey] || "";
+        }
+        if (sortKey === "total_amount") {
+          // 確保轉換為數字並處理可能的字串格式
+          const amount = order[sortKey];
+          if (typeof amount === 'string') {
+            return parseFloat((amount as string).replace(/[^\d.-]/g, '')) || 0;
+          }
+          return Number(amount) || 0;
+        }
+        return (order[sortKey] as number) ?? 0;
+      };
+      const aVal = getValue(a);
+      const bVal = getValue(b);
+      
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortDirection === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+    });
+  };
+
+  // 排序功能
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDirection("desc");
+    } else {
+      if (sortDirection === "desc") setSortDirection("asc");
+      else if (sortDirection === "asc") {
+        setSortDirection(null);
+        setSortKey(null);
+      } else setSortDirection("desc");
+    }
+  };
+
+  const getArrow = (key: SortKey) => {
+    const isActive = sortKey === key;
+    const dir = isActive ? sortDirection : null;
+
+    const getIcon = () => {
+      if (dir === "asc") return <img src="/icon/i-sort-2.svg" alt="升冪" className="i-sort" />;
+      if (dir === "desc") return <img src="/icon/i-sort-1.svg" alt="降冪" className="i-sort" />;
+      return <img src="/icon/i-sort-0.svg" alt="未排序" className="i-sort" />;
+    };
+
+    return (
+      <span className={`${isActive}`}>
+        {getIcon()}
+      </span>
+    );
+  };
 
   // 快速設定日期
   const quickSetDate = (type: string) => {
@@ -130,13 +192,18 @@ export default function OrdersManagePage() {
     }
   }, [currentPage, limit])
 
-  // 頁面載入時自動搜尋3日內資料
+  // 排序變化時重新排序現有資料
   useEffect(() => {
-    if (!hasSearched) {
-      setHasSearched(true)
-      loadOrders()
-    }
-  }, [])
+    setOrders((prev) => sortOrders(prev));
+  }, [sortKey, sortDirection]);
+
+  // 頁面載入時不自動搜尋，等待使用者手動搜尋
+  // useEffect(() => {
+  //   if (!hasSearched) {
+  //     setHasSearched(true)
+  //     loadOrders()
+  //   }
+  // }, [])
 
   const loadOrders = async () => {
     try {
@@ -194,7 +261,9 @@ export default function OrdersManagePage() {
 
       const data = await response.json()
       
-      setOrders(data.data || [])
+      // 應用排序到載入的資料
+      const sortedOrders = sortOrders(data.data || [])
+      setOrders(sortedOrders)
       setTotalOrders(data.total || 0)
       setTotalPages(Math.ceil((data.total || 0) / limit))
       
@@ -431,63 +500,60 @@ export default function OrdersManagePage() {
   }
 
   const renderPagination = () => {
-    if (totalPages <= 1 || totalOrders === 0) return null
+    if (totalPages <= 1 || totalOrders === 0) return null;
 
-    const pages = []
-    const maxVisible = 5
+    const pages = [];
 
     if (totalPages <= 10) {
       for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
+        pages.push(i);
       }
     } else {
-      pages.push(1)
+      pages.push(1);
 
-      const start = Math.max(2, currentPage - 2)
-      const end = Math.min(totalPages - 1, currentPage + 2)
+      const start = Math.max(2, currentPage - 2);
+      const end = Math.min(totalPages - 1, currentPage + 2);
 
       if (start > 2) {
-        pages.push("...")
+        pages.push("...");
       }
 
       for (let i = start; i <= end; i++) {
-        pages.push(i)
+        pages.push(i);
       }
 
       if (end < totalPages - 1) {
-        pages.push("...")
+        pages.push("...");
       }
 
-      pages.push(totalPages)
+      pages.push(totalPages);
     }
 
     return (
-      <div className="fo5 w100 b-data-tables_munber mb15">
-        <p>
-          目前第 {currentPage} 頁，共 {totalPages} 頁（共 {totalOrders} 筆資料）
-        </p>
+      <div className="pagination">
+        <div className="pagination-info">
+          第 {currentPage} 頁，共 {totalPages} 頁（總計 {totalOrders} 筆資料）
+        </div>
 
-        <div className="tables_munber">
+        <div className="pagination-buttons">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className=""
+            className="pagination-btn"
           >
-            上一頁
+            ⬅️ 上一頁
           </button>
 
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={`ellipsis-${idx}`}>
+              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
                 ...
               </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setCurrentPage(p as number)}
-                className={`${
-                  currentPage === p ? "pagehover" : ""
-                }`}
+                className={`pagination-btn ${currentPage === p ? "active" : ""}`}
               >
                 {p}
               </button>
@@ -497,43 +563,44 @@ export default function OrdersManagePage() {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className=""
+            className="pagination-btn"
           >
-            下一頁
+            下一頁 ➡️
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
-        <div className="b-ibox-s">
-          <div className="w100 mb15">
-            <h1 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>
-              訂單管理
-            </h1>
-          </div>
+    <div className="promotions-admin-container">
+      {/* 頁面標題區域 */}
+      <div className="promotions-header">
+        <h1>訂單管理</h1>
+      </div>
 
-          <button
-            className="b-search-btn w100"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-          >
-            篩選條件
-            <span className={`i-arrow ${isFilterOpen ? "rotate" : ""}`}></span>
-          </button>
+      {/* 篩選區域 */}
+      <div className="filter-section">
+        <button
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="filter-toggle"
+        >
+          <span>🔍 篩選條件</span>
+          <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+        </button>
 
-          {isFilterOpen && (
-            <div className="b-search-box fl1 w100 mt15">
-              <div className="b-form-group-2 fl4 w33 mb25">
-                <label>訂單狀態</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w60"
+        {isFilterOpen && (
+          <div className="filter-content">
+            <div className="filter-grid">
+              <div className="form-group">
+                <label htmlFor="status-filter" className="form-label">訂單狀態</label>
+                <select 
+                  id="status-filter" 
+                  value={statusFilter} 
+                  onChange={(e) => setStatusFilter(e.target.value)} 
+                  className="form-select"
                 >
-                  <option value="">狀態（全部）</option>
+                  <option value="">全部狀態</option>
                   <option value="pending">待付款</option>
                   <option value="paid">已付款</option>
                   <option value="processing">處理中</option>
@@ -544,148 +611,167 @@ export default function OrdersManagePage() {
                 </select>
               </div>
 
-              <div className="b-form-group-2 fl4 w33 mb25">
-                <label>付款方式</label>
-                <select
-                  value={paymentMethodFilter}
-                  onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                  className="w60"
+              <div className="form-group">
+                <label htmlFor="payment-filter" className="form-label">付款方式</label>
+                <select 
+                  id="payment-filter" 
+                  value={paymentMethodFilter} 
+                  onChange={(e) => setPaymentMethodFilter(e.target.value)} 
+                  className="form-select"
                 >
-                  <option value="">付款方式（全部）</option>
+                  <option value="">全部付款方式</option>
                   <option value="credit_card">信用卡</option>
                   <option value="bank_transfer">銀行轉帳</option>
                   <option value="cash_on_delivery">貨到付款</option>
                   <option value="line_pay">LINE Pay</option>
+                  <option value="ecpay_credit">綠界信用卡</option>
+                  <option value="ecpay_atm">綠界ATM轉帳</option>
+                  <option value="ecpay_cvs">綠界超商代碼</option>
                 </select>
               </div>
 
-              <div className="b-form-group-2 fl4 w33 mb25">
-                <label>搜尋訂單</label>
-                <input
-                  type="text"
-                  placeholder="訂單編號、客戶姓名或電話"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w60"
+              <div className="form-group">
+                <label htmlFor="search-term" className="form-label">搜尋訂單</label>
+                <input 
+                  type="text" 
+                  id="search-term"
+                  placeholder="訂單編號、客戶姓名或電話" 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                  className="form-input" 
                 />
               </div>
 
-              <div className="w50 fd1 mb25">
-                <div className="b-form-group-2 fl4 w100 mb10">
-                  <label>訂購日期</label>
-                  <div className="w70 fl4">
-                    <input 
-                      type="date" 
-                      value={startDate} 
-                      onChange={(e) => setStartDate(e.target.value)} 
-                      className="date-select flex1" 
-                    />
-                    <span className="dateto">到</span>
-                    <input 
-                      type="date" 
-                      value={endDate} 
-                      onChange={(e) => setEndDate(e.target.value)} 
-                      className="date-select flex1" 
-                    />
-                  </div>
-                </div>
-
-                <div className="b-form-group-2 w100 fl4">
-                  <div className="b-date-fast fl4 w70 ml132">
-                    <button onClick={() => quickSetDate("today")}>今日</button>
-                    <button onClick={() => quickSetDate("yesterday")}>昨日</button>
-                    <button onClick={() => quickSetDate("3days")}>近三日</button>
-                    <button onClick={() => quickSetDate("thisMonth")}>本月</button>
-                    <button onClick={() => quickSetDate("lastMonth")}>上月</button>
-                  </div>
-                </div>
+              <div className="form-group">
+                <label htmlFor="product-filter" className="form-label">商品名稱</label>
+                <input 
+                  type="text" 
+                  id="product-filter"
+                  placeholder="搜尋商品名稱" 
+                  value={productNameFilter} 
+                  onChange={(e) => setProductNameFilter(e.target.value)} 
+                  className="form-input" 
+                />
               </div>
 
-              <div className="w50 fd1 mb25">
-                <div className="b-form-group-2 fl4 w100 mb25">
-                  <label>商品名稱</label>
-                  <input
-                    type="text"
-                    placeholder="搜尋商品名稱"
-                    value={productNameFilter}
-                    onChange={(e) => setProductNameFilter(e.target.value)}
-                    className="w60"
+              <div className="form-group date-range-group">
+                <label htmlFor="date-from" className="form-label">訂購日期範圍</label>
+                <div className="date-inputs">
+                  <input 
+                    type="date" 
+                    id="date-from"
+                    value={startDate} 
+                    onChange={(e) => setStartDate(e.target.value)} 
+                    className="form-input" 
+                  />
+                  <span className="date-separator">至</span>
+                  <input 
+                    type="date" 
+                    value={endDate} 
+                    onChange={(e) => setEndDate(e.target.value)} 
+                    className="form-input" 
                   />
                 </div>
-              </div>
-
-              <div className="fl4 w100 b-btnbox">
-                <button onClick={handleSearch} className="b-btn-s2 b-btn-c4 mr20">查詢</button>
-                <button onClick={clearFilter} className="b-btn-s2 b-btn-c1">清除</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {loading && <p>載入中...</p>}
-
-      {!loading && hasSearched && (
-        <div className="b-ibox">
-          <div className="b-ibox-s">
-            <div className="w100 fo5 mb15">
-              <div className="w50 fl4">
-                <label htmlFor="page11">每頁&nbsp;</label>
-                <input
-                  type="number"
-                  id="page11"
-                  value={inputLimit}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (!isNaN(val)) setInputLimit(val);
-                  }}
-                  min={1}
-                  className="txtbox1 mr20"
-                />
-                <button
-                  onClick={() => {
-                    const validLimit = Math.max(1, inputLimit);
-                    setLimit(validLimit);
-                  }}
-                  className="ml10 b-btn-s2 b-btn-c4"
-                >
-                  顯示筆數
-                </button>
-              </div>
-
-              <div className="w50 fl6">
-                <div className="fo5 w100 b-data-tables_munber mb15">
-                  <div className="tables_munber">
-                    共 {totalOrders} 筆訂單
-                  </div>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
                 </div>
               </div>
             </div>
 
-            <table className="b-table-box admin-table mb15">
+            <div className="filter-actions">
+              <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
+              <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 載入狀態和錯誤訊息 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
+
+      {!loading && hasSearched && (
+        <div className="content-section">
+          {/* 表格控制區域 */}
+          <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
+            <div className="pagination-info">
+              共 {totalOrders} 筆資料
+            </div>
+          </div>
+
+          {/* 現代化表格 */}
+          <table className="modern-table">
             <thead>
               <tr>
-                <th>訂單編號</th>
-                <th>訂購時間</th>
+                <th onClick={() => toggleSort("id")}>
+                  <div className="fl4">
+                    ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  </div>
+                </th>
+                <th onClick={() => toggleSort("order_number")}>
+                  <div className="fl4">
+                    訂單編號 <span className={`sort-icon ${sortKey === "order_number" ? "active" : ""}`}>{getArrow("order_number")}</span>
+                  </div>
+                </th>
+                <th onClick={() => toggleSort("created_at")}>
+                  <div className="fl4">
+                    訂購時間 <span className={`sort-icon ${sortKey === "created_at" ? "active" : ""}`}>{getArrow("created_at")}</span>
+                  </div>
+                </th>
                 <th>買家帳號</th>
-                <th>商品摘要</th>
-                <th>總金額</th>
+                <th className="w30">商品摘要</th>
+                <th onClick={() => toggleSort("total_amount")}>
+                  <div className="fl4">
+                    總金額 <span className={`sort-icon ${sortKey === "total_amount" ? "active" : ""}`}>{getArrow("total_amount")}</span>
+                  </div>
+                </th>
                 <th>付款狀態</th>
                 <th>出貨狀態</th>
                 <th>備註</th>
-                <th className="th-last">操作</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id}>
+                  <td>#{order.id}</td>
                   <td>
-                    <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-                      {order.order_number}
-                    </div>
+                    <div className="order-number">{order.order_number}</div>
                   </td>
-                  <td style={{ fontSize: '13px', color: '#555' }}>
+                  <td style={{fontSize: "12px", lineHeight: "1.4"}}>
                     {new Date(order.created_at).toLocaleString('zh-TW', {
+                      timeZone: "Asia/Taipei", 
+                      hour12: false,
                       year: 'numeric',
                       month: '2-digit',
                       day: '2-digit',
@@ -694,72 +780,66 @@ export default function OrdersManagePage() {
                     })}
                   </td>
                   <td>
-                    <div style={{ fontWeight: '500', fontSize: '14px' }}>
+                    <div className="customer-name">
                       {order.user?.username || '訪客'}
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontSize: '13px', color: '#555', maxWidth: '200px' }}>
+                    <div className="product-summary">
                       {getProductSummary(order.items)}
                     </div>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: '600', color: '#dc2626', fontSize: '14px' }}>
-                      {Math.round(order.total_amount).toLocaleString()}
-                    </div>
+                  <td style={{textAlign: "right", fontWeight: "600"}}>
+                    {Math.round(order.total_amount).toLocaleString()}
                   </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span style={{
-                      background: getStatusColor(order.payment_status || order.status),
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '500'
-                    }}>
+                  <td>
+                    <span className={`status-badge ${
+                      (order.payment_status || order.status) === "paid" ? "status-active" :
+                      (order.payment_status || order.status) === "pending" ? "status-upcoming" :
+                      "status-expired"
+                    }`}>
                       {getPaymentStatusText(order.payment_status || order.status)}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span style={{
-                      background: getStatusColor(order.shipping_status || order.status),
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '500'
-                    }}>
+                  <td>
+                    <span className={`status-badge ${
+                      (order.shipping_status || order.status) === "delivered" ? "status-active" :
+                      (order.shipping_status || order.status) === "shipped" ? "status-upcoming" :
+                      "status-expired"
+                    }`}>
                       {getShippingStatusText(order.shipping_status || order.status)}
                     </span>
                   </td>
                   <td>
-                    <div style={{ fontSize: '12px', color: '#6c757d', maxWidth: '120px' }}>
+                    <div className="admin-notes">
                       {order.admin_notes || '-'}
                     </div>
                   </td>
                   <td>
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="b-btn-s3 b-btn-c2"
-                      style={{ fontSize: '12px', padding: '4px 8px' }}
-                    >
-                      查看詳情
-                    </button>
+                    <div className="action-buttons">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="btn-edit"
+                      >
+                        👁️ 查看
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-            </table>
+          </table>
 
-            {orders.length === 0 && (
-              <div className="b-no-information w100 fd5">
-                <img src="/no-information.webp" alt="無資料" className="mb25" />
-                <p>查無資料</p>
-              </div>
-            )}
+          {/* 無資料顯示 */}
+          {!loading && hasSearched && orders.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無符合條件的訂單</p>
+            </div>
+          )}
 
-            {renderPagination()}
-          </div>
+          {/* 分頁控制 */}
+          {renderPagination()}
         </div>
       )}
 

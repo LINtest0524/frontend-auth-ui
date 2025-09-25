@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/hooks/use-user-store";
+import "@/styles/pages/admin-user.css";
 
 interface PromotionCategory {
   id: number;
@@ -82,108 +83,134 @@ export default function PromotionCategoriesPage() {
     }
   };
 
-  return (
-    <div className="b-bigbox-all w100">
-      <div className="b-ibox mb30">
-        <h1>活動類型管理</h1>
+  const canModify = currentUser?.role === "SUPER_ADMIN" || 
+                   currentUser?.role === "GLOBAL_ADMIN" || 
+                   currentUser?.role === "AGENT_OWNER";
 
-        <div className="b-ibox-s">
-          {(currentUser?.role === "SUPER_ADMIN" || 
-            currentUser?.role === "GLOBAL_ADMIN" || 
-            currentUser?.role === "AGENT_OWNER") && (
-            <div className="w100 mb15">
-              <button
-                onClick={() => router.push("/admin/promotion-categories/new")}
-                className="b-btn-s2 b-btn-c4"
-              >
-                新增活動類型
-              </button>
-            </div>
+  const canDelete = currentUser?.role === "SUPER_ADMIN" || 
+                   currentUser?.role === "GLOBAL_ADMIN" || 
+                   currentUser?.role === "AGENT_OWNER" || 
+                   currentUser?.role === "AGENT_SUPPORT";
+
+  return (
+    <div className="admin-user-container">
+      {/* 頁面標題區域 */}
+      <div className="admin-user-header">
+        <h1>🏷️ 促銷分類管理</h1>
+        <div className="admin-user-header-actions">
+          {canModify && (
+            <button 
+              onClick={() => router.push("/admin/promotion-categories/new")} 
+              className="btn-primary"
+            >
+              ✨ 新增促銷分類
+            </button>
           )}
         </div>
       </div>
 
-      {loading && <p>載入中...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {/* 載入狀態 */}
+      {loading && (
+        <div className="loading-spinner">
+          <div>⏳ 載入中...</div>
+        </div>
+      )}
+
+      {/* 錯誤訊息 */}
+      {error && (
+        <div className="filter-section">
+          <div style={{ color: "#ef4444", padding: "16px", textAlign: "center" }}>
+            ❌ {error}
+          </div>
+        </div>
+      )}
 
       {!loading && (
-        <div className="b-ibox">
-          <div className="b-ibox-s">
-            <table className="b-table-box admin-table mb15">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>類型名稱</th>
-                  <th>描述</th>
-                  <th>排序</th>
-                  <th>狀態</th>
-                  <th>建立時間</th>
-                  <th className="th-last">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((category) => (
-                  <tr key={category.id}>
-                    <td>{category.id}</td>
-                    <td>
-                      <div style={{fontWeight: "500"}}>{category.name}</div>
-                    </td>
-                    <td>
-                      {category.description && (
-                        <div style={{fontSize: "12px", color: "#666"}}>
-                          {category.description.length > 30 
-                            ? `${category.description.substring(0, 30)}...` 
-                            : category.description}
-                        </div>
+        <div className="content-section">
+          {/* 現代化表格 */}
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>分類資訊</th>
+                <th>描述</th>
+                <th>排序</th>
+                <th>狀態</th>
+                <th>建立時間</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category.id}>
+                  <td>#{category.id}</td>
+                  <td>
+                    <div className="user-info">
+                      <div className="user-username">{category.name}</div>
+                      <div className="user-id">ID: {category.id}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="login-info">
+                      {category.description ? (
+                        category.description.length > 50 
+                          ? `${category.description.substring(0, 50)}...` 
+                          : category.description
+                      ) : (
+                        <span style={{ color: "#9ca3af" }}>無描述</span>
                       )}
-                    </td>
-                    <td style={{textAlign: "center"}}>{category.sortOrder}</td>
-                    <td>
-                      <span style={{color: category.isActive ? "#28a745" : "#dc3545"}}>
-                        {category.isActive ? "啟用" : "停用"}
-                      </span>
-                    </td>
-                    <td>{category.createdAt ? new Date(category.createdAt).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "-"}</td>
-                    <td>
-                      <div style={{display: "flex", gap: "8px", flexWrap: "wrap"}}>
-                        {(currentUser?.role === "SUPER_ADMIN" || 
-                          currentUser?.role === "GLOBAL_ADMIN" || 
-                          currentUser?.role === "AGENT_OWNER") && (
-                          <button
-                            onClick={() => router.push(`/admin/promotion-categories/${category.id}/edit`)}
-                            className="b-btn-s3 b-btn-c4"
-                          >
-                            編輯
-                          </button>
-                        )}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ textAlign: "center", fontWeight: "600", color: "#374151" }}>
+                      {category.sortOrder}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${
+                      category.isActive ? "status-active" : "status-inactive"
+                    }`}>
+                      {category.isActive ? "✅ 啟用" : "❌ 停用"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="login-info">
+                      <div>🕒 {category.createdAt ? new Date(category.createdAt).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false }) : "無記錄"}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      {canModify && (
+                        <button 
+                          onClick={() => router.push(`/admin/promotion-categories/${category.id}/edit`)} 
+                          className="btn-edit"
+                        >
+                          ✏️ 編輯
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button 
+                          onClick={() => handleDelete(category.id)} 
+                          className="btn-delete"
+                          disabled={deletingId === category.id}
+                        >
+                          {deletingId === category.id ? "⏳ 刪除中..." : "🗑️ 刪除"}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-                        {(currentUser?.role === "SUPER_ADMIN" || 
-                          currentUser?.role === "GLOBAL_ADMIN" || 
-                          currentUser?.role === "AGENT_OWNER" || 
-                          currentUser?.role === "AGENT_SUPPORT") && (
-                          <button
-                            onClick={() => handleDelete(category.id)}
-                            className={`b-btn-s3 b-btn-c3 ${
-                              deletingId === category.id ? "opacity-50 pointer-events-none" : ""
-                            }`}
-                          >
-                            {deletingId === category.id ? "刪除中..." : "刪除"}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {!loading && categories.length === 0 && (
-              <div className="b-no-information w100 fd5">
-                <img src="/no-information.webp" alt="無資料" className="mb25" />
-                <p>查無資料</p>
-              </div>
-            )}
-          </div>
+          {/* 無資料顯示 */}
+          {!loading && categories.length === 0 && (
+            <div className="no-data">
+              <img src="/no-information.webp" alt="無資料" />
+              <p>查無促銷分類資料</p>
+            </div>
+          )}
         </div>
       )}
     </div>

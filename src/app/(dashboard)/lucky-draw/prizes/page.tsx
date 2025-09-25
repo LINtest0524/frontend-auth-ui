@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import '@/styles/pages/lucky-draw-prizes.css';
 
 interface Prize {
   id: number;
@@ -113,61 +114,92 @@ export default function LuckyDrawPrizesPage() {
   }, [selectedEventId]);
 
   return (
-    <div className="b-ibox">
-      <h1>轉盤獎項列表</h1>
-
-      <div className="b-ibox-s">
-
-      <div className="fl4 w100 mb15">
-        <div className="mr10">
-          <label className="mr-2">選擇活動：</label>
-          <select 
-            value={selectedEventId || ""} 
-            onChange={(e) => setSelectedEventId(e.target.value ? Number(e.target.value) : null)}
-            className="b-input"
+    <div className="lucky-draw-prizes-container">
+      {/* 頁面標題區域 */}
+      <div className="lucky-draw-prizes-header">
+        <h1>🎁 抽獎獎品管理</h1>
+        <div className="lucky-draw-prizes-header-actions">
+          <button 
+            onClick={() => router.push(`/lucky-draw/new?eventId=${selectedEventId}`)}
+            className="btn-primary"
+            disabled={!selectedEventId}
           >
-            <option value="">請選擇活動</option>
-            {events.map(event => (
-              <option key={event.id} value={event.id}>
-                {event.name} {event.isActive ? '(啟用中)' : ''}
-              </option>
-            ))}
-          </select>
+            <span>✨</span>
+            新增獎品
+          </button>
         </div>
-        <button 
-          onClick={() => router.push(`/lucky-draw/new?eventId=${selectedEventId}`)}
-          className="b-btn-s2 b-btn-c4"
-          disabled={!selectedEventId}
-        >
-          新增獎品
-        </button>
-      
       </div>
 
+      {/* 篩選控制區域 */}
+      <div className="filter-section">
+        <div className="filter-card">
+          <div className="filter-header">
+            <span className="filter-icon">🎯</span>
+            <h3>選擇活動</h3>
+          </div>
+          <div className="filter-content">
+            <select 
+              value={selectedEventId || ""} 
+              onChange={(e) => setSelectedEventId(e.target.value ? Number(e.target.value) : null)}
+              className="modern-select"
+            >
+              <option value="">請選擇活動</option>
+              {events.map(event => (
+                <option key={event.id} value={event.id}>
+                  {event.name} {event.isActive ? '(啟用中)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
+      {/* 內容區域 */}
+      <div className="content-section">
+        {/* 表格控制區域 */}
+        <div className="table-controls">
+          <div className="table-info">
+            {selectedEventId ? `共 ${prizes.length} 個獎品` : '請先選擇活動'}
+          </div>
+          {selectedEventId && (
+            <div className="table-actions">
+              <span className="selected-event">
+                🎯 {events.find(e => e.id === selectedEventId)?.name}
+              </span>
+            </div>
+          )}
+        </div>
 
-      
+        {/* 載入狀態 */}
+        {loading && (
+          <div className="loading-spinner">
+            <div>⏳ 載入中...</div>
+          </div>
+        )}
 
-      {loading && <p>載入中...</p>}
-      
-
-      {!loading && (
-        <table className="prizes b-table-box admin-table mb15">
-          <thead>
-            <tr>
-              <th>名稱</th>
-              <th>圖片</th>
-              <th>數量</th>
-              <th>機率 (%)</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-
-                {Array.isArray(prizes) && prizes.map((prize) => (
-                <tr key={prize.id} className="text-center">
-                    <td>{prize.name}</td>
-                    <td className="b-td-center">
+        {/* 現代化表格 */}
+        {!loading && selectedEventId && (
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>🎁 獎品資訊</th>
+                <th>🖼️ 獎品圖片</th>
+                <th>📦 數量</th>
+                <th>🎲 中獎機率</th>
+                <th>⚙️ 操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(prizes) && prizes.map((prize) => (
+                <tr key={prize.id}>
+                  <td>
+                    <div className="prize-info">
+                      <div className="prize-name">{prize.name}</div>
+                      <div className="prize-id">ID: #{prize.id}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="image-cell">
                       {(() => {
                         const imagePath = prize.imageUrl || prize.image_url;
                         
@@ -175,71 +207,122 @@ export default function LuckyDrawPrizesPage() {
                           const fullImageUrl = `http://localhost:3001${imagePath}`;
                           
                           return (
-                            <div className="fo5p">
+                            <div className="image-preview-container">
                               <img
                                 src={fullImageUrl}
                                 alt={prize.name}
-                                height={40}
+                                className="prize-thumbnail"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                 }}
                               />
-                           
-                              <button onClick={() => setPreviewImage(fullImageUrl)}
+                              <button 
+                                onClick={() => setPreviewImage(fullImageUrl)}
+                                className="image-preview-btn"
                               >
-                                 預覽
+                                <span>🔍</span>
+                                預覽
                               </button>
                             </div>
                           );
                         } else {
-                          return <span className="text-gray-400">無圖</span>;
+                          return (
+                            <div className="no-image">
+                              <span>📷</span>
+                              <span>無圖片</span>
+                            </div>
+                          );
                         }
                       })()}
-                    </td>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="quantity-cell">
+                      <span className="quantity-badge">
+                        📦 {prize.quantity} 個
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="probability-cell">
+                      <span className="probability-badge">
+                        🎲 {prize.probability}%
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => router.push(`/lucky-draw/edit/${prize.id}`)}
+                        className="btn-edit"
+                      >
+                        <span>✏️</span>
+                        編輯
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(prize.id, prize.name)}
+                        className="btn-delete"
+                      >
+                        <span>🗑️</span>
+                        刪除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        
+        {/* 無活動選擇提示 */}
+        {!loading && !selectedEventId && (
+          <div className="no-selection">
+            <div className="no-selection-icon">🎯</div>
+            <h3>請選擇活動</h3>
+            <p>請先在上方選擇一個活動，才能查看和管理該活動的獎品</p>
+          </div>
+        )}
 
+        {/* 無資料顯示 */}
+        {!loading && selectedEventId && prizes.length === 0 && (
+          <div className="no-data">
+            <img src="/no-information.webp" alt="無資料" />
+            <p>此活動目前沒有獎品</p>
+            <button 
+              onClick={() => router.push(`/lucky-draw/new?eventId=${selectedEventId}`)}
+              className="btn-primary"
+              style={{ marginTop: '16px' }}
+            >
+              <span>✨</span>
+              立即新增獎品
+            </button>
+          </div>
+        )}
+      </div>
 
-                    <td>{prize.quantity}</td>
-                    <td>{prize.probability}</td>
-                
-                <td>
-                  <div className="fl4">
-                    <button 
-                      onClick={() => router.push(`/lucky-draw/edit/${prize.id}`)}
-                      className="b-btn-s3 b-btn-c1 mr10"
-                    >
-                      編輯
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(prize.id, prize.name)}
-                      className="b-btn-s3 b-btn-c3"
-                    >
-                      刪除
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
+      {/* 圖片預覽彈窗 */}
       {previewImage && (
-        <div className="b-lightbox-1">
-          <h2 className="mb15">圖片預覽</h2>
-          <div className="b-id-imgbox mb25">
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
+            <div className="image-preview-header">
+              <h2 className="image-preview-title">🖼️ 獎品圖片預覽</h2>
+              <button 
+                onClick={() => setPreviewImage(null)} 
+                className="image-preview-close"
+              >
+                ✕
+              </button>
+            </div>
             <Image 
               src={previewImage} 
               alt="預覽圖片" 
-              width={800}
-              height={600}
-              className="b-id-img" 
+              width={800} 
+              height={600} 
+              className="image-preview-img" 
             />
           </div>
-          <button onClick={() => setPreviewImage(null)} className="b-id-imgbox-X">X</button>
         </div>
       )}
-
-      </div>
     </div>
   );
 }

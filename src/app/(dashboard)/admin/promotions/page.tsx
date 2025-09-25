@@ -57,14 +57,8 @@ export default function PromotionsPage() {
   const [categoryId, setCategoryId] = useState("");
   const [status, setStatus] = useState("");
   const [isActive, setIsActive] = useState("");
-  const [createdFrom, setCreatedFrom] = useState(() => {
-    const today = dayjs();
-    return today.subtract(30, "day").format("YYYY-MM-DD");
-  });
-  const [createdTo, setCreatedTo] = useState(() => {
-    const today = dayjs();
-    return today.format("YYYY-MM-DD");
-  });
+  const [createdFrom, setCreatedFrom] = useState("");
+  const [createdTo, setCreatedTo] = useState("");
   
   // 篩選展開
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -97,6 +91,10 @@ export default function PromotionsPage() {
         const y = today.subtract(1, "day");
         fromDate = y.format("YYYY-MM-DD");
         toDate = y.format("YYYY-MM-DD");
+        break;
+      case "3days":
+        fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
+        toDate = today.format("YYYY-MM-DD");
         break;
       case "7days":
         fromDate = today.subtract(6, "day").format("YYYY-MM-DD");
@@ -157,7 +155,7 @@ export default function PromotionsPage() {
     });
   };
 
-  const fetchPromotions = async () => {
+  const fetchPromotions = async (useInitialFilter = false) => {
     if (!Number.isFinite(limit) || !Number.isFinite(page)) return;
     setLoading(true);
     try {
@@ -180,11 +178,21 @@ export default function PromotionsPage() {
       if (isActive !== "") {
         queryParams.append('isActive', isActive);
       }
-      if (createdFrom) {
-        queryParams.append('createdFrom', createdFrom);
-      }
-      if (createdTo) {
-        queryParams.append('createdTo', createdTo);
+      
+      // 如果是初始載入，使用預設的近3天時間範圍，否則使用篩選條件中的時間
+      if (useInitialFilter) {
+        const today = dayjs();
+        const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
+        const todayStr = today.format("YYYY-MM-DD");
+        queryParams.append('createdFrom', threeDaysAgo);
+        queryParams.append('createdTo', todayStr);
+      } else {
+        if (createdFrom) {
+          queryParams.append('createdFrom', createdFrom);
+        }
+        if (createdTo) {
+          queryParams.append('createdTo', createdTo);
+        }
       }
       
       const url = `http://localhost:3001/promotions?${queryParams.toString()}`;
@@ -249,11 +257,11 @@ export default function PromotionsPage() {
     setPromotions((prev) => sortPromotions(prev));
   }, [sortKey, sortDirection]);
 
-  // 頁面載入時自動搜尋
+  // 頁面載入時自動搜尋近3天資料
   useEffect(() => {
     if (!hasSearched) {
       setHasSearched(true);
-      fetchPromotions();
+      fetchPromotions(true); // 使用初始篩選條件
     }
   }, []);
 
@@ -540,6 +548,7 @@ export default function PromotionsPage() {
                 <div className="quick-date-buttons">
                   <button onClick={() => quickSetDate("today")} className="btn-quick-date">今日</button>
                   <button onClick={() => quickSetDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days")} className="btn-quick-date">近三日</button>
                   <button onClick={() => quickSetDate("7days")} className="btn-quick-date">近七日</button>
                   <button onClick={() => quickSetDate("thisMonth")} className="btn-quick-date">本月</button>
                   <button onClick={() => quickSetDate("lastMonth")} className="btn-quick-date">上月</button>
@@ -604,22 +613,32 @@ export default function PromotionsPage() {
             <thead>
               <tr>
                 <th onClick={() => toggleSort("id")}>
-                  ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  <div className="fl4">
+                    ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  </div>
                 </th>
-                <th onClick={() => toggleSort("title")}>
-                  活動標題 <span className={`sort-icon ${sortKey === "title" ? "active" : ""}`}>{getArrow("title")}</span>
+                <th onClick={() => toggleSort("title")} className="w30">
+                  <div className="fl4">
+                    活動標題<span className={`sort-icon ${sortKey === "title" ? "active" : ""}`}>{getArrow("title")}</span>
+                  </div>
                 </th>
                 <th>活動類型</th>
                 <th>活動期間</th>
                 <th>狀態</th>
                 <th onClick={() => toggleSort("viewCount")}>
-                  瀏覽次數 <span className={`sort-icon ${sortKey === "viewCount" ? "active" : ""}`}>{getArrow("viewCount")}</span>
+                  <div className="fl4">
+                    瀏覽次數 <span className={`sort-icon ${sortKey === "viewCount" ? "active" : ""}`}>{getArrow("viewCount")}</span>
+                  </div>
                 </th>
                 <th onClick={() => toggleSort("sortOrder")}>
-                  排序 <span className={`sort-icon ${sortKey === "sortOrder" ? "active" : ""}`}>{getArrow("sortOrder")}</span>
+                  <div className="fl4">
+                    排序 <span className={`sort-icon ${sortKey === "sortOrder" ? "active" : ""}`}>{getArrow("sortOrder")}</span>
+                  </div>
                 </th>
                 <th onClick={() => toggleSort("createdAt")}>
-                  建立時間 <span className={`sort-icon ${sortKey === "createdAt" ? "active" : ""}`}>{getArrow("createdAt")}</span>
+                  <div className="fl4">
+                    建立時間 <span className={`sort-icon ${sortKey === "createdAt" ? "active" : ""}`}>{getArrow("createdAt")}</span>
+                  </div>
                 </th>
                 <th>操作</th>
               </tr>
@@ -630,13 +649,6 @@ export default function PromotionsPage() {
                   <td>#{promotion.id}</td>
                   <td>
                     <div className="promotion-title">{promotion.title}</div>
-                    {promotion.summary && (
-                      <div className="promotion-summary">
-                        {promotion.summary.length > 60 
-                          ? `${promotion.summary.substring(0, 60)}...` 
-                          : promotion.summary}
-                      </div>
-                    )}
                   </td>
                   <td>
                     <span style={{

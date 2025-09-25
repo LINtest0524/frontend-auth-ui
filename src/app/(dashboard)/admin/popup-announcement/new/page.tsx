@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import '@/styles/pages/popup-announcement-create.css'
 
 // 格式化日期時間為本地時間格式 (台灣時區)
 const formatDateTimeLocal = (dateString: string): string => {
@@ -30,8 +31,14 @@ export default function NewPopupAnnouncementPage() {
   const [mobileImageFile, setMobileImageFile] = useState<File | null>(null)
   const [desktopPreview, setDesktopPreview] = useState<string>('')
   const [mobilePreview, setMobilePreview] = useState<string>('')
+  const [desktopSelectedFile, setDesktopSelectedFile] = useState<File | null>(null)
+  const [mobileSelectedFile, setMobileSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const desktopInputRef = useRef<HTMLInputElement | null>(null)
+  const mobileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -39,6 +46,48 @@ export default function NewPopupAnnouncementPage() {
       ...prev,
       [name]: name === 'sort_order' ? parseInt(value) || 0 : value
     }))
+  }
+
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+  const handleDesktopFileSelect = (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      alert('只接受 JPG / PNG / WEBP 圖片')
+      return
+    }
+    setDesktopSelectedFile(file)
+    setDesktopImageFile(file)
+    setDesktopPreview(URL.createObjectURL(file))
+  }
+
+  const handleMobileFileSelect = (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      alert('只接受 JPG / PNG / WEBP 圖片')
+      return
+    }
+    setMobileSelectedFile(file)
+    setMobileImageFile(file)
+    setMobilePreview(URL.createObjectURL(file))
+  }
+
+  const handleRemoveDesktopImage = () => {
+    setDesktopSelectedFile(null)
+    setDesktopImageFile(null)
+    setDesktopPreview('')
+    setUploading(false)
+    if (desktopInputRef.current) {
+      desktopInputRef.current.value = ''
+    }
+  }
+
+  const handleRemoveMobileImage = () => {
+    setMobileSelectedFile(null)
+    setMobileImageFile(null)
+    setMobilePreview('')
+    setUploading(false)
+    if (mobileInputRef.current) {
+      mobileInputRef.current.value = ''
+    }
   }
 
   const handleDesktopImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,170 +217,388 @@ export default function NewPopupAnnouncementPage() {
   }
 
   return (
-    <div className="b-ibox">
-      <h1>新增彈窗公告</h1>
-
-      <div className="b-ibox-s">
-        <div className="fl4 w100 mb15">
-          <button
-            type="button"
-            onClick={() => setShowPreview(true)}
-            className="b-btn-s2 b-btn-c3 mr10"
-            disabled={!desktopPreview}
-          >
-            預覽效果
-          </button>
-          <Link
-            href="/admin/popup-announcement"
-            className="b-btn-s2 b-btn-c2"
-          >
-            返回列表
-          </Link>
+    <div className="popup-announcement-create-container">
+      {/* 頁面標題區域 */}
+      <div className="popup-announcement-create-header">
+        <h1>📢 新增彈窗公告</h1>
+        <div className="popup-announcement-create-breadcrumb">
+          <span onClick={() => router.push("/admin/popup-announcement")} className="breadcrumb-link">
+            📢 彈窗公告管理
+          </span>
+          <span className="breadcrumb-separator">›</span>
+          <span className="breadcrumb-current">新增公告</span>
         </div>
-        <form onSubmit={handleSubmit} className="w100">
-          <div className="b-form-group-1 w100 fl4">
-            <label>公告標題 *</label>
-            <input
-              type="text"
-              name="title"
-              className="w70"
-              value={formData.title}
-              onChange={handleInputChange}
-              placeholder="請輸入公告標題"
-              required
-            />
+      </div>
+
+      {/* 表單區域 */}
+      <div className="form-section">
+        <div className="modern-form">
+          
+          {/* 基本資訊卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">📝</span>
+              <h3>基本資訊</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="title" className="form-label">
+                    <span className="label-icon">🏷️</span>
+                    公告標題
+                    <span className="required">*</span>
+                  </label>
+                  <input
+                    id="title"
+                    type="text"
+                    name="title"
+                    className="form-input"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="請輸入公告標題"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="button_text" className="form-label">
+                    <span className="label-icon">📝</span>
+                    按鈕文字
+                  </label>
+                  <input
+                    id="button_text"
+                    type="text"
+                    name="button_text"
+                    className="form-input"
+                    value={formData.button_text}
+                    onChange={handleInputChange}
+                    placeholder="例如：前往優惠、我要參加"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="button_url" className="form-label">
+                    <span className="label-icon">🔗</span>
+                    按鈕連結
+                  </label>
+                  <input
+                    id="button_url"
+                    type="url"
+                    name="button_url"
+                    className="form-input"
+                    value={formData.button_url}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-2 w50 fl4 mb10">
-            <label htmlFor="desktop-img">桌面版圖片</label>
-            <input
-              type="file"
-              id="desktop-img"
-              className="pt3 w70"
-              accept="image/*"
-              onChange={handleDesktopImageChange}
-            />
+          {/* 圖片上傳卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">🖼️</span>
+              <h3>彈窗圖片</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="image-upload-section">
+                {/* 桌面版圖片上傳 */}
+                <div className="image-upload-group">
+                  <div className="form-group po-r">
+                    <label className="form-label">💻 桌面版圖片</label>
+                    
+                    {!desktopPreview ? (
+                      <div 
+                        className="file-upload-area"
+                        onClick={() => desktopInputRef.current?.click()}
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                          e.currentTarget.classList.add('dragover')
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.classList.remove('dragover')
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          e.currentTarget.classList.remove('dragover')
+                          const file = e.dataTransfer.files[0]
+                          if (file) handleDesktopFileSelect(file)
+                        }}
+                      >
+                        <div className="file-upload-icon">📁</div>
+                        <div className="file-upload-text">點擊選擇桌面版圖片或拖拽到此處</div>
+                        <div className="file-upload-hint">支援 JPG、PNG、WebP 格式，建議尺寸 1200x800 像素</div>
+                      </div>
+                    ) : (
+                      <div className="image-preview-container">
+                        <div className="image-preview">
+                          <img src={desktopPreview} alt="桌面版預覽" />
+                          <div className="image-info">
+                            📄 {desktopSelectedFile?.name} ({((desktopSelectedFile?.size || 0) / 1024).toFixed(1)} KB)
+                          </div>
+                          {uploading && (
+                            <div className="upload-status">
+                              ⏳ 上傳中...
+                            </div>
+                          )}
+                          <div className="image-actions">
+                            <button
+                              type="button"
+                              className="btn-change-image"
+                              onClick={() => desktopInputRef.current?.click()}
+                              disabled={uploading}
+                            >
+                              🔄 更換圖片
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-remove-image"
+                              onClick={handleRemoveDesktopImage}
+                              disabled={uploading}
+                            >
+                              🗑️ 移除圖片
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <input
+                      type="file"
+                      ref={desktopInputRef}
+                      className="file-input-hidden"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleDesktopFileSelect(file)
+                      }}
+                    />
+                    
+                    <div className="form-hint">
+                      建議上傳高品質的桌面版圖片，檔案大小不超過 5MB
+                    </div>
+                  </div>
+                </div>
+
+                {/* 手機版圖片上傳 */}
+                <div className="image-upload-group">
+                  <div className="form-group po-r">
+                    <label className="form-label">📱 手機版圖片</label>
+                    
+                    {!mobilePreview ? (
+                      <div 
+                        className="file-upload-area"
+                        onClick={() => mobileInputRef.current?.click()}
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                          e.currentTarget.classList.add('dragover')
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.classList.remove('dragover')
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          e.currentTarget.classList.remove('dragover')
+                          const file = e.dataTransfer.files[0]
+                          if (file) handleMobileFileSelect(file)
+                        }}
+                      >
+                        <div className="file-upload-icon">📁</div>
+                        <div className="file-upload-text">點擊選擇手機版圖片或拖拽到此處</div>
+                        <div className="file-upload-hint">支援 JPG、PNG、WebP 格式，建議尺寸 600x800 像素</div>
+                      </div>
+                    ) : (
+                      <div className="image-preview-container">
+                        <div className="image-preview">
+                          <img src={mobilePreview} alt="手機版預覽" />
+                          <div className="image-info">
+                            📄 {mobileSelectedFile?.name} ({((mobileSelectedFile?.size || 0) / 1024).toFixed(1)} KB)
+                          </div>
+                          {uploading && (
+                            <div className="upload-status">
+                              ⏳ 上傳中...
+                            </div>
+                          )}
+                          <div className="image-actions">
+                            <button
+                              type="button"
+                              className="btn-change-image"
+                              onClick={() => mobileInputRef.current?.click()}
+                              disabled={uploading}
+                            >
+                              🔄 更換圖片
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-remove-image"
+                              onClick={handleRemoveMobileImage}
+                              disabled={uploading}
+                            >
+                              🗑️ 移除圖片
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <input
+                      type="file"
+                      ref={mobileInputRef}
+                      className="file-input-hidden"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleMobileFileSelect(file)
+                      }}
+                    />
+                    
+                    <div className="form-hint">
+                      建議上傳高品質的手機版圖片，檔案大小不超過 5MB
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-2 w50 fl4 mb25 ml132">
-            {desktopPreview && (
-              <img
-                src={desktopPreview}
-                alt="桌面版預覽"
-                className="b-banner-img"
-              />
-            )}
+          {/* 顯示設定卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">⚙️</span>
+              <h3>顯示設定</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="status" className="form-label">
+                    <span className="label-icon">⚡</span>
+                    狀態
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="active">啟用</option>
+                    <option value="inactive">停用</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="sort_order" className="form-label">
+                    <span className="label-icon">🔢</span>
+                    排序順序
+                  </label>
+                  <input
+                    id="sort_order"
+                    type="number"
+                    name="sort_order"
+                    className="form-input"
+                    value={formData.sort_order}
+                    onChange={handleInputChange}
+                    placeholder="數字越大越前面"
+                    min="0"
+                  />
+                  <div className="form-hint">
+                    💡 設定公告顯示的優先順序
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-2 w50 fl4 mb10">
-            <label htmlFor="mobile-img">手機版圖片</label>
-            <input
-              type="file"
-              id="mobile-img"
-              className="pt3 w70"
-              accept="image/*"
-              onChange={handleMobileImageChange}
-            />
+          {/* 時間設定卡片 */}
+          <div className="form-card">
+            <div className="form-card-header">
+              <span className="form-card-icon">📅</span>
+              <h3>時間設定</h3>
+            </div>
+            <div className="form-card-content">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="start_date" className="form-label">
+                    <span className="label-icon">🟢</span>
+                    開始時間
+                  </label>
+                  <input
+                    id="start_date"
+                    type="datetime-local"
+                    name="start_date"
+                    className="form-input"
+                    value={formData.start_date}
+                    onChange={handleInputChange}
+                  />
+                  <div className="form-hint">
+                    💡 不設定則立即生效
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="end_date" className="form-label">
+                    <span className="label-icon">🔴</span>
+                    結束時間
+                  </label>
+                  <input
+                    id="end_date"
+                    type="datetime-local"
+                    name="end_date"
+                    className="form-input"
+                    value={formData.end_date}
+                    onChange={handleInputChange}
+                  />
+                  <div className="form-hint">
+                    💡 不設定則永久有效
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="b-form-group-2 w50 fl4 mb25 ml132">
-            {mobilePreview && (
-              <img
-                src={mobilePreview}
-                alt="手機版預覽"
-                className="b-banner-img"
-              />
-            )}
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>按鈕文字</label>
-            <input
-              type="text"
-              name="button_text"
-              className="w70"
-              value={formData.button_text}
-              onChange={handleInputChange}
-              placeholder="例如：前往優惠、我要參加"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>按鈕連結</label>
-            <input
-              type="url"
-              name="button_url"
-              className="w70"
-              value={formData.button_url}
-              onChange={handleInputChange}
-              placeholder="https://example.com"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>排序順序</label>
-            <input
-              type="number"
-              name="sort_order"
-              className="w70"
-              value={formData.sort_order}
-              onChange={handleInputChange}
-              placeholder="數字越大越前面"
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>狀態</label>
-            <select
-              name="status"
-              className="w70"
-              value={formData.status}
-              onChange={handleInputChange}
-            >
-              <option value="active">啟用</option>
-              <option value="inactive">停用</option>
-            </select>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>開始時間</label>
-            <input
-              type="datetime-local"
-              name="start_date"
-              className="w70"
-              value={formData.start_date}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>結束時間</label>
-            <input
-              type="datetime-local"
-              name="end_date"
-              className="w70"
-              value={formData.end_date}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="fl4 w100 b-btnbox">
+          {/* 操作按鈕 */}
+          <div className="form-actions">
             <button
-              type="submit"
-              disabled={loading}
-              className="b-btn-s2 b-btn-c4 mr20"
+              type="button"
+              onClick={() => setShowPreview(true)}
+              disabled={!desktopPreview}
+              className="btn-preview"
             >
-              {loading ? "創建中..." : "儲存送出"}
+              <span>👁️</span>
+              預覽效果
             </button>
             <button
               type="button"
-              onClick={() => window.location.href = '/admin/popup-announcement'}
-              className="b-btn-s2 b-btn-c1"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-submit"
             >
+              {loading ? (
+                <>
+                  <span className="loading-spinner">⏳</span>
+                  創建中...
+                </>
+              ) : (
+                <>
+                  <span>💾</span>
+                  儲存公告
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/popup-announcement")}
+              className="popup-announcement-cancel-btn"
+            >
+              <span>❌</span>
               取消
             </button>
           </div>
-        </form>
+
+        </div>
       </div>
 
       <PreviewModal />

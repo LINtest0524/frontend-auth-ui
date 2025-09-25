@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useUserStore } from "@/hooks/use-user-store";
 import SunEditor from '@/components/SunEditor'
+import '@/styles/pages/product-form.css'
 
 type ProductCategory = {
   id: number
@@ -147,8 +148,8 @@ export default function EditProductPage() {
             short_description: product.short_description || '',
             specifications_description: product.specifications_description || '',
             shipping_description: product.shipping_description || '',
-            price: product.price.toString(),
-            original_price: product.original_price?.toString() || '',
+            price: Math.floor(product.price).toString(),
+            original_price: product.original_price ? Math.floor(product.original_price).toString() : '',
             stock_quantity: product.stock_quantity.toString(),
             min_stock: product.min_stock.toString(),
             category_id: product.category_id?.toString() || '',
@@ -190,8 +191,8 @@ export default function EditProductPage() {
               id: variant.id,
               variant_name: variant.variant_name,
               sku: variant.sku,
-              price: variant.price.toString(),
-              original_price: variant.original_price?.toString() || '',
+              price: Math.floor(parseFloat(variant.price)).toString(),
+              original_price: variant.original_price ? Math.floor(parseFloat(variant.original_price)).toString() : '',
               stock_quantity: variant.stock_quantity.toString(),
               variant_options: variant.variant_options,
               images: variant.images || [],
@@ -574,224 +575,311 @@ export default function EditProductPage() {
 
   if (loadingProduct) {
     return (
-      <div className="b-ibox">
-        <h1>載入中...</h1>
-        <div className="b-ibox-s">
-          <p>正在載入產品資料...</p>
+      <div className="product-form-container">
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">正在載入商品資料...</div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <>
-      <style jsx>{`
-        .se-wrapper-inner.se-wrapper-wysiwyg.sun-editor-editable {
-          min-height: 300px;
-        }
-      `}</style>
-      <div className="b-ibox">
-        <h1>編輯商品</h1>
-
-      <div className="b-ibox-s">
-        <form onSubmit={handleSubmit} className="w100">
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品名稱</label>
-            <input
-              type="text"
-              name="name"
-              className="w70"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="請輸入商品名稱"
-              required
-            />
+    <div className="product-form-container">
+      {/* 載入遮罩 */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">正在更新商品...</div>
           </div>
+        </div>
+      )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品編號 (SKU)</label>
-            <input
-              type="text"
-              name="sku"
-              className="w70"
-              value={formData.sku}
-              onChange={handleInputChange}
-              placeholder="請輸入商品編號"
-              required
-            />
-          </div>
+      {/* 頁面標題區域 */}
+      <div className="product-form-header">
+        <h1>✏️ 編輯商品</h1>
+      </div>
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品分類</label>
-            <select
-              name="category_id"
-              className="w70"
-              value={formData.category_id}
-              onChange={handleInputChange}
-            >
-              <option value="">請選擇分類</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>商品狀態</label>
-            <select
-              name="status"
-              className="w70"
-              value={formData.status}
-              onChange={handleInputChange}
-            >
-              <option value="ACTIVE">上架</option>
-              <option value="INACTIVE">下架</option>
-              <option value="OUT_OF_STOCK">缺貨</option>
-            </select>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>簡短描述 (支援換行)</label>
-            <textarea
-              name="short_description"
-              className="w70"
-              rows={3}
-              value={formData.short_description}
-              onChange={handleInputChange}
-              placeholder="請輸入商品簡短描述，可以使用 Enter 換行"
-            />
-            <small style={{ color: '#666', marginLeft: '132px', display: 'block', marginTop: '5px' }}>
-              提示：直接按 Enter 鍵可換行
-            </small>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>詳細描述</label>
-            <div style={{ width: '70%' }}>
-              <div className="suneditor-wrapper txtbox-9" >
-                <SunEditor
-                  value={formData.description}
-                  onChange={handleDescriptionChange}
-                  placeholder="請輸入商品詳細描述..."
-                  height="350px"
-                />
-              </div>
-              <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                提示：SunEditor 專業級富文本編輯器，支援豐富的格式化功能、圖片上傳、表格、程式碼等
-              </small>
+      {/* 表單內容 */}
+      <div className="product-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本資訊
             </div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>規格說明</label>
-            <div style={{ width: '70%' }}>
-              <div className="suneditor-wrapper txtbox-9" >
-                <SunEditor
-                  value={formData.specifications_description}
-                  onChange={handleSpecificationsDescriptionChange}
-                  placeholder="請輸入商品規格說明..."
-                  height="350px"
-                />
-              </div>
-              <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                提示：用於前台「規格說明」分頁顯示的內容
-              </small>
-            </div>
-          </div>
-
-          <div className="b-form-group-1 w100 fl4">
-            <label>配送說明</label>
-            <div style={{ width: '70%' }}>
-              <div className="suneditor-wrapper txtbox-9" >
-                <SunEditor
-                  value={formData.shipping_description}
-                  onChange={handleShippingDescriptionChange}
-                  placeholder="請輸入配送與退換貨說明..."
-                  height="350px"
-                />
-              </div>
-              <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                提示：用於前台「配送說明」分頁顯示的內容
-              </small>
-            </div>
-          </div>
-
-          {!useVariants && (
-            <>
-              <div className="b-form-group-1 w100 fl4">
-                <label>售價</label>
+            
+            <div className="form-grid two-column">
+              <div className="form-group">
+                <label htmlFor="name" className="form-label required">🏷️ 商品名稱</label>
                 <input
-                  type="number"
-                  name="price"
-                  className="w70"
-                  value={formData.price}
+                  type="text"
+                  id="name"
+                  name="name"
+                  className="form-input"
+                  value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="請輸入售價"
-                  min="0"
-                  step="0.01"
+                  placeholder="請輸入商品名稱"
                   required
                 />
+                <div className="form-hint">
+                  建議使用簡潔明瞭的商品名稱，有助於搜尋和識別
+                </div>
               </div>
 
-              <div className="b-form-group-1 w100 fl4">
-                <label>原價</label>
+              <div className="form-group">
+                <label htmlFor="sku" className="form-label required">🔢 商品編號 (SKU)</label>
                 <input
-                  type="number"
-                  name="original_price"
-                  className="w70"
-                  value={formData.original_price}
+                  type="text"
+                  id="sku"
+                  name="sku"
+                  className="form-input"
+                  value={formData.sku}
                   onChange={handleInputChange}
-                  placeholder="請輸入原價（選填）"
-                  min="0"
-                  step="0.01"
+                  placeholder="請輸入商品編號"
+                  required
                 />
+                <div className="form-hint">
+                  唯一的商品識別碼，建議使用英數字組合
+                </div>
               </div>
 
-              <div className="b-form-group-1 w100 fl4">
-                <label>庫存數量</label>
-                <input
-                  type="number"
-                  name="stock_quantity"
-                  className="w70"
-                  value={formData.stock_quantity}
-                  onChange={handleInputChange}
-                  placeholder="請輸入庫存數量"
-                  min="0"
-                />
+              <div className="form-group">
+                <label htmlFor="category_id" className="form-label">📂 商品分類</label>
+                <div className="enhanced-select">
+                  <select
+                    id="category_id"
+                    name="category_id"
+                    className="form-select"
+                    value={formData.category_id}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">請選擇分類</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-hint">
+                  選擇適合的分類有助於用戶快速找到商品
+                </div>
               </div>
-            </>
-          )}
 
-          {useVariants && (
-            <div className="b-form-group-1 w100 fl4">
-              <div style={{ 
-                padding: '15px', 
-                background: '#e3f2fd', 
-                border: '1px solid #2196f3', 
-                borderRadius: '6px',
-                color: '#1565c0'
-              }}>
-                <strong>📦 使用變體模式</strong>
-                <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
-                  當啟用商品變體時，價格和庫存將由各個變體單獨管理，主商品的價格和庫存設定將被忽略。
-                </p>
+              <div className="form-group">
+                <label htmlFor="status" className="form-label">📊 商品狀態</label>
+                <div className="enhanced-select">
+                  <select
+                    id="status"
+                    name="status"
+                    className="form-select"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="ACTIVE">✅ 上架</option>
+                    <option value="INACTIVE">❌ 下架</option>
+                    <option value="OUT_OF_STOCK">⚠️ 缺貨</option>
+                  </select>
+                </div>
+                <div className="form-hint">
+                  設定商品在前台的顯示狀態
+                </div>
               </div>
             </div>
-          )}
 
-          <div className="b-form-group-1 w100 fl4">
-            <label>最低庫存警告</label>
-            <input
-              type="number"
-              name="min_stock"
-              className="w70"
-              value={formData.min_stock}
-              onChange={handleInputChange}
-              placeholder="請輸入最低庫存警告數量"
-              min="0"
-            />
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label htmlFor="short_description" className="form-label">📝 簡短描述</label>
+                <textarea
+                  id="short_description"
+                  name="short_description"
+                  className="form-textarea"
+                  rows={3}
+                  value={formData.short_description}
+                  onChange={handleInputChange}
+                  placeholder="請輸入商品簡短描述，可以使用 Enter 換行"
+                />
+                <div className="form-hint">
+                  簡短描述會顯示在商品列表中，建議控制在 100-200 字內
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 內容編輯區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>✏️</span>
+              內容編輯
+            </div>
+            
+            <div className="form-grid single-column">
+              <div className="form-group">
+                <label className="form-label required">📄 詳細描述</label>
+                <div className="editor-container">
+                  <SunEditor
+                    value={formData.description}
+                    onChange={handleDescriptionChange}
+                    placeholder="請輸入商品詳細描述..."
+                    height="350px"
+                  />
+                </div>
+                <div className="form-hint">
+                  支援豐富的格式化功能、圖片上傳、表格、程式碼等，用於商品詳情頁面顯示
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">📋 規格說明</label>
+                <div className="editor-container">
+                  <SunEditor
+                    value={formData.specifications_description}
+                    onChange={handleSpecificationsDescriptionChange}
+                    placeholder="請輸入商品規格說明..."
+                    height="300px"
+                  />
+                </div>
+                <div className="form-hint">
+                  用於前台「規格說明」分頁顯示的內容，可包含尺寸、材質、功能等詳細規格
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">🚚 配送說明</label>
+                <div className="editor-container">
+                  <SunEditor
+                    value={formData.shipping_description}
+                    onChange={handleShippingDescriptionChange}
+                    placeholder="請輸入配送與退換貨說明..."
+                    height="300px"
+                  />
+                </div>
+                <div className="form-hint">
+                  用於前台「配送說明」分頁顯示的內容，包含配送方式、退換貨政策等
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 價格與庫存設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>💰</span>
+              價格與庫存設定
+            </div>
+
+            {!useVariants && (
+              <div className="form-grid two-column">
+                <div className="form-group">
+                  <label htmlFor="price" className="form-label required">💰 售價</label>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    className="form-input"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    placeholder="請輸入售價"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <div className="form-hint">
+                    商品的銷售價格，僅支援整數
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="original_price" className="form-label">🏷️ 原價</label>
+                  <input
+                    type="number"
+                    id="original_price"
+                    name="original_price"
+                    className="form-input"
+                    value={formData.original_price}
+                    onChange={handleInputChange}
+                    placeholder="請輸入原價（選填）"
+                    min="0"
+                    step="1"
+                  />
+                  <div className="form-hint">
+                    原價用於顯示折扣效果，僅支援整數，可不填寫
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="stock_quantity" className="form-label">📦 庫存數量</label>
+                  <input
+                    type="number"
+                    id="stock_quantity"
+                    name="stock_quantity"
+                    className="form-input"
+                    value={formData.stock_quantity}
+                    onChange={handleInputChange}
+                    placeholder="請輸入庫存數量"
+                    min="0"
+                  />
+                  <div className="form-hint">
+                    當前可銷售的商品數量
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="min_stock" className="form-label">⚠️ 最低庫存警告</label>
+                  <input
+                    type="number"
+                    id="min_stock"
+                    name="min_stock"
+                    className="form-input"
+                    value={formData.min_stock}
+                    onChange={handleInputChange}
+                    placeholder="請輸入最低庫存警告數量"
+                    min="0"
+                  />
+                  <div className="form-hint">
+                    當庫存低於此數量時會顯示警告
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {useVariants && (
+              <div className="info-box info">
+                <div className="info-box-icon">ℹ️</div>
+                <div className="info-box-content">
+                  <div className="info-box-title">已啟用變體管理</div>
+                  <div className="info-box-text">
+                    價格、庫存和圖片將在下方的變體設定中管理，每個變體可以設定不同的價格和庫存數量。
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {useVariants && (
+              <div className="form-grid single-column">
+                <div className="form-group">
+                  <label htmlFor="min_stock" className="form-label">⚠️ 最低庫存警告</label>
+                  <input
+                    type="number"
+                    id="min_stock"
+                    name="min_stock"
+                    className="form-input"
+                    value={formData.min_stock}
+                    onChange={handleInputChange}
+                    placeholder="請輸入最低庫存警告數量"
+                    min="0"
+                  />
+                  <div className="form-hint">
+                    當任一變體庫存低於此數量時會顯示警告
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {!useVariants && (
@@ -1493,25 +1581,30 @@ export default function EditProductPage() {
             </>
           )}
 
-          <div className="fl4 w100 b-btnbox">
-            <button
-              type="submit"
-              disabled={loading}
-              className="b-btn-s2 b-btn-c4 mr20"
-            >
-              {loading ? "更新中..." : "儲存更新"}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/admin/products")}
-              className="b-btn-s2 b-btn-c1"
-            >
-              取消
-            </button>
+          {/* 操作按鈕 */}
+          <div className="form-section">
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => router.push("/admin/products")}
+                className="btn-form-secondary"
+                disabled={loading}
+              >
+                <span>↩️</span>
+                取消
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-form-primary"
+              >
+                <span>💾</span>
+                {loading ? "更新中..." : "儲存更新"}
+              </button>
+            </div>
           </div>
         </form>
       </div>
     </div>
-    </>
   );
 }

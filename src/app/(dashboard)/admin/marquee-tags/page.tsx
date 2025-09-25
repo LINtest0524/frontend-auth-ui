@@ -9,6 +9,7 @@ type MarqueeTag = {
   name: string;
   backgroundColor: string;
   textColor: string;
+  shape: string;
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -100,7 +101,7 @@ export default function MarqueeTagListPage() {
     <div className="admin-user-container">
       {/* 頁面標題區域 */}
       <div className="admin-user-header">
-        <h1>🏷️ 跑馬燈標籤管理</h1>
+        <h1>🏷️ 標籤管理</h1>
         <div className="admin-user-header-actions">
           <button 
             onClick={() => router.push("/admin/marquee-tags/new")} 
@@ -187,13 +188,14 @@ export default function MarqueeTagListPage() {
                         style={{
                           backgroundColor: item.backgroundColor,
                           color: item.textColor,
-                          padding: "8px 16px",
-                          borderRadius: "20px",
+                          padding: item.shape === 'pentagon' ? "6px 5px 10px" : "8px 16px",
+                          borderRadius: (item.shape === 'oval' || !item.shape) ? "20px" : "0px",
+                          clipPath: item.shape === 'pentagon' ? 'polygon(0% 0%, 100% 0%, 100% 80%, 50% 100%, 0% 80%)' : 'none',
                           fontSize: "12px",
-                          fontWeight: "600",
+                          fontWeight: item.shape === 'pentagon' ? 'normal' : "600",
                           display: "inline-block",
                           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          minWidth: "80px"
+                          minWidth: item.shape === 'pentagon' ? 'auto' : "80px"
                         }}
                       >
                         {item.name}
@@ -289,7 +291,7 @@ export default function MarqueeTagListPage() {
           {!loading && hasSearched && items.length === 0 && (
             <div className="no-data">
               <img src="/no-information.webp" alt="無資料" />
-              <p>查無符合條件的跑馬燈標籤</p>
+              <p>查無符合條件的標籤</p>
               {searchName && (
                 <button 
                   onClick={() => {

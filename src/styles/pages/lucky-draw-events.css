@@ -1,0 +1,461 @@
+/* 抽獎活動管理頁面現代化樣式 - 參考banner-admin設計 */
+
+.lucky-draw-events-container {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
+  width: 100%;
+}
+
+.lucky-draw-events-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+}
+
+.lucky-draw-events-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lucky-draw-events-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+}
+
+.content-section {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  animation: slideIn 0.3s ease-out;
+}
+
+.table-controls {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.table-info {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.loading-spinner div {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modern-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.modern-table th:hover {
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.modern-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background: #f8fafc;
+  transform: scale(1.001);
+}
+
+/* 活動資訊樣式 */
+.event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.event-id {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 時間資訊樣式 */
+.time-info {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.time-start {
+  color: #059669;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.time-end {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* 獎品數量樣式 */
+.prize-count {
+  display: flex;
+  justify-content: center;
+}
+
+.prize-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+/* 狀態切換按鈕 */
+.status-toggle {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-active:hover {
+  background: #bbf7d0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(22, 101, 52, 0.2);
+}
+
+.status-inactive {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.status-inactive:hover {
+  background: #fecaca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(153, 27, 27, 0.2);
+}
+
+/* 操作按鈕區域 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-manage {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.btn-manage:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* 無資料顯示 */
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.no-data img {
+  max-width: 200px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.no-data p {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 表格行懸停效果 */
+.modern-table tbody tr:hover .prize-badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  transform: scale(1.05);
+}
+
+.modern-table tbody tr:hover .event-name {
+  color: #f59e0b;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .lucky-draw-events-container {
+    padding: 16px;
+  }
+  
+  .lucky-draw-events-header {
+    padding: 24px;
+  }
+  
+  .lucky-draw-events-header h1 {
+    font-size: 24px;
+  }
+  
+  .modern-table {
+    font-size: 14px;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .time-info {
+    font-size: 11px;
+  }
+  
+  .prize-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lucky-draw-events-header-actions {
+    width: 100%;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .action-buttons {
+    gap: 4px;
+  }
+  
+  .btn-manage,
+  .btn-delete {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  .event-name {
+    font-size: 13px;
+  }
+  
+  .event-id {
+    font-size: 11px;
+  }
+  
+  .status-toggle {
+    padding: 6px 12px;
+    font-size: 11px;
+    min-width: 70px;
+  }
+}
+
+/* 特殊效果 */
+.lucky-draw-events-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.lucky-draw-events-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: sparkle 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sparkle {
+  0% {
+    transform: translateX(-50px) translateY(-50px);
+  }
+  100% {
+    transform: translateX(50px) translateY(50px);
+  }
+}
+
+/* 懸停時的微妙動畫 */
+.btn-primary,
+.btn-manage,
+.btn-delete,
+.status-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before,
+.btn-manage::before,
+.btn-delete::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-primary:hover::before,
+.btn-manage:hover::before,
+.btn-delete:hover::before {
+  width: 100%;
+  height: 100%;
+}
