@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname } from 'next/navigation'
+import { getUser } from '@/lib/useAuth'
 
 export default function MemberEditForm() {
   const { user, setUser } = useUserStore()
@@ -28,10 +29,27 @@ export default function MemberEditForm() {
   }
 
   useEffect(() => {
-    if (user?.email) {
-      setEmail(user.email)
+    // 從 localStorage 獲取用戶資料
+    const companyCode = getCompanyCode()
+    const storedUser = getUser(companyCode)
+    
+    console.log('MemberEditForm - 檢查用戶資料:', { 
+      zustandUser: user, 
+      storedUser,
+      companyCode,
+      zustandUserId: user?.id,
+      storedUserId: storedUser?.id
+    })
+    
+    if (storedUser && !user) {
+      setUser(storedUser)
     }
-  }, [user])
+    
+    const currentUser = user || storedUser
+    if (currentUser?.email) {
+      setEmail(currentUser.email)
+    }
+  }, [user, setUser])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,11 +61,37 @@ export default function MemberEditForm() {
       return
     }
 
+    // 獲取當前用戶資料
+    const companyCode = getCompanyCode()
+    const storedUser = getUser(companyCode)
+    const currentUser = user || storedUser
+
+    console.log('MemberEditForm - 提交時用戶資料:', { 
+      user, 
+      storedUser, 
+      currentUser,
+      userId: currentUser?.id,
+      actualUserId: currentUser?.id || currentUser?.userId,
+      currentUserKeys: currentUser ? Object.keys(currentUser) : [],
+      currentUserValues: currentUser
+    })
+
+    // 檢查 id 或 userId 屬性
+    const actualUserId = currentUser?.id || currentUser?.userId
+    if (!actualUserId) {
+      setError('使用者資訊不完整，請重新登入')
+      return
+    }
+
     try {
       const token = getToken()
+      
+      if (!token) {
+        setError('請重新登入')
+        return
+      }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${user?.id}`, {
-
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${actualUserId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

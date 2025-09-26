@@ -37,10 +37,20 @@ interface User {
   role: string
 }
 
+interface Tag {
+  id: number
+  name: string
+  backgroundColor: string
+  textColor: string
+  shape: string
+  isActive: boolean
+}
+
 export default function AdminMessagesPage() {
   const { user: currentUser } = useUserStore()
   const [messages, setMessages] = useState<Message[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(false)
   const [sendingMessage, setSendingMessage] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
@@ -64,11 +74,17 @@ export default function AdminMessagesPage() {
   const [sendToNewMembers, setSendToNewMembers] = useState<boolean | undefined>(undefined)
   const [validDays, setValidDays] = useState<number | undefined>(undefined)
   
+  // 標籤群組發送狀態
+  const [tagGroupTitle, setTagGroupTitle] = useState('')
+  const [tagGroupContent, setTagGroupContent] = useState('')
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
+  const [sendingTagMessage, setSendingTagMessage] = useState(false)
+  
   // 搜尋和篩選
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<'ALL' | 'SYSTEM' | 'USER' | 'ADMIN'>('ALL')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'list' | 'send' | 'broadcast'>('list')
+  const [activeTab, setActiveTab] = useState<'list' | 'send' | 'broadcast' | 'tagGroup'>('list')
   
   // 時間篩選
   const [createdFrom, setCreatedFrom] = useState('')
@@ -121,6 +137,52 @@ export default function AdminMessagesPage() {
     setCreatedFrom(fromDate)
     setCreatedTo(toDate)
   }
+
+  // 獲取標籤列表
+  const fetchTags = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/tags`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('🏷️ 前端收到標籤數據:', data)
+        setTags(data.tags || [])
+        
+        // 顯示調試信息
+        if (data.debug) {
+          console.log('📊 標籤統計:', {
+            活躍標籤數量: data.debug.activeCount,
+            總標籤數量: data.debug.totalCount,
+            返回標籤數量: data.tags?.length || 0
+          })
+        }
+      } else {
+        console.error('獲取標籤列表失敗:', response.status, response.statusText)
+      }
+    } catch (error) {
+      console.error('獲取標籤列表失敗:', error)
+    }
+  }
+
+  // 載入標籤列表
+  useEffect(() => {
+    if (canUseBroadcast()) {
+      fetchTags()
+    }
+  }, [])
+
+  // 當切換到標籤群組發送頁面時重新獲取標籤
+  useEffect(() => {
+    if (activeTab === 'tagGroup' && canUseBroadcast()) {
+      fetchTags()
+    }
+  }, [activeTab])
 
   // 移除自動獲取用戶列表，改為手動輸入用戶名
   // useEffect(() => {
@@ -308,6 +370,53 @@ export default function AdminMessagesPage() {
       alert('發送廣播失敗，請稍後再試')
     } finally {
       setSendingMessage(false)
+    }
+  }
+
+  const sendTagGroupMessage = async () => {
+    if (!tagGroupTitle.trim() || !tagGroupContent.trim()) {
+      alert('請填寫標題和內容')
+      return
+    }
+
+    if (selectedTagIds.length === 0) {
+      alert('請選擇至少一個標籤')
+      return
+    }
+
+    setSendingTagMessage(true)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/send-by-tags`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: tagGroupTitle,
+          content: tagGroupContent,
+          tagIds: selectedTagIds
+        })
+      })
+
+      if (response.ok) {
+        alert('標籤群組消息發送成功！')
+        setTagGroupTitle('')
+        setTagGroupContent('')
+        setSelectedTagIds([])
+        if (hasSearched) {
+          fetchMessages()
+        }
+      } else {
+        const error = await response.json()
+        alert(`發送失敗: ${error.message || '未知錯誤'}`)
+      }
+    } catch (error) {
+      console.error('發送標籤群組消息失敗:', error)
+      alert('發送標籤群組消息失敗，請稍後再試')
+    } finally {
+      setSendingTagMessage(false)
     }
   }
 
@@ -549,6 +658,14 @@ export default function AdminMessagesPage() {
               📢 系統站內信
             </button>
           )}
+          {canUseBroadcast() && (
+            <button 
+              onClick={() => setActiveTab('tagGroup')} 
+              className={`tab-button ${activeTab === 'tagGroup' ? 'active' : ''}`}
+            >
+              🏷️ 標籤群組發送
+            </button>
+          )}
         </div>
       </div>
 
@@ -713,13 +830,21 @@ export default function AdminMessagesPage() {
                             <div>{message.sender.email}</div>
                           </div>
                         ) : (
-                          <span style={{ fontWeight: '500', color: '#4f46e5' }}>系統</span>
+                          <div>
+                            <span style={{ fontWeight: '500', color: '#4f46e5' }}>系統</span>
+                            {message.messageType === 'SYSTEM' && message.receiver.username !== '所有會員' && (
+                              <div style={{ fontSize: '10px', color: '#ef4444' }}>🏷️ 標籤群組</div>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td style={{ fontSize: '12px', color: '#6b7280' }}>
                         <div>
                           <div style={{ fontWeight: '500' }}>{message.receiver.username}</div>
                           {message.receiver.email && <div>{message.receiver.email}</div>}
+                          {message.receiver.username === '所有會員' && message.messageType === 'SYSTEM' && (
+                            <div style={{ fontSize: '10px', color: '#10b981' }}>📢 全站廣播</div>
+                          )}
                         </div>
                       </td>
                       <td style={{ fontSize: '12px', color: '#6b7280' }}>
@@ -836,6 +961,122 @@ export default function AdminMessagesPage() {
             <li>• 超級管理員 (SUPER_ADMIN)</li>
           </ul>
           <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>
+        </div>
+      )}
+
+      {/* 標籤群組發送標籤 */}
+      {activeTab === 'tagGroup' && !canUseBroadcast() && (
+        <div className="permission-notice">
+          <h3>⚠️ 權限不足</h3>
+          <p>標籤群組發送功能僅限以下角色使用：</p>
+          <ul>
+            <li>• 客服人員 (AGENT_SUPPORT)</li>
+            <li>• 代理商老闆 (AGENT_OWNER)</li>
+            <li>• 超級管理員 (SUPER_ADMIN)</li>
+          </ul>
+          <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>
+        </div>
+      )}
+
+      {activeTab === 'tagGroup' && canUseBroadcast() && (
+        <div className="form-section">
+          <h2>標籤群組發送</h2>
+          <p>向擁有特定標籤的會員發送系統消息，支援多標籤選擇（客服人員、代理商老闆、超級管理員可使用）</p>
+          
+          <div className="form-row">
+            <label htmlFor="tag-group-title">消息標題 *</label>
+            <input
+              type="text"
+              id="tag-group-title"
+              value={tagGroupTitle}
+              onChange={(e) => setTagGroupTitle(e.target.value)}
+              placeholder="請輸入消息標題"
+            />
+          </div>
+
+          <div className="form-row">
+            <label>選擇會員標籤 *</label>
+            <div className="tag-selection-grid">
+              {tags.length === 0 && (
+                <p className="no-tags-message">目前沒有可用的標籤，請先到「標籤管理」新增標籤</p>
+              )}
+              {tags.map(tag => (
+                <div key={tag.id} className="tag-checkbox-item">
+                  <input
+                    type="checkbox"
+                    id={`tag-${tag.id}`}
+                    checked={selectedTagIds.includes(tag.id)}
+                    disabled={!tag.isActive}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedTagIds([...selectedTagIds, tag.id])
+                      } else {
+                        setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id))
+                      }
+                    }}
+                  />
+                  <label htmlFor={`tag-${tag.id}`} className="tag-label">
+                    <span 
+                      className={`tag-preview ${tag.shape} ${!tag.isActive ? 'inactive' : ''}`}
+                      style={{ 
+                        backgroundColor: tag.backgroundColor, 
+                        color: tag.textColor,
+                        opacity: tag.isActive ? 1 : 0.5
+                      }}
+                    >
+                      {tag.name}
+                      {!tag.isActive && <span style={{ fontSize: '10px' }}> (停用)</span>}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+            {selectedTagIds.length > 0 && (
+              <div className="selected-tags-info">
+                已選擇 {selectedTagIds.length} 個標籤：
+                {selectedTagIds.map(id => {
+                  const tag = tags.find(t => t.id === id)
+                  return tag ? (
+                    <span 
+                      key={id}
+                      className={`selected-tag ${tag.shape}`}
+                      style={{ 
+                        backgroundColor: tag.backgroundColor, 
+                        color: tag.textColor 
+                      }}
+                    >
+                      {tag.name}
+                    </span>
+                  ) : null
+                })}
+              </div>
+            )}
+          </div>
+          
+          <div className="form-row">
+            <label htmlFor="tag-group-content">消息內容 *</label>
+            <div className="editor-wrapper">
+              <SunEditor
+                value={tagGroupContent}
+                onChange={(content) => setTagGroupContent(content)}
+                placeholder="請輸入消息內容..."
+                height="300px"
+              />
+              <div className="editor-hint">
+                🏷️ 提示：此消息將發送給所有擁有選中標籤的會員
+              </div>
+            </div>
+          </div>
+          
+          <div className="form-actions">
+            <button 
+              onClick={sendTagGroupMessage} 
+              disabled={sendingTagMessage || selectedTagIds.length === 0}
+              className="btn-tag-group"
+            >
+              {sendingTagMessage ? '⏳ 發送中...' : '🏷️ 發送標籤群組消息'}
+            </button>
+          </div>
         </div>
       )}
 

@@ -30,4 +30,11 @@ export interface User {
   user_code?: string | null;
 
   modules?: string[];
+
+  // 驗證相關欄位
+  id_verified?: boolean;
+  id_verified_at?: string | null;
+  bank_verified?: boolean;
+  bank_verified_at?: string | null;
+  vip_level?: number;
 }

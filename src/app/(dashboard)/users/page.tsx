@@ -703,6 +703,33 @@ export default function UserListPage() {
                   </td>
                   <td>
                     <div className="user-tags">
+                      {/* 身分證驗證標籤 */}
+                      {user.id_verified && (
+                        <span 
+                          className="user-tag tag-shape-oval verification-tag"
+                          style={{ 
+                            backgroundColor: '#10B981', 
+                            color: '#FFFFFF' 
+                          }}
+                        >
+                          身
+                        </span>
+                      )}
+                      
+                      {/* 銀行帳戶驗證標籤 */}
+                      {user.bank_verified && (
+                        <span 
+                          className="user-tag tag-shape-oval verification-tag"
+                          style={{ 
+                            backgroundColor: '#3B82F6', 
+                            color: '#FFFFFF' 
+                          }}
+                        >
+                          銀
+                        </span>
+                      )}
+                      
+                      {/* 使用者自定義標籤 */}
                       {(user as any).tags?.slice(0, 2).map((tag: any) => (
                         <span 
                           key={tag.id} 
@@ -718,7 +745,9 @@ export default function UserListPage() {
                       {(user as any).tags?.length > 2 && (
                         <span className="tag-more">+{(user as any).tags.length - 2}</span>
                       )}
-                      {!(user as any).tags?.length && (
+                      
+                      {/* 當沒有任何標籤時顯示 */}
+                      {!user.id_verified && !user.bank_verified && !(user as any).tags?.length && (
                         <span className="no-tags">無標籤</span>
                       )}
                     </div>

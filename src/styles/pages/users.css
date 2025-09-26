@@ -627,7 +627,7 @@
 
 .user-tag {
   display: inline-block;
-  padding: 2px 3px;
+  padding: 4px 3px 5px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
@@ -805,6 +805,17 @@
   justify-content: center;
   font-size: 10px;
 }
+
+/* 驗證標籤樣式 */
+.verification-tag {
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: none !important;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 80%, 50% 100%, 0% 80%);
+  border-radius: 0 !important;
+}
+
+
 
 .tag-toggle-btn {
   padding: 4px 12px;
