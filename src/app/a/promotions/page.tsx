@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import '@/styles/pages/promotions-frontend.css'
 
 interface PromotionCategory {
@@ -144,7 +143,6 @@ export default function PromotionsPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div className="promotions-page">
         <div className="promotions-container">
           {/* 頁面標題 */}

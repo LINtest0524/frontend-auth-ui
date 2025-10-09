@@ -59,8 +59,8 @@ export default function BannerCarousel({ banners }: Props) {
   return (
     <Swiper
       pagination={{ clickable: true }}
-      autoplay={{ delay: 5000 }}
-      loop
+      autoplay={activeBanners.length > 1 ? { delay: 5000 } : false}
+      loop={activeBanners.length > 1}
       modules={[Pagination, Autoplay]}
       className="w100 fl5"
     >

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 interface OrderItem {
   id: number
@@ -194,7 +193,6 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <>
-        <PortalHeaderBar />
         <div style={{ 
           minHeight: '100vh', 
           display: 'flex', 
@@ -213,7 +211,6 @@ export default function OrdersPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div style={{
         maxWidth: '1200px',
         margin: '140px auto 40px',

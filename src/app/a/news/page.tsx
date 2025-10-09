@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import '@/styles/pages/news.css'
 
 
@@ -51,25 +50,16 @@ export default function NewsListPage() {
       if (category) params.append('category', category)
       
       const url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/news?${params}`
-      console.log('API 請求:', { page, search, category, url })
       
       const response = await fetch(url)
       if (response.ok) {
         const data: NewsResponse = await response.json()
-        console.log(' API 回應:', { 
-          page: data.page, 
-          totalPages: data.totalPages, 
-          total: data.total, 
-          dataLength: data.data?.length 
-        })
         setNews(data.data)
         setTotalPages(data.totalPages)
         setCurrentPage(Number(data.page))
-      } else {
-        console.error('API 請求失敗:', response.status, response.statusText)
       }
     } catch (error) {
-      console.error('Failed to fetch news:', error)
+      // 靜默處理錯誤
     } finally {
       setLoading(false)
     }
@@ -216,7 +206,6 @@ export default function NewsListPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       
       <div className="news-page">
         {/* 頁面標題區域 */}

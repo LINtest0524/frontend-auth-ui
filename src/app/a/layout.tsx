@@ -5,6 +5,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter } from 'next/navigation'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
+import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user } = useUserStore()
@@ -82,8 +83,15 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
   if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
 
+  // 檢查是否為登入或註冊頁面，這些頁面不需要顯示 Header
+  const currentCompanyCode = pathname.split('/')[1]
+  const isLoginPage = pathname === `/${currentCompanyCode}/login`
+  const isRegisterPage = pathname === `/${currentCompanyCode}/register`
+  const shouldShowHeader = !isLoginPage && !isRegisterPage
+
   return (
     <>
+      {shouldShowHeader && <PortalHeaderBar />}
       {children}
       <FloatingAds companyCode="a" />
       <PopupAnnouncement companyCode="a" />

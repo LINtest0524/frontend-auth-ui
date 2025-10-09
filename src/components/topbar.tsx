@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 export default function Topbar() {
   const router = useRouter()
   const [username, setUsername] = useState("")
+  const [balance, setBalance] = useState(0)
   const [audioEnabled, setAudioEnabled] = useState(() => {
     // 從 localStorage 讀取音效設定
     if (typeof window !== 'undefined') {
@@ -21,6 +22,7 @@ export default function Topbar() {
       try {
         const parsed = JSON.parse(user)
         setUsername(parsed.username)
+        setBalance(parsed.balance || 0)
       } catch (err) {
         console.error("Failed to parse user from localStorage", err)
       }
@@ -40,9 +42,39 @@ export default function Topbar() {
     router.push("/login")
   }
 
+  const handleRefreshBalance = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (response.ok) {
+        const userData = await response.json()
+        setBalance(userData.balance || 0)
+        // 更新 localStorage 中的用戶資料
+        const currentUser = localStorage.getItem("user")
+        if (currentUser) {
+          const parsedUser = JSON.parse(currentUser)
+          localStorage.setItem("user", JSON.stringify({ ...parsedUser, balance: userData.balance }))
+        }
+      }
+    } catch (error) {
+      console.error('刷新餘額失敗:', error)
+    }
+  }
+
   return (
     <div className="flex justify-end items-center bg-gray-100 px-4 py-2 border-b">
-      <span className="mr-4 text-sm text-gray-600">{username}</span>
+      <span className="mr-2 text-sm text-gray-600">{username}</span>
+      <button 
+        onClick={handleRefreshBalance}
+        className="mr-4 px-2 py-1 bg-gray-200 border border-gray-300 rounded text-sm font-bold text-red-800 hover:bg-gray-300"
+        title="點擊刷新餘額"
+      >
+        $ {balance.toLocaleString()}
+      </button>
       
       {/* 音效開關 */}
       <div className="flex items-center mr-4">

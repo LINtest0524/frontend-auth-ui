@@ -2,7 +2,6 @@
 
 import { useCartStore, ShippingMethod } from '@/hooks/use-cart-store-new'
 import { useEffect, useState } from 'react'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './cart.css'
 
 export default function CartPage() {
@@ -27,9 +26,19 @@ export default function CartPage() {
   // 運送方式狀態
   const [loadingShipping, setLoadingShipping] = useState(true)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  
+  // 優惠碼狀態
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [couponError, setCouponError] = useState('')
 
   const shippingFee = getShippingFee()
-  const finalTotal = totalPrice + shippingFee
+  
+  // 計算優惠券折扣
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
+  const discountedPrice = totalPrice - discountAmount
+  const finalTotal = Math.max(0, discountedPrice) + shippingFee
 
   // 獲取運送方式
   const fetchShippingMethods = async () => {
@@ -130,11 +139,81 @@ export default function CartPage() {
     console.log('Cart page - Current state:', { items, totalItems, totalPrice })
   }, [items, totalItems, totalPrice])
 
+  // 驗證優惠碼
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('請輸入優惠碼')
+      return
+    }
+
+    setCouponLoading(true)
+    setCouponError('')
+    
+    try {
+      // 從 URL 路徑動態獲取公司代碼
+      const companyCode = window.location.pathname.split('/')[1] || 'a'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
+      console.log('🎫 購物車優惠碼驗證:', {
+        companyCode,
+        tokenExists: !!token,
+        couponCode: couponCode.trim(),
+        totalPrice,
+        apiUrl: `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/validate`
+      })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          amount: totalPrice
+        })
+      })
+
+      console.log('🎫 API 響應狀態:', response.status, response.statusText)
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('🎫 API 響應成功:', result)
+        if (result.valid) {
+          setAppliedCoupon({
+            code: couponCode.trim(),
+            discountAmount: result.discountAmount,
+            finalAmount: result.finalAmount
+          })
+          setCouponError('')
+        } else {
+          console.log('🎫 優惠碼驗證失敗:', result.message)
+          setCouponError(result.message || '優惠碼無效')
+          setAppliedCoupon(null)
+        }
+      } else {
+        const error = await response.json()
+        console.log('🎫 API 響應錯誤:', error)
+        setCouponError(error.message || '驗證優惠碼失敗')
+        setAppliedCoupon(null)
+      }
+    } catch (error) {
+      console.error('驗證優惠碼失敗:', error)
+      setCouponError('驗證優惠碼失敗，請稍後再試')
+      setAppliedCoupon(null)
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  // 移除優惠碼
+  const removeCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCode('')
+    setCouponError('')
+  }
+
   if (items.length === 0) {
     return (
-      <>
-        <PortalHeaderBar />
-        <div className="cart-empty">
+      <div className="cart-empty">
         <div className="cart-empty-content">
           <div className="cart-empty-icon">🛒</div>
           <h3 className="cart-empty-title">購物車是空的</h3>
@@ -144,14 +223,11 @@ export default function CartPage() {
           </a>
         </div>
       </div>
-      </>
     )
   }
 
   return (
-    <>
-      <PortalHeaderBar />
-      <div className="cart-container">
+    <div className="cart-container">
       {/* 頁面頭部 */}
       <div className="cart-header">
         <div className="cart-header-content">
@@ -379,6 +455,66 @@ export default function CartPage() {
               )}
             </div>
             
+            {/* 優惠碼輸入區域 */}
+            <div className="coupon-section">
+              <h3 className="coupon-title">🎫 優惠碼</h3>
+              
+              {appliedCoupon ? (
+                <div className="applied-coupon">
+                  <div className="applied-coupon-info">
+                    <span className="coupon-code">已套用: {appliedCoupon.code}</span>
+                    <span className="coupon-discount">-NT$ {appliedCoupon.discountAmount.toLocaleString()}</span>
+                  </div>
+                  <button 
+                    onClick={removeCoupon}
+                    className="remove-coupon-btn"
+                    title="移除優惠碼"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="coupon-input-section">
+                  <div className="coupon-input-group">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="請輸入優惠碼"
+                      className="coupon-input"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          validateCoupon()
+                        }
+                      }}
+                    />
+                    <button 
+                      onClick={validateCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="apply-coupon-btn"
+                    >
+                      {couponLoading ? '驗證中...' : '套用'}
+                    </button>
+                  </div>
+                  
+                  {couponError && (
+                    <div className="coupon-error">
+                      ⚠️ {couponError}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* 顯示優惠券折扣 */}
+            {appliedCoupon && (
+              <div className="cart-summary-row cart-discount-row">
+                <span className="cart-summary-label">優惠券折扣</span>
+                <span className="cart-summary-discount">-NT$ {discountAmount.toLocaleString()}</span>
+              </div>
+            )}
+            
             <div className="cart-summary-row">
               <span className="cart-summary-label">運費</span>
               <span className="cart-summary-value">
@@ -395,7 +531,18 @@ export default function CartPage() {
               <span className="cart-summary-total">NT$ {finalTotal.toLocaleString()}</span>
             </div>
 
-            <a href="/a/checkout" className="cart-checkout-btn">
+            <a 
+              href="/a/checkout" 
+              className="cart-checkout-btn"
+              onClick={() => {
+                // 將優惠碼資訊存儲到 sessionStorage
+                if (appliedCoupon) {
+                  sessionStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon))
+                } else {
+                  sessionStorage.removeItem('appliedCoupon')
+                }
+              }}
+            >
               立即結帳
             </a>
             
@@ -406,6 +553,5 @@ export default function CartPage() {
         </div>
       </div>
     </div>
-    </>
   )
 }

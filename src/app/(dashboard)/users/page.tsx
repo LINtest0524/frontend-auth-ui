@@ -44,6 +44,12 @@ export default function UserListPage() {
   const [userTags, setUserTags] = useState<any[]>([]);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
 
+  // 存款管理相關狀態
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceType, setBalanceType] = useState<'add' | 'subtract'>('add');
+  const [balanceRemark, setBalanceRemark] = useState('');
+
   const quickSetDate = (type: string, target: "created" | "login") => {
     const today = dayjs();
     let fromDate = "";
@@ -351,6 +357,72 @@ export default function UserListPage() {
     setUserTags([]);
   };
 
+  // 存款相關功能
+  const handleOpenBalanceModal = (user: User) => {
+    setSelectedUser(user);
+    setIsBalanceModalOpen(true);
+    setBalanceAmount('');
+    setBalanceType('add');
+    setBalanceRemark('');
+  };
+
+  const closeBalanceModal = () => {
+    setIsBalanceModalOpen(false);
+    setSelectedUser(null);
+    setBalanceAmount('');
+    setBalanceRemark('');
+  };
+
+  const handleBalanceUpdate = async () => {
+    if (!selectedUser || !balanceAmount) {
+      alert('請填寫金額');
+      return;
+    }
+
+    const amount = parseInt(balanceAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('請輸入有效的整數金額');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const finalAmount = balanceType === 'subtract' ? -amount : amount;
+      
+      const response = await fetch(`http://localhost:3001/user/${selectedUser.id}/balance`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          amount: finalAmount,
+          remark: balanceRemark || '' 
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // 更新使用者列表中的餘額
+        setUsers(prev => 
+          prev.map(user => 
+            user.id === selectedUser.id 
+              ? { ...user, balance: result.newBalance }
+              : user
+          )
+        );
+        alert(`${balanceType === 'add' ? '存款' : '扣款'}成功！新餘額：$ ${result.newBalance.toLocaleString()}`);
+        closeBalanceModal();
+      } else {
+        const error = await response.json();
+        alert(`操作失敗：${error.message || '未知錯誤'}`);
+      }
+    } catch (err) {
+      console.error('餘額更新失敗', err);
+      alert('網路錯誤，請稍後再試');
+    }
+  };
+
   const renderPagination = () => {
     if (totalPages <= 1 || totalCount === 0) return null;
 
@@ -630,6 +702,7 @@ export default function UserListPage() {
                   ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
                 </th>
                 <th>會員資訊</th>
+                <th>帳戶餘額</th>
                 <th onClick={() => toggleSort("created_at")}>
                   註冊時間 <span className={`sort-icon ${sortKey === "created_at" ? "active" : ""}`}>{getArrow("created_at")}</span>
                 </th>
@@ -651,6 +724,26 @@ export default function UserListPage() {
                     <div className="user-info">
                       <div className="user-username">{user.username}</div>
                       <div className="user-email">{user.email || "未設定信箱"}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div 
+                      className="balance-info" 
+                      style={{ 
+                        color: '#991b1b', 
+                        fontWeight: 'bold', 
+                        fontSize: '16px',
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onClick={() => handleOpenBalanceModal(user)}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      title="點擊進行存款/扣款操作"
+                    >
+                      $ {user.balance?.toLocaleString() || '0'}
                     </div>
                   </td>
                   <td>
@@ -777,6 +870,132 @@ export default function UserListPage() {
 
           {/* 分頁控制 */}
           {renderPagination()}
+        </div>
+      )}
+
+      {/* 存款管理彈窗 */}
+      {isBalanceModalOpen && selectedUser && (
+        <div className="tag-modal-overlay" onClick={closeBalanceModal}>
+          <div className="tag-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="tag-modal-header">
+              <h3>💰 帳戶餘額管理 - {selectedUser.username}</h3>
+              <button onClick={closeBalanceModal} className="tag-modal-close">✕</button>
+            </div>
+            
+            <div className="tag-modal-body">
+              <div className="balance-current">
+                <h4>📊 目前餘額</h4>
+                <div style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  color: '#991b1b',
+                  textAlign: 'center',
+                  padding: '10px',
+                  backgroundColor: '#fef2f2',
+                  borderRadius: '8px',
+                  margin: '10px 0'
+                }}>
+                  $ {selectedUser.balance?.toLocaleString() || '0'}
+                </div>
+              </div>
+              
+              <div className="balance-operation">
+                <h4>💳 操作類型</h4>
+                <div style={{ display: 'flex', gap: '10px', margin: '10px 0' }}>
+                  <button
+                    onClick={() => setBalanceType('add')}
+                    className={`btn ${balanceType === 'add' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      backgroundColor: balanceType === 'add' ? '#059669' : '#6b7280',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ➕ 存款
+                  </button>
+                  <button
+                    onClick={() => setBalanceType('subtract')}
+                    className={`btn ${balanceType === 'subtract' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      backgroundColor: balanceType === 'subtract' ? '#dc2626' : '#6b7280',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ➖ 扣款
+                  </button>
+                </div>
+              </div>
+
+              <div className="balance-amount">
+                <h4>💰 金額</h4>
+                <input
+                  type="number"
+                  value={balanceAmount}
+                  onChange={(e) => setBalanceAmount(e.target.value)}
+                  placeholder="請輸入整數金額"
+                  min="0"
+                  step="1"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    fontSize: '16px',
+                    margin: '10px 0'
+                  }}
+                />
+              </div>
+
+              <div className="balance-remark">
+                <h4>📝 備註說明（選填）</h4>
+                <textarea
+                  value={balanceRemark}
+                  onChange={(e) => setBalanceRemark(e.target.value)}
+                  placeholder="請輸入操作備註（選填）"
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    margin: '10px 0',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="tag-modal-footer">
+              <button onClick={closeBalanceModal} className="btn-secondary">
+                取消
+              </button>
+              <button 
+                onClick={handleBalanceUpdate} 
+                className="btn-primary"
+                style={{
+                  marginLeft: '10px',
+                  backgroundColor: balanceType === 'add' ? '#059669' : '#dc2626',
+                  color: 'white',
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                {balanceType === 'add' ? '💰 確認存款' : '💸 確認扣款'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import { useUserStore } from '@/hooks/use-user-store'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './checkout.css'
 
 interface ShippingInfo {
@@ -47,12 +46,17 @@ export default function CheckoutPage() {
   
   const [selectedPayment, setSelectedPayment] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
 
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice()
   const selectedShippingMethod = getSelectedShippingMethod()
   const shippingFee = getShippingFee()
-  const finalTotal = totalPrice + shippingFee
+  
+  // 計算優惠券折扣
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0
+  const discountedPrice = totalPrice - discountAmount
+  const finalTotal = Math.max(0, discountedPrice) + shippingFee
 
   const paymentMethods: PaymentMethod[] = [
     {
@@ -111,6 +115,21 @@ export default function CheckoutPage() {
     }
   }, [items.length, selectedShippingMethod, isProcessingPayment])
 
+  // 從 sessionStorage 載入優惠碼資訊
+  useEffect(() => {
+    const savedCoupon = sessionStorage.getItem('appliedCoupon')
+    if (savedCoupon) {
+      try {
+        const couponData = JSON.parse(savedCoupon)
+        setAppliedCoupon(couponData)
+        console.log('🎫 結帳頁面載入優惠碼:', couponData)
+      } catch (error) {
+        console.error('解析優惠碼資料失敗:', error)
+        sessionStorage.removeItem('appliedCoupon')
+      }
+    }
+  }, [])
+
   const handleShippingInfoChange = (field: keyof ShippingInfo, value: string) => {
     setShippingInfo(prev => ({
       ...prev,
@@ -137,6 +156,32 @@ export default function CheckoutPage() {
     setIsSubmitting(true)
 
     try {
+      // 如果有使用優惠券，先調用使用優惠券 API
+      if (appliedCoupon) {
+        console.log('🎫 使用優惠券:', appliedCoupon.code)
+        
+        const token = localStorage.getItem('portalToken_a')
+        const useCouponResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/use`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            code: appliedCoupon.code,
+            amount: totalPrice // 使用折扣前的金額
+          })
+        })
+
+        if (!useCouponResponse.ok) {
+          const error = await useCouponResponse.json()
+          throw new Error(error.message || '優惠券使用失敗')
+        }
+
+        const useCouponResult = await useCouponResponse.json()
+        console.log('🎫 優惠券使用成功:', useCouponResult)
+      }
+
       // 調用後端 API 建立訂單
       const orderData = {
         items: items.map(item => ({
@@ -282,7 +327,6 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div className="checkout-container">
         {/* 結帳步驟指示器 */}
         <div className="checkout-steps">
@@ -531,6 +575,16 @@ export default function CheckoutPage() {
                     {shippingFee === 0 ? '免運費' : `NT$ ${shippingFee.toLocaleString()}`}
                   </span>
                 </div>
+                
+                {/* 顯示優惠券折扣 */}
+                {appliedCoupon && (
+                  <div className="summary-row discount-row">
+                    <span className="summary-label">
+                      🎫 優惠券折扣 ({appliedCoupon.code})
+                    </span>
+                    <span className="summary-discount">-NT$ {discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
                 
                 <div className="summary-divider"></div>
                 

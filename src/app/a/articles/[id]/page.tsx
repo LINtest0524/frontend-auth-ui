@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import ArticleDetailClient from './ArticleDetailClient'
 import '@/styles/pages/articles.css'
 
@@ -129,7 +128,6 @@ export default async function ArticleDetailPage({
 
   return (
     <>
-      <PortalHeaderBar />
       <ArticleDetailClient articleData={articleData} companyCode="a" />
     </>
   )

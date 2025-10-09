@@ -37,4 +37,5 @@ export interface User {
   bank_verified?: boolean;
   bank_verified_at?: string | null;
   vip_level?: number;
+  balance?: number;
 }

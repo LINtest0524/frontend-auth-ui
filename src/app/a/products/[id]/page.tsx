@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import { useFavoritesStore } from '@/hooks/use-favorites-store'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import './product-detail.css'
 
 interface FavoriteItem {
@@ -466,7 +465,6 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div className="product-detail-container">
         {/* 購物車圖標 */}
       <div className="cart-icon-container">

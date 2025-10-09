@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 export default function TestEcpayPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -130,7 +129,6 @@ export default function TestEcpayPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
         <h1>綠界金流測試頁面</h1>
         

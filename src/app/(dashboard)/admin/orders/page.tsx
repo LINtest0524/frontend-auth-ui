@@ -36,6 +36,9 @@ interface Order {
   notes?: string
   admin_notes?: string
   user_id?: number
+  coupon_code?: string
+  coupon_discount?: number
+  subtotal?: number
   user?: {
     username: string
     email: string
@@ -947,6 +950,47 @@ export default function OrdersManagePage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                    
+                    {/* 價格明細 */}
+                    <div className="order-pricing-summary">
+                      <div className="pricing-row">
+                        <span className="pricing-label">商品小計</span>
+                        <span className="pricing-value">
+                          NT$ {(selectedOrder.subtotal || 
+                            selectedOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+                      
+                      {selectedOrder.coupon_code && selectedOrder.coupon_discount && (
+                        <div className="pricing-row discount-row">
+                          <span className="pricing-label">
+                            🎫 優惠券折扣 ({selectedOrder.coupon_code})
+                          </span>
+                          <span className="pricing-discount">
+                            -NT$ {selectedOrder.coupon_discount.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {selectedOrder.shipping_fee && selectedOrder.shipping_fee > 0 && (
+                        <div className="pricing-row">
+                          <span className="pricing-label">運費</span>
+                          <span className="pricing-value">
+                            NT$ {selectedOrder.shipping_fee.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="pricing-divider"></div>
+                      
+                      <div className="pricing-row total-row">
+                        <span className="pricing-label">訂單總額</span>
+                        <span className="pricing-total">
+                          NT$ {selectedOrder.total_amount.toLocaleString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

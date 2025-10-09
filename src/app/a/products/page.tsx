@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ProductCard from '@/components/ProductCard'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import '@/styles/pages/products.css'
 
 interface Product {
@@ -131,7 +130,6 @@ export default function ProductsPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div className="products-page">
         <div className="products-container">
         {/* 頁面標題 */}

@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
 import { verifyTokenOnce } from '@/lib/tokenVerification'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 
 type NewsItem = {
@@ -112,7 +111,6 @@ export default function AgentAHomePage() {
 
   return (
     <>
-      <PortalHeaderBar />
 
       <div>
         

@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useRouter } from 'next/navigation'
 import MessageCenter from '@/components/message/MessageCenter'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import FloatingAds from '@/components/FloatingAds'
 
 export default function MessagesPage() {
@@ -24,7 +23,6 @@ export default function MessagesPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       <div style={{ paddingTop: '80px' }}>
         <MessageCenter />
       </div>

@@ -512,3 +512,83 @@
     padding: 16px;
   }
 }
+
+/* 價格明細樣式 */
+.order-pricing-summary {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.pricing-label {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.pricing-value {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.pricing-discount {
+  color: #059669;
+  font-weight: 600;
+}
+
+.discount-row .pricing-label {
+  color: #065f46;
+  font-size: 13px;
+}
+
+.pricing-divider {
+  height: 1px;
+  background: #d1d5db;
+  margin: 8px 0;
+}
+
+.total-row {
+  border-top: 2px solid #374151;
+  padding-top: 12px;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.total-row .pricing-label {
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.pricing-total {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* 價格明細響應式設計 */
+@media (max-width: 768px) {
+  .order-pricing-summary {
+    padding: 12px;
+  }
+  
+  .pricing-row {
+    font-size: 13px;
+  }
+  
+  .total-row {
+    font-size: 15px;
+  }
+  
+  .pricing-total {
+    font-size: 16px;
+  }
+}

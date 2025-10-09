@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import '@/styles/pages/articles.css'
 
 type ArticleItem = {
@@ -74,12 +73,10 @@ export default function ArticlesListPage() {
       if (categoryId) params.append('categoryId', categoryId)
       
       const url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/articles?${params}`
-      console.log('API 請求:', { page, search, categoryId, url })
       
       const response = await fetch(url)
       if (response.ok) {
         const data: ArticleResponse = await response.json()
-        console.log('API 回應:', data)
         setArticles(data.data)
         setTotalPages(data.totalPages)
         setCurrentPage(data.page)
@@ -93,29 +90,31 @@ export default function ArticlesListPage() {
     }
   }
 
+  // 初始化載入
   useEffect(() => {
     fetchCategories()
     
-    // 從 URL 參數讀取 categoryId
-    const categoryIdFromUrl = searchParams.get('categoryId')
-    if (categoryIdFromUrl && categoryIdFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryIdFromUrl)
-      fetchArticles(1, searchTerm, categoryIdFromUrl)
-    } else {
-      fetchArticles(currentPage, searchTerm, selectedCategory)
-    }
-  }, [currentPage, searchParams])
+    // 從 URL 參數讀取初始值
+    const categoryIdFromUrl = searchParams.get('categoryId') || ''
+    const pageFromUrl = parseInt(searchParams.get('page') || '1')
+    
+    setSelectedCategory(categoryIdFromUrl)
+    setCurrentPage(pageFromUrl)
+    fetchArticles(pageFromUrl, searchTerm, categoryIdFromUrl)
+  }, [])
 
-  // 當 selectedCategory 改變時，更新 URL
+  // 當 URL 參數改變時同步狀態和數據
   useEffect(() => {
-    const categoryIdFromUrl = searchParams.get('categoryId')
-    if (selectedCategory !== (categoryIdFromUrl || '')) {
-      const newUrl = selectedCategory 
-        ? `/a/articles?categoryId=${selectedCategory}`
-        : '/a/articles'
-      router.replace(newUrl)
-    }
-  }, [selectedCategory])
+    const categoryIdFromUrl = searchParams.get('categoryId') || ''
+    const pageFromUrl = parseInt(searchParams.get('page') || '1')
+    
+    // 同步狀態
+    setSelectedCategory(categoryIdFromUrl)
+    setCurrentPage(pageFromUrl)
+    
+    // 載入對應的數據
+    fetchArticles(pageFromUrl, searchTerm, categoryIdFromUrl)
+  }, [searchParams])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,9 +123,9 @@ export default function ArticlesListPage() {
   }
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId)
-    setCurrentPage(1)
-    fetchArticles(1, searchTerm, categoryId)
+    // 直接更新 URL，讓 useEffect 處理狀態和數據載入
+    const newUrl = categoryId ? `/a/articles?categoryId=${categoryId}` : '/a/articles'
+    router.replace(newUrl)
   }
 
   const formatDate = (dateString: string) => {
@@ -150,7 +149,11 @@ export default function ArticlesListPage() {
       pages.push(
         <button
           key={1}
-          onClick={() => setCurrentPage(1)}
+          onClick={() => {
+            const params = new URLSearchParams()
+            if (selectedCategory) params.set('categoryId', selectedCategory)
+            router.replace(`/a/articles?${params.toString()}`)
+          }}
           className="pagination-btn"
         >
           1
@@ -170,7 +173,12 @@ export default function ArticlesListPage() {
       pages.push(
         <button
           key={i}
-          onClick={() => setCurrentPage(i)}
+          onClick={() => {
+            const params = new URLSearchParams()
+            if (selectedCategory) params.set('categoryId', selectedCategory)
+            if (i > 1) params.set('page', i.toString())
+            router.replace(`/a/articles?${params.toString()}`)
+          }}
           className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
         >
           {i}
@@ -190,7 +198,12 @@ export default function ArticlesListPage() {
       pages.push(
         <button
           key={totalPages}
-          onClick={() => setCurrentPage(totalPages)}
+          onClick={() => {
+            const params = new URLSearchParams()
+            if (selectedCategory) params.set('categoryId', selectedCategory)
+            params.set('page', totalPages.toString())
+            router.replace(`/a/articles?${params.toString()}`)
+          }}
           className="pagination-btn"
         >
           {totalPages}
@@ -201,7 +214,13 @@ export default function ArticlesListPage() {
     return (
       <div className="pagination-container">
         <button
-          onClick={() => setCurrentPage(currentPage - 1)}
+          onClick={() => {
+            const prevPage = currentPage - 1
+            const params = new URLSearchParams()
+            if (selectedCategory) params.set('categoryId', selectedCategory)
+            if (prevPage > 1) params.set('page', prevPage.toString())
+            router.replace(`/a/articles?${params.toString()}`)
+          }}
           disabled={currentPage === 1}
           className="pagination-nav-btn"
         >
@@ -216,7 +235,13 @@ export default function ArticlesListPage() {
         </div>
         
         <button
-          onClick={() => setCurrentPage(currentPage + 1)}
+          onClick={() => {
+            const nextPage = currentPage + 1
+            const params = new URLSearchParams()
+            if (selectedCategory) params.set('categoryId', selectedCategory)
+            params.set('page', nextPage.toString())
+            router.replace(`/a/articles?${params.toString()}`)
+          }}
           disabled={currentPage === totalPages}
           className="pagination-nav-btn"
         >
@@ -231,7 +256,6 @@ export default function ArticlesListPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       
       <div className="articles-page">
         {/* 頁面標題區域 */}

@@ -43,6 +43,7 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/popup-announcement")) setActiveMenu("popup-announcement");
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
     else if (pathname?.startsWith("/admin/messages")) setActiveMenu("messages");
+    else if (pathname?.startsWith("/admin/coupons")) setActiveMenu("coupons");
     else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
@@ -383,6 +384,45 @@ export default function Sidebar() {
                   className={cn("sidebar-subitem", pathname === "/admin/promotions/new" && currentActive === null && "active")}
                 >
                   新增活動
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 優惠碼管理 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_SUPPORT"].includes(role) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("coupons");
+                setCurrentActive("coupons");
+              }}
+              className={cn(
+                "sidebar-item i-modules", 
+                currentActive === "coupons" && "active",
+                activeMenu === "coupons" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              優惠碼管理
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "coupons" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/coupons"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/coupons" && currentActive === null && "active")}
+                >
+                  模板管理
+                </Link>
+                <Link
+                  href="/admin/coupons/distribute"
+                  onClick={resetMenu}
+                  className={cn("sidebar-subitem", pathname === "/admin/coupons/distribute" && currentActive === null && "active")}
+                >
+                  發放優惠碼
                 </Link>
               </div>
             </div>

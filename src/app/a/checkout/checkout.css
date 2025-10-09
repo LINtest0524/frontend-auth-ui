@@ -209,7 +209,6 @@
 
 .form-group input,
 .form-group textarea {
-  padding: 12px 16px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 14px;
@@ -490,4 +489,15 @@
   .step-label {
     font-size: 12px;
   }
+}
+
+/* 優惠券折扣樣式 */
+.discount-row .summary-discount {
+  color: #059669;
+  font-weight: 600;
+}
+
+.discount-row .summary-label {
+  color: #065f46;
+  font-size: 14px;
 }

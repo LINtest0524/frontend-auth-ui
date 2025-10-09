@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import MemberProfile from '@/components/member/MemberProfile'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
 import MemberOrders from '@/components/member/MemberOrders'
+import MemberCoupons from '@/components/member/MemberCoupons'
 import MemberFavorites from '@/components/member/MemberFavorites'
 import IdVerification from '@/app/a/member/id-verification/page'
 import BankVerification from '@/app/a/member/bank-verification/page'
@@ -16,7 +16,7 @@ import '../../../styles/pages/member.css'
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders' | 'favorites'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders' | 'coupons' | 'favorites'>('profile')
 
   const getTabTitle = () => {
     const titles = {
@@ -26,6 +26,7 @@ export default function MemberPage() {
       'id-verification': '身分證驗證',
       'bank-verification': '銀行帳戶驗證',
       'orders': '我的訂單',
+      'coupons': '優惠券',
       'favorites': '我的最愛'
     }
     return titles[tab]
@@ -39,6 +40,7 @@ export default function MemberPage() {
       'id-verification': '🆔',
       'bank-verification': '🏦',
       'orders': '📋',
+      'coupons': '🎫',
       'favorites': '❤️'
     }
     return icons[tabName as keyof typeof icons]
@@ -46,7 +48,6 @@ export default function MemberPage() {
 
   return (
     <>
-      <PortalHeaderBar />
       
       <div className="member-container">
         <div className="member-wrapper">
@@ -130,6 +131,13 @@ export default function MemberPage() {
                       我的訂單
                     </button>
                     <button
+                      onClick={() => setTab('coupons')}
+                      className={`member-nav-item ${tab === 'coupons' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('coupons')}</span>
+                      優惠券
+                    </button>
+                    <button
                       onClick={() => setTab('favorites')}
                       className={`member-nav-item ${tab === 'favorites' ? 'active' : ''}`}
                     >
@@ -160,6 +168,7 @@ export default function MemberPage() {
               {tab === 'id-verification' && <IdVerification />}
               {tab === 'bank-verification' && <BankVerification />}
               {tab === 'orders' && <MemberOrders />}
+              {tab === 'coupons' && <MemberCoupons />}
               {tab === 'favorites' && <MemberFavorites />}
             </main>
           </div>

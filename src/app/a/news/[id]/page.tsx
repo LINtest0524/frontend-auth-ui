@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import PortalHeaderBar from '@/components/PortalHeaderBar'
 import NewsDetailClient from './NewsDetailClient'
 import '@/styles/pages/news.css'
 
@@ -122,7 +121,6 @@ export default async function NewsDetailPage({
 
   return (
     <>
-      <PortalHeaderBar />
       <NewsDetailClient newsData={newsData} />
     </>
   )
