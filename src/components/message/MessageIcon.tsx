@@ -20,7 +20,7 @@ export default function MessageIcon() {
     try {
       const token = localStorage.getItem(`portalToken_${company}`)
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/messages/unread-count`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/${company}/messages/unread-count`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUserStore } from './use-user-store'
+import { useCompanySlug } from './useCompanySlug'
 
 // 類型定義
 interface SystemBroadcast {
@@ -48,6 +49,7 @@ interface MessageListResponse {
 // Hook
 export const useHybridMessage = () => {
   const user = useUserStore((state) => state.user)
+  const companySlug = useCompanySlug()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -63,7 +65,17 @@ export const useHybridMessage = () => {
 
   // API 基礎配置
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token')
+    if (!companySlug) {
+      console.warn('⚠️ Company slug not available for token retrieval')
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': ''
+      }
+    }
+    
+    const token = localStorage.getItem(`portalToken_${companySlug}`)
+    console.log(`🔑 Token retrieval for company ${companySlug}:`, token ? '有 token' : '沒有 token')
+    
     return {
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
@@ -97,15 +109,18 @@ export const useHybridMessage = () => {
    * 獲取訊息統計
    */
   const fetchMessageStats = async () => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
       setLoading(true)
-      const response = await apiCall('/messages/stats')
+      const response = await apiCall(`/api/portal/${companySlug}/messages/unread-count`)
       
-      if (response.success) {
-        setMessageStats(response.data)
-      }
+      // 直接使用返回的數據結構
+      setMessageStats({
+        unreadBroadcastCount: response.broadcasts || 0,
+        unreadPersonalCount: response.personal || 0,
+        totalUnreadCount: response.total || 0
+      })
     } catch (err) {
       setError('獲取訊息統計失敗')
       console.error(err)
@@ -118,21 +133,24 @@ export const useHybridMessage = () => {
    * 獲取所有訊息（廣播 + 個人）
    */
   const fetchAllMessages = async (page = 1, limit = 20) => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
       setLoading(true)
-      const response = await apiCall(`/messages/my-messages?page=${page}&limit=${limit}`)
+      const response = await apiCall(`/api/portal/${companySlug}/messages?page=${page}&per_page=${limit}`)
       
-      if (response.success) {
-        setBroadcasts(response.data.broadcasts)
-        setPersonalMessages(response.data.personalMessages)
-        setMessageStats({
-          unreadBroadcastCount: response.data.unreadBroadcastCount,
-          unreadPersonalCount: response.data.unreadPersonalCount,
-          totalUnreadCount: response.data.unreadBroadcastCount + response.data.unreadPersonalCount
-        })
-      }
+      // 處理新的回應格式
+      const allMessages = response.messages || []
+      const broadcastMessages = allMessages.filter(msg => msg.type === 'broadcast')
+      const personalMessages = allMessages.filter(msg => msg.type === 'personal')
+      
+      setBroadcasts(broadcastMessages)
+      setPersonalMessages(personalMessages)
+      setMessageStats({
+        unreadBroadcastCount: broadcastMessages.filter(msg => !msg.is_read).length,
+        unreadPersonalCount: personalMessages.filter(msg => !msg.is_read).length,
+        totalUnreadCount: response.unread_count || 0
+      })
     } catch (err) {
       setError('獲取訊息列表失敗')
       console.error(err)
@@ -145,15 +163,17 @@ export const useHybridMessage = () => {
    * 獲取未讀廣播
    */
   const fetchUnreadBroadcasts = async () => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
-      const response = await apiCall('/messages/unread-broadcasts')
+      const response = await apiCall(`/api/portal/${companySlug}/messages`)
       
-      if (response.success) {
-        setBroadcasts(response.data)
-        return response.data
-      }
+      // 從所有訊息中篩選未讀廣播
+      const allMessages = response.messages || []
+      const unreadBroadcasts = allMessages.filter(msg => msg.type === 'broadcast' && !msg.is_read)
+      
+      setBroadcasts(unreadBroadcasts)
+      return unreadBroadcasts
     } catch (err) {
       setError('獲取未讀廣播失敗')
       console.error(err)
@@ -164,23 +184,31 @@ export const useHybridMessage = () => {
    * 標記廣播為已讀
    */
   const markBroadcastsAsRead = async () => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
-      const response = await apiCall('/messages/broadcasts/mark-read', {
-        method: 'PUT'
+      // 獲取所有未讀廣播的ID
+      const allMessages = await apiCall(`/api/portal/${companySlug}/messages`)
+      const unreadBroadcastIds = allMessages.messages
+        .filter(msg => msg.type === 'broadcast' && !msg.is_read)
+        .map(msg => msg.id)
+
+      if (unreadBroadcastIds.length === 0) return true
+
+      // 批量標記為已讀
+      await apiCall(`/api/portal/${companySlug}/messages/batch/read`, {
+        method: 'PUT',
+        body: JSON.stringify({ messageIds: unreadBroadcastIds })
       })
       
-      if (response.success) {
-        // 更新本地狀態
-        setBroadcasts([])
-        setMessageStats(prev => ({
-          ...prev,
-          unreadBroadcastCount: 0,
-          totalUnreadCount: prev.unreadPersonalCount
-        }))
-        return true
-      }
+      // 更新本地狀態
+      setBroadcasts([])
+      setMessageStats(prev => ({
+        ...prev,
+        unreadBroadcastCount: 0,
+        totalUnreadCount: prev.unreadPersonalCount
+      }))
+      return true
     } catch (err) {
       setError('標記廣播已讀失敗')
       console.error(err)
@@ -192,20 +220,23 @@ export const useHybridMessage = () => {
    * 獲取個人訊息
    */
   const fetchPersonalMessages = async (page = 1, limit = 20) => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
-      const response = await apiCall(`/messages/personal?page=${page}&limit=${limit}`)
+      const response = await apiCall(`/api/portal/${companySlug}/messages?page=${page}&per_page=${limit}`)
       
-      if (response.success) {
-        setPersonalMessages(response.data.messages)
-        setMessageStats(prev => ({
-          ...prev,
-          unreadPersonalCount: response.data.unreadCount,
-          totalUnreadCount: prev.unreadBroadcastCount + response.data.unreadCount
-        }))
-        return response.data
-      }
+      // 從所有訊息中篩選個人訊息
+      const allMessages = response.messages || []
+      const personalMsgs = allMessages.filter(msg => msg.type === 'personal')
+      const unreadPersonalCount = personalMsgs.filter(msg => !msg.is_read).length
+      
+      setPersonalMessages(personalMsgs)
+      setMessageStats(prev => ({
+        ...prev,
+        unreadPersonalCount: unreadPersonalCount,
+        totalUnreadCount: prev.unreadBroadcastCount + unreadPersonalCount
+      }))
+      return { messages: personalMsgs, unreadCount: unreadPersonalCount }
     } catch (err) {
       setError('獲取個人訊息失敗')
       console.error(err)
@@ -216,10 +247,10 @@ export const useHybridMessage = () => {
    * 標記個人訊息為已讀
    */
   const markPersonalMessageAsRead = async (messageId: number) => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
-      const response = await apiCall(`/messages/personal/${messageId}/read`, {
+      const response = await apiCall(`/api/portal/${companySlug}/messages/${messageId}/read`, {
         method: 'PUT'
       })
       
@@ -253,11 +284,11 @@ export const useHybridMessage = () => {
    * 發送個人訊息
    */
   const sendPersonalMessage = async (receiverId: number, title: string, content: string) => {
-    if (!user) return
+    if (!user || !companySlug) return
 
     try {
       setLoading(true)
-      const response = await apiCall('/messages/personal', {
+      const response = await apiCall(`/api/portal/${companySlug}/messages`, {
         method: 'POST',
         body: JSON.stringify({
           receiverId,
@@ -285,9 +316,10 @@ export const useHybridMessage = () => {
     if (!user) return
 
     try {
-      await apiCall('/messages/update-login-time', {
-        method: 'POST'
-      })
+      // 登錄時間更新可能需要不同的端點，這裡先註釋掉
+      // await apiCall('/messages/update-login-time', {
+      //   method: 'POST'
+      // })
     } catch (err) {
       console.error('更新登入時間失敗:', err)
     }

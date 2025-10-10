@@ -832,7 +832,7 @@ export default function AdminMessagesPage() {
                         ) : (
                           <div>
                             <span style={{ fontWeight: '500', color: '#4f46e5' }}>系統</span>
-                            {message.messageType === 'SYSTEM' && message.receiver.username !== '所有會員' && (
+                            {message.messageType === 'SYSTEM' && message.receiver?.username !== '所有會員' && (
                               <div style={{ fontSize: '10px', color: '#ef4444' }}>🏷️ 標籤群組</div>
                             )}
                           </div>
@@ -840,9 +840,11 @@ export default function AdminMessagesPage() {
                       </td>
                       <td style={{ fontSize: '12px', color: '#6b7280' }}>
                         <div>
-                          <div style={{ fontWeight: '500' }}>{message.receiver.username}</div>
-                          {message.receiver.email && <div>{message.receiver.email}</div>}
-                          {message.receiver.username === '所有會員' && message.messageType === 'SYSTEM' && (
+                          <div style={{ fontWeight: '500' }}>
+                            {message.receiver?.username || '所有會員'}
+                          </div>
+                          {message.receiver?.email && <div>{message.receiver?.email}</div>}
+                          {(!message.receiver || message.receiver?.username === '所有會員') && message.messageType === 'SYSTEM' && (
                             <div style={{ fontSize: '10px', color: '#10b981' }}>📢 全站廣播</div>
                           )}
                         </div>
@@ -1222,9 +1224,9 @@ export default function AdminMessagesPage() {
             <div className="modal-detail-item">
               <div className="modal-detail-label">收件人：</div>
               <div className="modal-detail-value">
-                {selectedMessage.receiver.email ? 
-                  `${selectedMessage.receiver.username} (${selectedMessage.receiver.email})` : 
-                  selectedMessage.receiver.username
+                {selectedMessage.receiver?.email ? 
+                  `${selectedMessage.receiver?.username} (${selectedMessage.receiver?.email})` : 
+                  (selectedMessage.receiver?.username || '所有會員')
                 }
               </div>
             </div>
