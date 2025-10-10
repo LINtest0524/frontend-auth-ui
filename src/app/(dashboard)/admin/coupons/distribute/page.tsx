@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import '@/styles/pages/coupons-admin.css'
 
@@ -30,6 +31,7 @@ interface Tag {
 
 export default function CouponDistributePage() {
   const { user, setUser } = useUserStore()
+  const searchParams = useSearchParams()
   const [templates, setTemplates] = useState<CouponTemplate[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(false)
@@ -52,7 +54,39 @@ export default function CouponDistributePage() {
     quantity: ''
   })
 
-  const [activeTab, setActiveTab] = useState<'public' | 'batch'>('public')
+  // 根據 URL 參數設置初始頁籤
+  const getInitialTab = (): 'public' | 'batch' => {
+    const tabParam = searchParams.get('tab')
+    const typeParam = searchParams.get('type')
+    
+    if (tabParam === 'batch' || typeParam === 'batch') {
+      return 'batch'
+    }
+    if (typeParam === 'public') {
+      return 'public'
+    }
+    return 'public' // 預設為公共優惠碼
+  }
+
+  const [activeTab, setActiveTab] = useState<'public' | 'batch'>(getInitialTab())
+
+  // 監聽 URL 參數變化，動態切換頁籤和預填模板
+  useEffect(() => {
+    const newTab = getInitialTab()
+    if (newTab !== activeTab) {
+      setActiveTab(newTab)
+    }
+    
+    // 如果有 templateId 參數，預填到對應表單
+    const templateId = searchParams.get('templateId')
+    if (templateId) {
+      if (newTab === 'public') {
+        setPublicForm(prev => ({ ...prev, templateId }))
+      } else if (newTab === 'batch') {
+        setBatchForm(prev => ({ ...prev, templateId }))
+      }
+    }
+  }, [searchParams])
 
   // 從 localStorage 恢復用戶狀態
   useEffect(() => {
@@ -90,7 +124,6 @@ export default function CouponDistributePage() {
       
       if (response.ok) {
         const data = await response.json()
-        console.log('獲取到的模板:', data)
         setTemplates(data.filter((t: CouponTemplate) => t.isActive))
       } else {
         console.error('獲取模板列表失敗:', response.status)
@@ -219,7 +252,8 @@ export default function CouponDistributePage() {
 
       if (response.ok) {
         const result = await response.json()
-        alert(`批量優惠碼發放成功！共發放 ${result.count} 張優惠碼`)
+        const distributedCount = result.distributedCount || result.count || 0
+        alert(`批量優惠碼發放成功！共發放 ${distributedCount} 張優惠碼`)
         setBatchForm({
           templateId: '',
           targetType: 'TAG_GROUP',

@@ -282,6 +282,18 @@
   box-shadow: 0 4px 8px rgba(153, 27, 27, 0.2);
 }
 
+.status-expired {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.status-expired:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.2);
+}
+
 /* 操作按鈕區域 */
 .action-buttons {
   display: flex;
@@ -388,6 +400,33 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+.modal-header-left {
+  position: absolute;
+  left: 24px;
+}
+
+.btn-back-to-list {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back-to-list:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(75, 85, 99, 0.3);
 }
 
 .distribute-modal .modal-header h3 {

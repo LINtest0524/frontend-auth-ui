@@ -73,7 +73,6 @@ export default function MessageCenter() {
 
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/${company}/messages?${params}`
 
-      
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -84,6 +83,14 @@ export default function MessageCenter() {
 
       if (response.ok) {
         const data: MessageListResponse = await response.json()
+        
+        // 計算分頁資訊
+        const limit = 20 // 每頁顯示數量
+        const total = data.total || 0
+        const calculatedTotalPages = Math.ceil(total / limit)
+        const currentPageNum = parseInt(data.page?.toString() || '1')
+        
+        
         // 映射後端字段名稱到前端期待的格式
         const mappedMessages = data.messages.map(msg => ({
           ...msg,
@@ -94,10 +101,30 @@ export default function MessageCenter() {
           isRead: msg.is_read !== undefined ? msg.is_read : msg.isRead
         }))
         
+        // 臨時修復：後端API沒有正確處理過濾，我們在前端進行過濾和分頁
+        let filteredMessages = mappedMessages
         
-        setMessages(mappedMessages)
-        setTotalPages(data.totalPages)
-        setCurrentPage(data.page)
+        // 根據當前標籤過濾消息
+        if (params.has('isRead')) {
+          const isReadFilter = params.get('isRead') === 'true'
+          filteredMessages = mappedMessages.filter(msg => msg.isRead === isReadFilter)
+        }
+        
+        // 重新計算分頁資訊（基於過濾後的數據）
+        const filteredTotal = filteredMessages.length
+        const recalculatedTotalPages = Math.ceil(filteredTotal / limit)
+        
+        // 對過濾後的消息進行分頁
+        let displayMessages = filteredMessages
+        if (filteredTotal > limit) {
+          const startIndex = (currentPageNum - 1) * limit
+          const endIndex = startIndex + limit
+          displayMessages = filteredMessages.slice(startIndex, endIndex)
+        }
+        
+        setMessages(displayMessages)
+        setTotalPages(recalculatedTotalPages)
+        setCurrentPage(Math.min(currentPageNum, recalculatedTotalPages))
       } else {
         const errorText = await response.text()
         console.error('❌ API 請求失敗:', { status: response.status, statusText: response.statusText, error: errorText })
@@ -430,6 +457,111 @@ export default function MessageCenter() {
     }
   }
 
+  // 處理頁面切換
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    const isReadFilter = activeTab === 'unread' ? false : activeTab === 'read' ? true : undefined
+    fetchMessages(isReadFilter, page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // 渲染分頁控制（參考新聞頁面）
+  const renderPagination = () => {
+    if (totalPages <= 1) return null
+
+    const pages = []
+    const maxVisiblePages = 7
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+    }
+
+    // 第一頁
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="pagination-btn"
+        >
+          1
+        </button>
+      )
+      if (startPage > 2) {
+        pages.push(
+          <span key="ellipsis1" className="pagination-ellipsis">
+            ...
+          </span>
+        )
+      }
+    }
+
+    // 頁碼範圍
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
+        >
+          {i}
+        </button>
+      )
+    }
+
+    // 最後一頁
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="ellipsis2" className="pagination-ellipsis">
+            ...
+          </span>
+        )
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className="pagination-btn"
+        >
+          {totalPages}
+        </button>
+      )
+    }
+
+    return (
+      <div className="pagination-container">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="pagination-nav-btn"
+        >
+          <svg className="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          上一頁
+        </button>
+        
+        <div className="pagination-numbers">
+          {pages}
+        </div>
+        
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="pagination-nav-btn"
+        >
+          下一頁
+          <svg className="pagination-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    )
+  }
+
   // 初始化效果 - 只在用戶和公司變化時執行
   useEffect(() => {
     if (user && company) {
@@ -671,33 +803,7 @@ export default function MessageCenter() {
               </div>
 
               {/* 分頁控制 */}
-              {totalPages > 1 && (
-                <div className="pagination">
-                  <button
-                    className="pagination-btn"
-                    disabled={currentPage === 1}
-                    onClick={() => {
-                      const isReadFilter = activeTab === 'unread' ? false : activeTab === 'read' ? true : undefined
-                      fetchMessages(isReadFilter, currentPage - 1)
-                    }}
-                  >
-                    ← 上一頁
-                  </button>
-                  <div className="pagination-info">
-                    {currentPage} / {totalPages}
-                  </div>
-                  <button
-                    className="pagination-btn"
-                    disabled={currentPage === totalPages}
-                    onClick={() => {
-                      const isReadFilter = activeTab === 'unread' ? false : activeTab === 'read' ? true : undefined
-                      fetchMessages(isReadFilter, currentPage + 1)
-                    }}
-                  >
-                    下一頁 →
-                  </button>
-                </div>
-              )}
+              {totalPages > 1 && renderPagination()}
             </>
           )}
         </div>

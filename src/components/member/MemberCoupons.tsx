@@ -29,6 +29,10 @@ export default function MemberCoupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<'all' | 'available' | 'used' | 'expired'>('available')
+  
+  // 現金券兌換相關狀態
+  const [cashCouponCode, setCashCouponCode] = useState('')
+  const [redeemLoading, setRedeemLoading] = useState(false)
 
   // 獲取我的優惠券
   const fetchMyCoupons = async () => {
@@ -38,9 +42,6 @@ export default function MemberCoupons() {
     try {
       const companyCode = user.company?.code || 'a'
       const token = localStorage.getItem(`portalToken_${companyCode}`)
-      console.log('🔍 優惠券查詢 - CompanyCode:', companyCode)
-      console.log('🔍 優惠券查詢 - Token存在:', !!token)
-      console.log('🔍 優惠券查詢 - 用戶ID:', user?.id)
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/my-coupons`, {
         headers: {
@@ -49,7 +50,6 @@ export default function MemberCoupons() {
         }
       })
       
-      console.log('🔍 優惠券查詢 - Response Status:', response.status)
       
       if (response.ok) {
         const data = await response.json()
@@ -61,6 +61,51 @@ export default function MemberCoupons() {
       console.error('獲取優惠券失敗:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 兌換現金券
+  const handleRedeemCashCoupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!cashCouponCode.trim()) {
+      alert('請輸入優惠碼')
+      return
+    }
+
+    setRedeemLoading(true)
+    try {
+      const companyCode = user?.company?.code || 'a'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/redeem-cash`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: cashCouponCode.trim().toUpperCase()
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        alert(result.message || '現金券兌換成功！')
+        setCashCouponCode('')
+        // 重新獲取用戶資料（更新錢包餘額）
+        if (window.location.reload) {
+          window.location.reload()
+        }
+      } else {
+        alert(result.message || '兌換失敗，請檢查優惠碼是否正確')
+      }
+    } catch (error) {
+      console.error('兌換現金券失敗:', error)
+      alert('兌換失敗，請稍後再試')
+    } finally {
+      setRedeemLoading(false)
     }
   }
 
@@ -135,6 +180,37 @@ export default function MemberCoupons() {
 
   return (
     <div className="member-coupons">
+      {/* 現金券兌換區域 */}
+      <div className="cash-coupon-redeem-section">
+        <div className="redeem-card">
+          <div className="redeem-header">
+            <h4>💰 兌換現金券</h4>
+            <p className="redeem-description">輸入現金券優惠碼，金額將直接加到您的錢包</p>
+          </div>
+          
+          <form onSubmit={handleRedeemCashCoupon} className="redeem-form">
+            <div className="input-group">
+              <input
+                type="text"
+                value={cashCouponCode}
+                onChange={(e) => setCashCouponCode(e.target.value.toUpperCase())}
+                placeholder="輸入現金券優惠碼 (如: NEWYEAR2026)"
+                className="coupon-input"
+                maxLength={20}
+                disabled={redeemLoading}
+              />
+              <button
+                type="submit"
+                disabled={!cashCouponCode.trim() || redeemLoading}
+                className="redeem-button"
+              >
+                {redeemLoading ? '⏳ 兌換中...' : '🎁 立即兌換'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       {/* 篩選標籤 */}
       <div className="coupon-filters">
         <button

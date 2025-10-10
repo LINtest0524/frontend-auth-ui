@@ -7,8 +7,8 @@ import '@/styles/pages/coupons-admin.css'
 interface CouponTemplate {
   id: number
   name: string
-  type: 'PUBLIC' | 'BATCH'
-  discountType: 'PERCENTAGE' | 'FIXED'
+  type: 'PUBLIC' | 'BATCH' | 'CASH'
+  discountType: 'PERCENTAGE' | 'FIXED' | 'CASH'
   discountValue: number
   minAmount: number
   maxDiscount?: number
@@ -30,8 +30,8 @@ export default function CouponsPage() {
   // 新增模板表單狀態
   const [formData, setFormData] = useState({
     name: '',
-    type: 'PUBLIC' as 'PUBLIC' | 'BATCH',
-    discountType: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
+    type: 'PUBLIC' as 'PUBLIC' | 'BATCH' | 'CASH',
+    discountType: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED' | 'CASH',
     discountValue: 0,
     minAmount: 0,
     maxDiscount: '',
@@ -43,12 +43,6 @@ export default function CouponsPage() {
 
   const [createLoading, setCreateLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<number | null>(null)
-  const [showDistributeModal, setShowDistributeModal] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<CouponTemplate | null>(null)
-  const [distributeType, setDistributeType] = useState<'ALL' | 'TAG_GROUP'>('ALL')
-  const [selectedTags, setSelectedTags] = useState<number[]>([])
-  const [availableTags, setAvailableTags] = useState<any[]>([])
-  const [distributeLoading, setDistributeLoading] = useState(false)
 
   // 從 localStorage 恢復用戶狀態
   useEffect(() => {
@@ -125,8 +119,16 @@ export default function CouponsPage() {
         setTemplates(prev => prev.filter(template => template.id !== templateId))
         alert('優惠碼模板刪除成功！')
       } else {
-        console.error('刪除模板失敗:', response.status)
-        alert('刪除失敗，請稍後再試')
+        // 嘗試解析後端錯誤訊息
+        try {
+          const errorData = await response.json()
+          const errorMessage = errorData.message || '刪除失敗，請稍後再試'
+          console.error('刪除模板失敗:', response.status, errorMessage)
+          alert(errorMessage)
+        } catch (parseError) {
+          console.error('刪除模板失敗:', response.status)
+          alert('刪除失敗，請稍後再試')
+        }
       }
     } catch (error) {
       console.error('刪除模板失敗:', error)
@@ -136,80 +138,24 @@ export default function CouponsPage() {
     }
   }
 
-  // 獲取標籤列表
-  const fetchTags = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/tags`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        console.log('🏷️ 優惠券發放 - 收到標籤數據:', data)
-        setAvailableTags(data.tags || [])
-      } else {
-        console.error('獲取標籤列表失敗:', response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error('獲取標籤列表失敗:', error)
+
+  // 統一派發處理：根據優惠碼類型跳轉到不同頁面
+  const handleDispatch = (template: CouponTemplate) => {
+    if (template.type === 'PUBLIC') {
+      // 公共優惠碼：跳轉到 distribute 頁面
+      window.location.href = `/admin/coupons/distribute?templateId=${template.id}&type=public`
+    } else {
+      // 批量優惠碼：跳轉到 distribute 頁面的批量發放頁籤
+      window.location.href = `/admin/coupons/distribute?templateId=${template.id}&type=batch&tab=batch`
     }
   }
 
-  // 打開發放彈窗
-  const handleDistribute = (template: CouponTemplate) => {
-    setSelectedTemplate(template)
-    setShowDistributeModal(true)
-    fetchTags()
+  // 管理現金優惠券優惠碼
+  const handleManageCashCoupon = (template: CouponTemplate) => {
+    // 跳轉到現金券管理頁面
+    window.location.href = `/admin/coupons/cash-management?templateId=${template.id}`
   }
 
-  // 執行發放
-  const handleExecuteDistribute = async () => {
-    if (!selectedTemplate) return
-
-    setDistributeLoading(true)
-    try {
-      const token = localStorage.getItem('token')
-      const payload = {
-        templateId: selectedTemplate.id,
-        targetType: distributeType === 'ALL' ? 'ALL_USERS' : 'TAG_GROUP',
-        tagIds: distributeType === 'TAG_GROUP' ? selectedTags : undefined
-      }
-
-      console.log('🎁 發放優惠券請求:', payload)
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/distribute/batch`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-
-      console.log('📡 後端響應狀態:', response.status)
-
-      if (response.ok) {
-        const result = await response.json()
-        console.log('✅ 發放成功結果:', result)
-        alert(`優惠券發放成功！共發放給 ${result.distributedCount} 位用戶`)
-        setShowDistributeModal(false)
-        setSelectedTemplate(null)
-        setSelectedTags([])
-      } else {
-        const error = await response.json()
-        console.error('❌ 發放失敗錯誤:', error)
-        alert(`發放失敗：${error.message}`)
-      }
-    } catch (error) {
-      console.error('發放失敗:', error)
-      alert('發放失敗，請稍後再試')
-    } finally {
-      setDistributeLoading(false)
-    }
-  }
 
   // 創建模板
   const handleCreateTemplate = async (e: React.FormEvent) => {
@@ -288,10 +234,24 @@ export default function CouponsPage() {
   }
 
   const getDiscountText = (template: CouponTemplate) => {
-    if (template.discountType === 'PERCENTAGE') {
+    if (template.type === 'CASH') {
+      return `現金 ${Math.floor(template.discountValue)} 元`
+    } else if (template.discountType === 'PERCENTAGE') {
       return `${Math.floor(template.discountValue)}% 折扣`
     } else {
       return `減 ${Math.floor(template.discountValue)} 元`
+    }
+  }
+
+  // 檢查優惠碼狀態（根據有效期）
+  const getTemplateStatus = (template: CouponTemplate) => {
+    const now = new Date()
+    const validTo = new Date(template.validTo)
+    
+    if (now > validTo) {
+      return { text: '已結束', class: 'status-expired' }
+    } else {
+      return { text: '啟用中', class: 'status-active' }
     }
   }
 
@@ -385,8 +345,10 @@ export default function CouponsPage() {
                         </div>
                       </td>
                       <td>
-                        <span className={`type-badge ${template.type === 'PUBLIC' ? 'public' : 'batch'}`}>
-                          {template.type === 'PUBLIC' ? '🌐 公共優惠碼' : '📦 批量優惠碼'}
+                        <span className={`type-badge ${template.type === 'PUBLIC' ? 'public' : template.type === 'CASH' ? 'cash' : 'batch'}`}>
+                          {template.type === 'PUBLIC' ? '🌐 公共優惠碼' : 
+                           template.type === 'CASH' ? '💰 現金優惠券' : 
+                           '📦 批量優惠碼'}
                         </span>
                       </td>
                       <td>
@@ -399,11 +361,22 @@ export default function CouponsPage() {
                       </td>
                       <td>
                         <div className="condition-info">
-                          <div className="min-amount">
-                            {template.minAmount > 0 ? `消費滿 ${Math.floor(template.minAmount)} 元` : '無限制'}
-                          </div>
-                          {template.usageLimit && (
-                            <div className="usage-limit">限用 {Math.floor(template.usageLimit)} 次</div>
+                          {template.type === 'CASH' ? (
+                            <>
+                              <div className="min-amount">直接兌換</div>
+                              {template.usageLimit && (
+                                <div className="usage-limit">限兌 {Math.floor(template.usageLimit)} 次</div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="min-amount">
+                                {template.minAmount > 0 ? `消費滿 ${Math.floor(template.minAmount)} 元` : '無限制'}
+                              </div>
+                              {template.usageLimit && (
+                                <div className="usage-limit">限用 {Math.floor(template.usageLimit)} 次</div>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
@@ -418,27 +391,33 @@ export default function CouponsPage() {
                         </div>
                       </td>
                       <td>
-                        <button className={`status-toggle ${template.isActive ? 'status-active' : 'status-inactive'}`}>
-                          {template.isActive ? '✅ 啟用中' : '❌ 未啟用'}
-                        </button>
+                        {(() => {
+                          const status = getTemplateStatus(template)
+                          return (
+                            <button className={`status-toggle ${status.class}`}>
+                              {status.text === '已結束' ? '🔴 已結束' : '✅ 啟用中'}
+                            </button>
+                          )
+                        })()}
                       </td>
                       <td>
                         <div className="action-buttons">
-                          {template.type === 'PUBLIC' ? (
+                          {template.type !== 'CASH' && (
                             <button 
                               className="btn-distribute"
-                              onClick={() => window.location.href = '/admin/coupons/distribute'}
+                              onClick={() => handleDispatch(template)}
                             >
-                              <span>🌐</span>
-                              建立公共碼
+                              <span>🚀</span>
+                              派發
                             </button>
-                          ) : (
+                          )}
+                          {template.type === 'CASH' && (
                             <button 
                               className="btn-distribute"
-                              onClick={() => handleDistribute(template)}
+                              onClick={() => handleManageCashCoupon(template)}
                             >
-                              <span>📦</span>
-                              批量發放
+                              <span>💰</span>
+                              管理優惠碼
                             </button>
                           )}
                           <button 
@@ -517,61 +496,72 @@ export default function CouponsPage() {
                   >
                     <option value="PUBLIC">🌐 公共優惠碼 (一組代碼多人使用)</option>
                     <option value="BATCH">📦 批量優惠碼 (批量生成唯一代碼)</option>
+                    <option value="CASH">💰 現金優惠券 (直接加到錢包)</option>
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label required">
-                    💰 折扣類型
-                  </label>
-                  <select
-                    value={formData.discountType}
-                    onChange={(e) => setFormData({ ...formData, discountType: e.target.value as 'PERCENTAGE' | 'FIXED' })}
-                    className="form-select"
-                  >
-                    <option value="PERCENTAGE">📊 百分比折扣</option>
-                    <option value="FIXED">💵 固定金額折扣</option>
-                  </select>
-                </div>
+                {formData.type !== 'CASH' && (
+                  <div className="form-group">
+                    <label className="form-label required">
+                      💰 折扣類型
+                    </label>
+                    <select
+                      value={formData.discountType}
+                      onChange={(e) => setFormData({ ...formData, discountType: e.target.value as 'PERCENTAGE' | 'FIXED' })}
+                      className="form-select"
+                    >
+                      <option value="PERCENTAGE">📊 百分比折扣</option>
+                      <option value="FIXED">💵 固定金額折扣</option>
+                    </select>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label className="form-label required">
-                    🔢 折扣值
+                    {formData.type === 'CASH' ? '💰 現金金額' : '🔢 折扣值'}
                   </label>
                   <div className="input-with-icon">
                     <input
                       type="number"
                       value={formData.discountValue}
-                      onChange={(e) => setFormData({ ...formData, discountValue: Number(e.target.value) })}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        discountValue: Number(e.target.value),
+                        discountType: formData.type === 'CASH' ? 'CASH' : formData.discountType
+                      })}
                       className="form-input"
-                      placeholder={formData.discountType === 'PERCENTAGE' ? '10' : '100'}
+                      placeholder={formData.type === 'CASH' ? '100' : (formData.discountType === 'PERCENTAGE' ? '10' : '100')}
                       min="0"
                       required
                     />
                     <span className="input-icon">
-                      {formData.discountType === 'PERCENTAGE' ? '%' : '元'}
+                      {formData.type === 'CASH' ? '元' : (formData.discountType === 'PERCENTAGE' ? '%' : '元')}
                     </span>
                   </div>
-                  {formData.discountType === 'PERCENTAGE' && (
+                  {formData.type === 'CASH' ? (
+                    <p className="form-help">💡 會員兌換後，此金額將直接加到錢包</p>
+                  ) : formData.discountType === 'PERCENTAGE' ? (
                     <p className="form-help">輸入 10 表示 10% 折扣</p>
-                  )}
+                  ) : null}
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">
-                    💳 最低消費金額
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.minAmount}
-                    onChange={(e) => setFormData({ ...formData, minAmount: Number(e.target.value) })}
-                    className="form-input"
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
+                {formData.type !== 'CASH' && (
+                  <div className="form-group">
+                    <label className="form-label">
+                      💳 最低消費金額
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.minAmount}
+                      onChange={(e) => setFormData({ ...formData, minAmount: Number(e.target.value) })}
+                      className="form-input"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                )}
 
-                {formData.discountType === 'PERCENTAGE' && (
+                {formData.discountType === 'PERCENTAGE' && formData.type !== 'CASH' && (
                   <div className="form-group">
                     <label className="form-label">
                       🏆 最大折扣金額
@@ -614,7 +604,7 @@ export default function CouponsPage() {
                   />
                 </div>
 
-                {formData.type === 'PUBLIC' && (
+                {(formData.type === 'PUBLIC' || formData.type === 'CASH') && (
                   <div className="form-group">
                     <label className="form-label">
                       🔄 使用次數限制
@@ -627,7 +617,9 @@ export default function CouponsPage() {
                       placeholder="100"
                       min="1"
                     />
-                    <p className="form-help">公共優惠碼的總使用次數限制</p>
+                    <p className="form-help">
+                      {formData.type === 'CASH' ? '現金優惠券的總兌換次數限制' : '公共優惠碼的總使用次數限制'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -667,139 +659,6 @@ export default function CouponsPage() {
       )}
 
 
-      {/* 發放優惠券彈窗 */}
-      {showDistributeModal && (
-        <div className="modal-overlay">
-          <div className="modal-content distribute-modal">
-            <div className="modal-header">
-              <h3>🎁 發放優惠券</h3>
-              <button 
-                className="close-btn"
-                onClick={() => setShowDistributeModal(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="template-info">
-                <h4>📋 模板資訊</h4>
-                <p><strong>標題：</strong>{selectedTemplate?.name}</p>
-                <p><strong>類型：</strong>{selectedTemplate?.discountType === 'PERCENTAGE' ? '百分比折扣' : '固定金額折扣'}</p>
-                <p><strong>折扣：</strong>
-                  {selectedTemplate?.discountType === 'PERCENTAGE' 
-                    ? `${Math.floor(selectedTemplate?.discountValue || 0)}% 折扣` 
-                    : `減 $${Math.floor(selectedTemplate?.discountValue || 0)} 元`
-                  }
-                </p>
-              </div>
-
-              <div className="distribute-options">
-                <h4>🎯 發放對象</h4>
-                <div className="radio-group">
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="distributeType"
-                      value="ALL"
-                      checked={distributeType === 'ALL'}
-                      onChange={(e) => setDistributeType(e.target.value as 'ALL' | 'TAG_GROUP')}
-                    />
-                    <span>🌐 全部用戶</span>
-                  </label>
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="distributeType"
-                      value="TAG_GROUP"
-                      checked={distributeType === 'TAG_GROUP'}
-                      onChange={(e) => setDistributeType(e.target.value as 'ALL' | 'TAG_GROUP')}
-                    />
-                    <span>🏷️ 標籤群組</span>
-                  </label>
-                </div>
-
-                {distributeType === 'TAG_GROUP' && (
-                  <div className="tag-selection">
-                    <h5>選擇標籤群組</h5>
-                    <div className="tags-list">
-                      {availableTags.map(tag => (
-                        <label key={tag.id} className="tag-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={selectedTags.includes(tag.id)}
-                            disabled={!tag.isActive}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedTags([...selectedTags, tag.id])
-                              } else {
-                                setSelectedTags(selectedTags.filter(id => id !== tag.id))
-                              }
-                            }}
-                          />
-                          <span 
-                            className={`tag-name ${tag.shape || ''} ${!tag.isActive ? 'inactive' : ''}`}
-                            style={{
-                              backgroundColor: tag.backgroundColor || '#f3f4f6',
-                              color: tag.textColor || '#374151',
-                              opacity: tag.isActive ? 1 : 0.5,
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              fontSize: '12px'
-                            }}
-                          >
-                            {tag.name}
-                            {!tag.isActive && <span style={{ fontSize: '10px' }}> (停用)</span>}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="preview-section">
-                <h4>👥 預覽發放對象</h4>
-                <div className="preview-info">
-                  {distributeType === 'ALL' ? (
-                    <p>將發放給 <strong>所有用戶</strong></p>
-                  ) : (
-                    <p>將發放給標籤群組：
-                      <strong>
-                        {selectedTags.map(tagId => {
-                          const tag = availableTags.find(t => t.id === tagId)
-                          return tag?.name
-                        }).filter(Boolean).join('、')}
-                      </strong>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button 
-                className="btn-cancel"
-                onClick={() => setShowDistributeModal(false)}
-                disabled={distributeLoading}
-              >
-                取消
-              </button>
-              <button 
-                className="btn-confirm"
-                onClick={handleExecuteDistribute}
-                disabled={distributeLoading || (distributeType === 'TAG_GROUP' && selectedTags.length === 0)}
-              >
-                {distributeLoading ? (
-                  <>⏳ 發放中...</>
-                ) : (
-                  <>🎁 確認發放</>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
