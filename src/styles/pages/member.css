@@ -1,5 +1,260 @@
 /* 會員中心樣式 - 參考主流購物商城設計 */
 
+/* 錢包交易記錄樣式 */
+.wallet-history-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+  overflow: hidden;
+}
+
+.wallet-history-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px 24px;
+}
+
+.wallet-history-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.wallet-history-icon {
+  font-size: 24px;
+}
+
+.wallet-history-subtitle {
+  font-size: 14px;
+  opacity: 0.8;
+  font-weight: normal;
+}
+
+.wallet-history-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.wallet-history-stat-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.wallet-history-stat-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.wallet-history-stat-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.wallet-history-stat-item.income .wallet-history-stat-value {
+  color: #4ade80;
+}
+
+.wallet-history-stat-item.expense .wallet-history-stat-value {
+  color: #f87171;
+}
+
+.wallet-history-content {
+  padding: 24px;
+}
+
+.wallet-history-loading,
+.wallet-history-error,
+.wallet-history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.wallet-history-loading-icon,
+.wallet-history-error-icon,
+.wallet-history-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.wallet-history-loading-text,
+.wallet-history-error-text,
+.wallet-history-empty-text {
+  color: #6b7280;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.wallet-history-retry-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.wallet-history-retry-btn:hover {
+  background: #2563eb;
+}
+
+.wallet-history-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.wallet-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s;
+}
+
+.wallet-history-item:last-child {
+  border-bottom: none;
+}
+
+.wallet-history-item:hover {
+  background-color: #f9fafb;
+}
+
+.wallet-history-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.wallet-history-item-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 50%;
+}
+
+.wallet-history-item-info {
+  flex: 1;
+}
+
+.wallet-history-item-type {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.wallet-history-item-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.wallet-history-item-date {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.wallet-history-item-right {
+  text-align: right;
+}
+
+.wallet-history-item-amount {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.wallet-history-item-amount.positive {
+  color: #059669;
+}
+
+.wallet-history-item-amount.negative {
+  color: #dc2626;
+}
+
+.wallet-history-item-balance {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.wallet-history-not-logged-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+}
+
+.wallet-history-not-logged-in-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.wallet-history-not-logged-in-text {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .wallet-history-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .wallet-history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .wallet-history-item-left {
+    width: 100%;
+  }
+  
+  .wallet-history-item-right {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .wallet-history-list {
+    max-height: 300px;
+  }
+}
+
 .member-container {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;

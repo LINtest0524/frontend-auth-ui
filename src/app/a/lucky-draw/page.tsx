@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import './wheel.css';
+import './wheel-new.css';
 
 interface Prize {
   id: number;

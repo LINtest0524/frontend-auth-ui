@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import './history.css';
+import './history-new.css';
 
 interface DrawRecord {
   id: number;

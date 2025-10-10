@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import MemberProfile from '@/components/member/MemberProfile'
+import MemberWalletHistory from '@/components/member/MemberWalletHistory'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
@@ -15,7 +16,7 @@ import '../../../styles/pages/member.css'
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'wallet-history' | 'orders'>('profile')
 
   const getTabTitle = () => {
     const titles = {
@@ -24,6 +25,7 @@ export default function MemberPage() {
       'edit': '修改個人資料',
       'id-verification': '身分證驗證',
       'bank-verification': '銀行帳戶驗證',
+      'wallet-history': '錢包紀錄',
       'orders': '我的訂單'
     }
     return titles[tab]
@@ -36,6 +38,7 @@ export default function MemberPage() {
       'edit': '✏️',
       'id-verification': '🆔',
       'bank-verification': '🏦',
+      'wallet-history': '💰',
       'orders': '📋'
     }
     return icons[tabName as keyof typeof icons]
@@ -112,6 +115,13 @@ export default function MemberPage() {
                   <span className="member-nav-icon">{getTabIcon('bank-verification')}</span>
                   銀行帳戶驗證
                 </button>
+                <button
+                  onClick={() => setTab('wallet-history')}
+                  className={`member-nav-item ${tab === 'wallet-history' ? 'active' : ''}`}
+                >
+                  <span className="member-nav-icon">{getTabIcon('wallet-history')}</span>
+                  錢包紀錄
+                </button>
               </nav>
             </aside>
 
@@ -130,6 +140,7 @@ export default function MemberPage() {
               {tab === 'edit' && <MemberEditForm />}
               {tab === 'id-verification' && <IdVerification />}
               {tab === 'bank-verification' && <BankVerification />}
+              {tab === 'wallet-history' && <MemberWalletHistory />}
               {tab === 'orders' && <MemberOrders />}
             </main>
           </div>

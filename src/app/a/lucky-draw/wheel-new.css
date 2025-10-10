@@ -1,0 +1,407 @@
+/* 幸運輪盤 - 簡潔高效能設計 */
+
+.lucky-draw-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* 標題區域 */
+.lucky-header {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lucky-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.lucky-subtitle {
+  font-size: 1.1rem;
+  color: #718096;
+  margin: 0;
+}
+
+/* 輪盤容器 */
+.wheel-container {
+  width: 320px;
+  height: 320px;
+  margin: 40px auto;
+  position: relative;
+  border-radius: 50%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  background: white;
+  transition: transform 3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* 輪盤背景容器 */
+.lucky-wheel-background {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 輪盤本體 */
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  transition: transform 3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* 輪盤指針 */
+.wheel-pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 40px solid #e53e3e;
+  z-index: 100;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.wheel-pointer::after {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  background: #e53e3e;
+  border-radius: 50%;
+}
+
+/* 中心按鈕 */
+.center-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: all 0.2s ease;
+}
+
+.center-button:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.05);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+}
+
+.center-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 輪盤扇形區域 */
+.wheel-sector {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  transform-origin: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 獎品卡片 */
+.prizes-section {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.prizes-title {
+  text-align: center;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.prizes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.prize-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.prize-card:hover {
+  transform: translateY(-2px);
+}
+
+.prize-card-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  margin: 0 auto 12px;
+  object-fit: cover;
+}
+
+.prize-card-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.prize-card-probability {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* 結果彈窗 */
+.result-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.result-content {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.result-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.result-message {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.result-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.result-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.result-btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.result-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.result-btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result-btn-secondary:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* 載入狀態 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: white;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 輪盤旋轉動畫 - 只在抽獎時使用 */
+.wheel.spinning,
+.wheel-container.spinning {
+  animation: wheelSpin 3s cubic-bezier(0.23, 1, 0.320, 1) forwards;
+}
+
+/* 各種旋轉程度的動畫類 */
+.spin-1 { animation: spin1 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-2 { animation: spin2 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-3 { animation: spin3 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-4 { animation: spin4 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-5 { animation: spin5 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-6 { animation: spin6 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-7 { animation: spin7 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+.spin-8 { animation: spin8 3s cubic-bezier(0.23, 1, 0.320, 1) forwards; }
+
+@keyframes wheelSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: var(--spin-rotation, 1440deg); }
+}
+
+@keyframes spin1 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1440deg); }
+}
+
+@keyframes spin2 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1485deg); }
+}
+
+@keyframes spin3 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1530deg); }
+}
+
+@keyframes spin4 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1575deg); }
+}
+
+@keyframes spin5 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1620deg); }
+}
+
+@keyframes spin6 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1665deg); }
+}
+
+@keyframes spin7 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1710deg); }
+}
+
+@keyframes spin8 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1755deg); }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .lucky-title {
+    font-size: 2rem;
+  }
+  
+  .wheel-container {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .center-button {
+    width: 70px;
+    height: 70px;
+    font-size: 0.9rem;
+  }
+  
+  .prizes-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+  
+  .result-content {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lucky-draw-page {
+    padding: 16px;
+  }
+  
+  .lucky-header {
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .wheel-container {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .center-button {
+    width: 60px;
+    height: 60px;
+    font-size: 0.8rem;
+  }
+}

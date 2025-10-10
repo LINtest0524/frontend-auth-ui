@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import MemberProfile from '@/components/member/MemberProfile'
-
+import MemberWalletHistory from '@/components/member/MemberWalletHistory'
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
 import MemberEditForm from '@/components/member/MemberEditForm'
 import MemberOrders from '@/components/member/MemberOrders'
@@ -16,7 +16,7 @@ import '../../../styles/pages/member.css'
 
 
 export default function MemberPage() {
-  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'orders' | 'coupons' | 'favorites'>('profile')
+  const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'wallet-history' | 'orders' | 'coupons' | 'favorites'>('profile')
 
   const getTabTitle = () => {
     const titles = {
@@ -25,6 +25,7 @@ export default function MemberPage() {
       'edit': '修改個人資料',
       'id-verification': '身分證驗證',
       'bank-verification': '銀行帳戶驗證',
+      'wallet-history': '錢包紀錄',
       'orders': '我的訂單',
       'coupons': '優惠券',
       'favorites': '我的最愛'
@@ -39,6 +40,7 @@ export default function MemberPage() {
       'edit': '✏️',
       'id-verification': '🆔',
       'bank-verification': '🏦',
+      'wallet-history': '💰',
       'orders': '📋',
       'coupons': '🎫',
       'favorites': '❤️'
@@ -113,6 +115,13 @@ export default function MemberPage() {
                       <span className="member-nav-icon">{getTabIcon('bank-verification')}</span>
                       銀行帳戶驗證
                     </button>
+                    <button
+                      onClick={() => setTab('wallet-history')}
+                      className={`member-nav-item ${tab === 'wallet-history' ? 'active' : ''}`}
+                    >
+                      <span className="member-nav-icon">{getTabIcon('wallet-history')}</span>
+                      錢包紀錄
+                    </button>
                   </div>
                 </div>
 
@@ -167,6 +176,7 @@ export default function MemberPage() {
               {tab === 'edit' && <MemberEditForm />}
               {tab === 'id-verification' && <IdVerification />}
               {tab === 'bank-verification' && <BankVerification />}
+              {tab === 'wallet-history' && <MemberWalletHistory />}
               {tab === 'orders' && <MemberOrders />}
               {tab === 'coupons' && <MemberCoupons />}
               {tab === 'favorites' && <MemberFavorites />}

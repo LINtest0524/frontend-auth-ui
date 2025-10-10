@@ -1,52 +1,22 @@
-/* 幸運輪盤 - 豪華商城風格 */
-
-/* 頁面背景動畫 */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* 幸運輪盤 - 簡潔高效能設計 */
 
 .lucky-draw-page {
-  background: linear-gradient(-45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-}
-
-/* 裝飾性粒子效果 */
-.lucky-draw-page::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 2px, transparent 2px),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 50px 50px, 30px 30px, 70px 70px;
-  animation: sparkle 20s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes sparkle {
-  0% { transform: translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-100px) rotate(360deg); }
+  padding: 20px;
 }
 
 /* 標題區域 */
 .lucky-header {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 20px 30px;
-  margin-bottom: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
 }
 
 .lucky-title {
@@ -109,7 +79,6 @@
   border-radius: 50%;
   background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
   z-index: -1;
-  animation: rotate 10s linear infinite;
 }
 
 .wheel-container::after {
@@ -122,10 +91,10 @@
   border-radius: 50%;
   background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
   z-index: -1;
-  animation: rotate 8s linear infinite reverse;
 }
 
-@keyframes rotate {
+/* 只保留抽獎時必要的旋轉動畫 */
+@keyframes wheelSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
