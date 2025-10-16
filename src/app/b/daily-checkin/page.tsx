@@ -34,6 +34,17 @@ export default function DailyCheckinPageB() {
 
   const companyId = 2; // B 公司使用 ID 2
 
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_b')
+      if (!token && !user) {
+        window.location.href = '/b/duplicate-login'
+        return
+      }
+    }
+  }, [user])
+
   useEffect(() => {
     if (user) {
       loadStatus();

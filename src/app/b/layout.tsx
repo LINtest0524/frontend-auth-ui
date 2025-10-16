@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
 import FloatingCustomerService from '@/components/FloatingCustomerService'
+import { setupCompanyBAuthInterceptor } from '@/lib/authInterceptor'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user } = useUserStore()
@@ -15,6 +16,9 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
   const [sessionId, setSessionId] = useState<string>('')
 
   useEffect(() => {
+    // Setup auth interceptor for automatic session invalidation handling
+    setupCompanyBAuthInterceptor()
+    
     const currentCompanyCode = pathname.split('/')[1]
     const token = localStorage.getItem(`portalToken_${currentCompanyCode}`)
     const userData = localStorage.getItem(`portalUser_${currentCompanyCode}`)
@@ -31,15 +35,22 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
       `/${currentCompanyCode}`, 
       `/${currentCompanyCode}/login`, 
       `/${currentCompanyCode}/register`,
+      `/${currentCompanyCode}/duplicate-login`,
       `/${currentCompanyCode}/news`,
-      `/${currentCompanyCode}/articles`
+      `/${currentCompanyCode}/articles`,
+      `/${currentCompanyCode}/products`,
+      `/${currentCompanyCode}/promotions`
     ]
     
     // 檢查是否為新聞相關頁面（包含新聞詳細頁面）
     const isNewsPage = pathname.startsWith(`/${currentCompanyCode}/news`)
     // 檢查是否為文章相關頁面（包含文章詳細頁面）
     const isArticlePage = pathname.startsWith(`/${currentCompanyCode}/articles`)
-    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage
+    // 檢查是否為產品相關頁面（包含產品詳細頁面）
+    const isProductPage = pathname.startsWith(`/${currentCompanyCode}/products`)
+    // 檢查是否為優惠活動相關頁面（包含優惠活動詳細頁面）
+    const isPromotionPage = pathname.startsWith(`/${currentCompanyCode}/promotions`)
+    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage || isPromotionPage
 
     if (token && userData) {
       try {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import FacebookLoginButton from '@/components/FacebookLoginButton'
+import { CsrfTokenManager } from '@/lib/csrf'
 
 
 export default function AgentLoginPage() {
@@ -22,7 +23,8 @@ export default function AgentLoginPage() {
   useEffect(() => {
     const fetchLoginMethods = async () => {
       try {
-        const res = await fetch(`http://localhost:3001/company/code/${companyCode}/login-methods`)
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+        const res = await fetch(`${apiBase}/company/code/${companyCode}/login-methods`)
         if (res.ok) {
           const data = await res.json()
           setEnabledLoginMethods(data.loginMethods || ['USERNAME_PASSWORD', 'FACEBOOK'])
@@ -76,9 +78,10 @@ export default function AgentLoginPage() {
     setError('')
 
     try {
-      const res = await fetch(`http://localhost:3001/portal/auth/login?company=${companyCode}`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      const res = await fetch(`${apiBase}/portal/auth/login?company=${companyCode}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: CsrfTokenManager.getHeaders(),
         body: JSON.stringify({ username, password }),
       })
 

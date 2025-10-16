@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useCartStore } from '@/hooks/use-cart-store'
 
 export default function CartPage() {
@@ -11,6 +12,17 @@ export default function CartPage() {
     removeItem, 
     clearCart 
   } = useCartStore()
+
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_b')
+      if (!token) {
+        window.location.href = '/b/duplicate-login'
+        return
+      }
+    }
+  }, [])
 
   if (items.length === 0) {
     return (

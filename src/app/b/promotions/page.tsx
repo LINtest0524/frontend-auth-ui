@@ -42,7 +42,8 @@ export default function PromotionsPage() {
 
   const fetchPromotions = async () => {
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/${companySlug}/promotions`
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      let url = `${apiBase}/portal/${companySlug}/promotions`
       if (selectedCategory) {
         url += `?categoryId=${selectedCategory}`
       }
@@ -62,7 +63,8 @@ export default function PromotionsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/${companySlug}/promotions/categories`)
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      const response = await fetch(`${apiBase}/portal/${companySlug}/promotions/categories`)
 
       if (response.ok) {
         const data = await response.json()

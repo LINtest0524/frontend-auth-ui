@@ -40,6 +40,17 @@ export default function CartPage() {
   const discountedPrice = totalPrice - discountAmount
   const finalTotal = Math.max(0, discountedPrice) + shippingFee
 
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_a')
+      if (!token) {
+        window.location.href = '/a/duplicate-login'
+        return
+      }
+    }
+  }, [])
+
   // 獲取運送方式
   const fetchShippingMethods = async () => {
     try {

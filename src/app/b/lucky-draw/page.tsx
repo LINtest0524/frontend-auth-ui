@@ -42,6 +42,17 @@ export default function Wheel() {
   const [showResult, setShowResult] = useState(false);
   const [winningClass, setWinningClass] = useState('');
 
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_b')
+      if (!token) {
+        window.location.href = '/b/duplicate-login'
+        return
+      }
+    }
+  }, [])
+
   const fetchPrizes = async () => {
     // 動態獲取公司代碼
     const companyCode = window.location.pathname.split('/')[1];

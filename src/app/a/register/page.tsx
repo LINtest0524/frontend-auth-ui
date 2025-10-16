@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
+import { CsrfTokenManager } from '@/lib/csrf'
 import './register.css'
 
 export default function PortalRegisterPage() {
@@ -33,11 +34,12 @@ export default function PortalRegisterPage() {
     setMessage('')
 
     try {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
       const res = await fetch(
-        `http://localhost:3001/portal/auth/register?company=${company}`,
+        `${apiBase}/portal/auth/register?company=${company}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: CsrfTokenManager.getHeaders(),
           body: JSON.stringify({ username, password, email }),
         }
       )

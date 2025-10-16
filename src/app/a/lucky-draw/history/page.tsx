@@ -76,7 +76,7 @@ export default function LuckyDrawHistoryPage() {
       }
 
       // 取得抽獎歷史
-      const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
+      const token = localStorage.getItem(`portalToken_${companyCode}`);
       const res = await fetch(`http://localhost:3001/lucky-prize/history/${userId}?companyId=${companyId}`, {
         headers: {
           Authorization: `Bearer ${token}`,

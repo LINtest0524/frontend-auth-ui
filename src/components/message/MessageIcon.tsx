@@ -19,6 +19,11 @@ export default function MessageIcon() {
 
     try {
       const token = localStorage.getItem(`portalToken_${company}`)
+      if (!token) {
+        setUnreadCount(0)
+        return
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/${company}/messages/unread-count`,
         {
@@ -31,9 +36,40 @@ export default function MessageIcon() {
       if (response.ok) {
         const data = await response.json()
         setUnreadCount(data.count)
+      } else if (response.status === 401 || response.status === 500) {
+        // Token 無效或會話失效，檢查錯誤訊息
+        try {
+          const errorData = await response.json()
+          if (errorData.message?.includes('Session invalid') || 
+              errorData.message?.includes('被踢下線') ||
+              errorData.message?.includes('會話已失效') ||
+              response.status === 401) {
+            // 清除 token 並重定向到重複登入頁面
+            localStorage.removeItem(`portalToken_${company}`)
+            localStorage.removeItem(`portalUser_${company}`)
+            localStorage.removeItem(`enabledModules_${company}`)
+            localStorage.removeItem(`sessionId_${company}`)
+            localStorage.removeItem(`tokenCreatedTime_${company}`)
+            window.location.href = `/${company}/duplicate-login`
+            return
+          }
+        } catch (parseError) {
+          // 如果是 401 或無法解析的 500 錯誤，也當作會話失效處理
+          if (response.status === 401) {
+            localStorage.removeItem(`portalToken_${company}`)
+            localStorage.removeItem(`portalUser_${company}`)
+            localStorage.removeItem(`enabledModules_${company}`)
+            localStorage.removeItem(`sessionId_${company}`)
+            localStorage.removeItem(`tokenCreatedTime_${company}`)
+            window.location.href = `/${company}/duplicate-login`
+            return
+          }
+        }
+        setUnreadCount(0)
       }
     } catch (error) {
-      console.error('獲取未讀數量失敗:', error)
+      // 網路錯誤等，不輸出錯誤日誌避免刷屏
+      setUnreadCount(0)
     }
   }
 

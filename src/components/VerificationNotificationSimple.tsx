@@ -30,6 +30,11 @@ export default function VerificationNotificationSimple() {
   // 獲取未讀通知
   const fetchUnreadNotifications = async () => {
     try {
+      // 只在後台管理介面中運作，檢查路徑是否包含 dashboard
+      if (!window.location.pathname.includes('/dashboard') && !window.location.pathname.includes('/(dashboard)')) {
+        return
+      }
+      
       const token = localStorage.getItem('token')
       if (!token) return
 
@@ -156,9 +161,15 @@ export default function VerificationNotificationSimple() {
           setIsVisible(false)
           setIsDismissed(false) // 沒有通知時重置關閉狀態
         }
+      } else if (response.status === 401) {
+        // Token 無效，清除並停止檢查
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        console.log('VerificationNotification: Token已失效，已清除')
+        return
       }
     } catch (error) {
-      console.error('獲取未讀通知失敗:', error)
+      // 網路錯誤等，不輸出錯誤日誌避免刷屏
     }
   }
 

@@ -40,12 +40,13 @@ export default function PromotionsPage() {
 
   const fetchPromotions = async () => {
     try {
-      let url = `http://localhost:3001/promotions/active`
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      let url = `${apiBase}/portal/${companySlug}/promotions`
       if (selectedCategory) {
         url += `?categoryId=${selectedCategory}`
       }
       
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem(`portalToken_a`)
       const response = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
@@ -69,10 +70,8 @@ export default function PromotionsPage() {
 
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:3001/promotion-categories/active`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      })
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      const response = await fetch(`${apiBase}/portal/${companySlug}/promotions/categories`)
 
       if (response.ok) {
         const data = await response.json()

@@ -7,6 +7,7 @@ import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
 import FloatingCustomerService from '@/components/FloatingCustomerService'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
+import { setupCompanyAAuthInterceptor } from '@/lib/authInterceptor'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user } = useUserStore()
@@ -16,6 +17,9 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
   const [sessionId, setSessionId] = useState<string>('')
 
   useEffect(() => {
+    // Setup auth interceptor for automatic session invalidation handling
+    setupCompanyAAuthInterceptor()
+    
     const currentCompanyCode = pathname.split('/')[1]
     const token = localStorage.getItem(`portalToken_${currentCompanyCode}`)
     const userData = localStorage.getItem(`portalUser_${currentCompanyCode}`)
@@ -32,9 +36,11 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
       `/${currentCompanyCode}`, 
       `/${currentCompanyCode}/login`, 
       `/${currentCompanyCode}/register`,
+      `/${currentCompanyCode}/duplicate-login`,
       `/${currentCompanyCode}/news`,
       `/${currentCompanyCode}/articles`,
-      `/${currentCompanyCode}/products`
+      `/${currentCompanyCode}/products`,
+      `/${currentCompanyCode}/promotions`
     ]
     
     // 檢查是否為新聞相關頁面（包含新聞詳細頁面）
@@ -43,7 +49,9 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
     const isArticlePage = pathname.startsWith(`/${currentCompanyCode}/articles`)
     // 檢查是否為產品相關頁面（包含產品詳細頁面）
     const isProductPage = pathname.startsWith(`/${currentCompanyCode}/products`)
-    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage
+    // 檢查是否為優惠活動相關頁面（包含優惠活動詳細頁面）
+    const isPromotionPage = pathname.startsWith(`/${currentCompanyCode}/promotions`)
+    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage || isPromotionPage
 
     if (token && userData) {
       try {

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useUserStore } from '@/hooks/use-user-store'
+import { usePathname, useRouter } from 'next/navigation'
 import MemberProfile from '@/components/member/MemberProfile'
 import MemberWalletHistory from '@/components/member/MemberWalletHistory'
 import MemberPasswordForm from '@/components/member/MemberPasswordForm'
@@ -17,6 +19,67 @@ import '../../../styles/pages/member.css'
 
 export default function MemberPage() {
   const [tab, setTab] = useState<'profile' | 'password' | 'edit' | 'id-verification' | 'bank-verification' | 'wallet-history' | 'orders' | 'coupons' | 'favorites'>('profile')
+  const [isVerifying, setIsVerifying] = useState(true)
+  const { user, setUser, logout } = useUserStore()
+  const pathname = usePathname()
+  const router = useRouter()
+
+  // 從路徑獲取公司代碼
+  const getCompanyCode = () => {
+    const segments = pathname.split('/')
+    return segments[1] // /a/member -> 'a', /b/member -> 'b'
+  }
+
+  // 驗證Token是否有效
+  useEffect(() => {
+    const verifyToken = async () => {
+      const companyCode = getCompanyCode()
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
+      
+      if (!token) {
+        // 沒有Token，清除用戶狀態並導向登入頁
+        logout()
+        router.push(`/${companyCode}/login`)
+        return
+      }
+
+      try {
+        // 驗證Token是否還有效
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/verify-token?company=${companyCode}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          // Token無效，清除所有相關數據
+          localStorage.removeItem(`portalToken_${companyCode}`)
+          localStorage.removeItem(`portalUser_${companyCode}`)
+          localStorage.removeItem(`enabledModules_${companyCode}`)
+          logout()
+          router.push(`/${companyCode}/login`)
+          return
+        }
+
+        // Token有效，更新用戶數據
+        const userData = await response.json()
+        setUser(userData.user)
+        setIsVerifying(false)
+      } catch (error) {
+        console.error('Token驗證失敗:', error)
+        // 網路錯誤等，清除Token並導向登入頁
+        localStorage.removeItem(`portalToken_${companyCode}`)
+        localStorage.removeItem(`portalUser_${companyCode}`)
+        localStorage.removeItem(`enabledModules_${companyCode}`)
+        logout()
+        router.push(`/${companyCode}/login`)
+      }
+    }
+
+    verifyToken()
+  }, [logout, router, pathname])
 
   const getTabTitle = () => {
     const titles = {
@@ -46,6 +109,37 @@ export default function MemberPage() {
       'favorites': '❤️'
     }
     return icons[tabName as keyof typeof icons]
+  }
+
+  // 如果正在驗證Token，顯示載入畫面
+  if (isVerifying) {
+    return (
+      <div className="member-container">
+        <div className="member-wrapper">
+          <div className="member-loading">
+            <div className="member-loading-spinner">⏳</div>
+            <div className="member-loading-text">驗證登入狀態...</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 如果沒有用戶，顯示未登入提示
+  if (!user) {
+    return (
+      <div className="member-container">
+        <div className="member-wrapper">
+          <div className="member-not-logged-in">
+            <div className="member-not-logged-in-icon">🔒</div>
+            <div className="member-not-logged-in-text">請先登入</div>
+            <a href={`/${getCompanyCode()}/login`} className="member-login-btn">
+              前往登入
+            </a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

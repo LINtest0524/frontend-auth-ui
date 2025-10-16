@@ -42,11 +42,22 @@ export default function Wheel() {
   const [showResult, setShowResult] = useState(false);
   const [winningClass, setWinningClass] = useState('');
 
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_a')
+      if (!token) {
+        window.location.href = '/a/duplicate-login'
+        return
+      }
+    }
+  }, [])
+
   const fetchPrizes = async () => {
     // 動態獲取公司代碼
     const companyCode = window.location.pathname.split('/')[1];
-    // 前台使用 portalToken_[company]，後台使用 token
-    const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
+    // 前台只使用 portalToken_[company]
+    const token = localStorage.getItem(`portalToken_${companyCode}`);
     
     // 獲取當前代理商 ID
     const portalUser = localStorage.getItem(`portalUser_${companyCode}`);
@@ -98,7 +109,7 @@ export default function Wheel() {
     try {
       // 前台使用 portalToken 和 portalUser，後台使用 token 和 user
       const companyCode = window.location.pathname.split('/')[1];
-      const token = localStorage.getItem(`portalToken_${companyCode}`) || localStorage.getItem('token');
+      const token = localStorage.getItem(`portalToken_${companyCode}`);
       const portalUser = localStorage.getItem(`portalUser_${companyCode}`);
       const adminUser = localStorage.getItem('user');
       

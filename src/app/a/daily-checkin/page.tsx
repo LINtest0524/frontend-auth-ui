@@ -43,6 +43,17 @@ export default function DailyCheckinPage() {
   const [activityId, setActivityId] = useState<number | null>(null);
 
 
+  // 重複登入檢查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('portalToken_a')
+      if (!token && !user) {
+        window.location.href = '/a/duplicate-login'
+        return
+      }
+    }
+  }, [user])
+
   const loadAvailableActivity = useCallback(async (isMounted = true) => {
     try {
       if (!isMounted) return;
