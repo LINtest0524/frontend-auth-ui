@@ -209,7 +209,7 @@ export default function CashCouponManagementPage() {
               </div>
               <div className="info-item">
                 <label>💰 現金金額:</label>
-                <span>{template.discountValue} 元</span>
+                <span>{Math.floor(template.discountValue)} 元</span>
               </div>
               <div className="info-item">
                 <label>🔄 使用限制:</label>
@@ -296,7 +296,7 @@ export default function CashCouponManagementPage() {
                     </td>
                     <td>
                       <div className="cash-amount">
-                        💰 {template?.discountValue} 元
+                        💰 {Math.floor(template?.discountValue || 0)} 元
                       </div>
                     </td>
                     <td>

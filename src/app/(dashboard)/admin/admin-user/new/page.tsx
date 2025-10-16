@@ -16,6 +16,7 @@ export default function AdminUserCreatePage() {
     password: "",
     role: "AGENT_SUPPORT",
     companyId: undefined as number | undefined,
+    department_type: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -356,6 +357,39 @@ export default function AdminUserCreatePage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* 部門資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🏢</span>
+              部門資訊
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="department_type" className="form-label">
+                  部門類型
+                </label>
+                <input
+                  id="department_type"
+                  name="department_type"
+                  type="text"
+                  value={form.department_type}
+                  onChange={handleChange}
+                  className={`form-input ${form.department_type ? 'success' : ''}`}
+                  placeholder="例：行銷、後台、客服、財務..."
+                />
+                {form.department_type && (
+                  <div className="field-success">
+                    ✅ 部門類型：{form.department_type}
+                  </div>
+                )}
+                <div className="form-help">
+                  🏢 用於標示該管理員所屬的部門單位，方便後續管理和識別（選填）
+                </div>
+              </div>
             </div>
           </div>
 

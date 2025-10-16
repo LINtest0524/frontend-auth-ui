@@ -836,7 +836,18 @@ export default function UserListPage() {
                         </span>
                       ))}
                       {(user as any).tags?.length > 2 && (
-                        <span className="tag-more">+{(user as any).tags.length - 2}</span>
+                        <span 
+                          className="user-tag tag-shape-oval tag-more"
+                          style={{ 
+                            backgroundColor: '#6b7280', 
+                            color: '#ffffff',
+                            cursor: 'pointer'
+                          }}
+                          title={`還有 ${(user as any).tags.length - 2} 個標籤，點擊查看全部`}
+                          onClick={() => handleOpenTagModal(user)}
+                        >
+                          🏷️ +{(user as any).tags.length - 2}
+                        </span>
                       )}
                       
                       {/* 當沒有任何標籤時顯示 */}

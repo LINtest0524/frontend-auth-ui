@@ -109,6 +109,7 @@ export default function MemberWalletHistory() {
       'order_payment': '訂單付款',
       'refund': '退款',
       'bonus': '獎勵',
+      'checkin_reward': '簽到獎勵',
     }
     return typeMap[type] || type
   }
@@ -124,6 +125,7 @@ export default function MemberWalletHistory() {
       'order_payment': '🛒',
       'refund': '↩️',
       'bonus': '🎁',
+      'checkin_reward': '📅',
     }
     return iconMap[type] || '💳'
   }

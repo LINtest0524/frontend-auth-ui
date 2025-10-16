@@ -1,0 +1,419 @@
+/* 維護頁面樣式 */
+.maintenance-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.maintenance-loading-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  color: #374151;
+}
+
+.maintenance-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.maintenance-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 600px;
+  padding: 40px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* 視覺元素 */
+.maintenance-visual {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.maintenance-icon-large {
+  font-size: 80px;
+  margin-bottom: 20px;
+  display: block;
+  animation: bounce 2s infinite;
+}
+
+.maintenance-gears {
+  position: relative;
+  height: 40px;
+  margin: 20px 0;
+}
+
+.gear {
+  position: absolute;
+  font-size: 30px;
+  animation: rotate 3s linear infinite;
+}
+
+.gear-1 {
+  left: 40%;
+  animation-direction: normal;
+}
+
+.gear-2 {
+  right: 40%;
+  animation-direction: reverse;
+  animation-duration: 2.5s;
+}
+
+/* 主要內容 */
+.maintenance-main-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.maintenance-main-message {
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+  opacity: 0.9;
+}
+
+/* 時間資訊 */
+.maintenance-time-info,
+.maintenance-contact-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.time-icon,
+.contact-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.time-content,
+.contact-content {
+  text-align: left;
+}
+
+.time-label,
+.contact-label {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.time-value,
+.contact-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 提示訊息 */
+.maintenance-tips {
+  margin: 30px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.tip-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* 操作按鈕 */
+.maintenance-actions {
+  margin-top: 30px;
+}
+
+.refresh-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-icon {
+  font-size: 18px;
+  animation: spin 2s linear infinite paused;
+}
+
+.refresh-btn:hover .refresh-icon {
+  animation-play-state: running;
+}
+
+/* 裝飾元素 */
+.maintenance-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decoration-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: float 3s ease-in-out infinite;
+}
+
+.dot-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  top: 60%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.dot-3 {
+  bottom: 30%;
+  left: 20%;
+  animation-delay: 2s;
+}
+
+.decoration-line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  height: 1px;
+  animation: slide 4s ease-in-out infinite;
+}
+
+.line-1 {
+  top: 30%;
+  left: -100%;
+  width: 200px;
+}
+
+.line-2 {
+  bottom: 40%;
+  right: -100%;
+  width: 150px;
+  animation-delay: 2s;
+}
+
+/* 背景動畫 */
+.maintenance-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: particle-float 6s ease-in-out infinite;
+}
+
+.particle-1 {
+  width: 60px;
+  height: 60px;
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 40px;
+  height: 40px;
+  top: 70%;
+  right: 10%;
+  animation-delay: 1.5s;
+}
+
+.particle-3 {
+  width: 80px;
+  height: 80px;
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 3s;
+}
+
+.particle-4 {
+  width: 50px;
+  height: 50px;
+  top: 40%;
+  right: 5%;
+  animation-delay: 4.5s;
+}
+
+/* 動畫定義 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-15px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateY(-30px) translateX(20px) scale(1.1);
+    opacity: 0.7;
+  }
+  66% {
+    transform: translateY(20px) translateX(-15px) scale(0.9);
+    opacity: 0.5;
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .maintenance-content {
+    margin: 20px;
+    padding: 30px 20px;
+    max-width: calc(100vw - 40px);
+  }
+  
+  .maintenance-icon-large {
+    font-size: 60px;
+  }
+  
+  .maintenance-main-title {
+    font-size: 28px;
+  }
+  
+  .maintenance-main-message {
+    font-size: 16px;
+  }
+  
+  .maintenance-time-info,
+  .maintenance-contact-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .time-content,
+  .contact-content {
+    text-align: center;
+  }
+  
+  .maintenance-tips {
+    gap: 8px;
+  }
+  
+  .tip-item {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .maintenance-content {
+    margin: 10px;
+    padding: 20px 15px;
+  }
+  
+  .maintenance-main-title {
+    font-size: 24px;
+  }
+  
+  .refresh-btn {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}

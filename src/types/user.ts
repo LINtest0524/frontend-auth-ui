@@ -31,6 +31,9 @@ export interface User {
 
   modules?: string[];
 
+  // 部門資訊
+  department_type?: string | null;
+
   // 驗證相關欄位
   id_verified?: boolean;
   id_verified_at?: string | null;

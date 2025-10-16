@@ -5,6 +5,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter } from 'next/navigation'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
+import FloatingCustomerService from '@/components/FloatingCustomerService'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user } = useUserStore()
@@ -84,6 +85,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
       {children}
       <FloatingAds companyCode="b" />
       <PopupAnnouncement companyCode="b" />
+      <FloatingCustomerService companyCode="b" />
     </>
   )
 }

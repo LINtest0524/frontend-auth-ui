@@ -15,6 +15,8 @@ export default function AdminUserEditPage() {
     email: "",
     status: "ACTIVE",
     role: "",
+    ip_whitelist: "",
+    department_type: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,6 +42,8 @@ export default function AdminUserEditPage() {
         email: data.email || "",
         status: data.status || "ACTIVE",
         role: data.role || "",
+        ip_whitelist: data.ip_whitelist || "",
+        department_type: data.department_type || "",
       };
       
       setForm(userData);
@@ -50,6 +54,21 @@ export default function AdminUserEditPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const canEditRole = ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser?.role || "");
+
+  // 檢查是否有變更
+  const hasChanges = () => {
+    if (!originalData) return false;
+    
+    return (
+      form.email !== (originalData.email || "") ||
+      form.status !== (originalData.status || "ACTIVE") ||
+      (canEditRole && form.role !== (originalData.role || "")) ||
+      form.ip_whitelist !== (originalData.ip_whitelist || "") ||
+      form.department_type !== (originalData.department_type || "")
+    );
   };
 
   // 表單驗證
@@ -68,6 +87,14 @@ export default function AdminUserEditPage() {
     
     if (canEditRole && !form.role) {
       errors.role = '請選擇角色';
+    }
+
+    // IP白名單驗證
+    if (form.ip_whitelist.trim()) {
+      const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      if (!ipPattern.test(form.ip_whitelist.trim())) {
+        errors.ip_whitelist = '請輸入有效的IP地址格式 (例：192.168.1.100)';
+      }
     }
     
     setFieldErrors(errors);
@@ -112,6 +139,12 @@ export default function AdminUserEditPage() {
       if (form.email !== originalData?.email) changedFields.email = form.email;
       if (form.status !== originalData?.status) changedFields.status = form.status;
       if (canEditRole && form.role !== originalData?.role) changedFields.role = form.role;
+      if (form.ip_whitelist !== (originalData?.ip_whitelist || "")) {
+        changedFields.ip_whitelist = form.ip_whitelist.trim() || null;
+      }
+      if (form.department_type !== (originalData?.department_type || "")) {
+        changedFields.department_type = form.department_type.trim() || null;
+      }
       
       // 如果沒有任何變更
       if (Object.keys(changedFields).length === 0) {
@@ -145,20 +178,6 @@ export default function AdminUserEditPage() {
     }
   };
 
-  const canEditRole = currentUser?.role === "SUPER_ADMIN";
-
-
-
-
-
-
-
-
-
-
-
-
-
   const getRoleDescription = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN":
@@ -168,32 +187,23 @@ export default function AdminUserEditPage() {
       case "AGENT_OWNER":
         return "代理商負責人，可管理該公司的客服人員";
       case "AGENT_SUPPORT":
-        return "客服人員，負責處理客戶服務相關事務";
+        return "客服人員，負責處理會員問題和支援服務";
       default:
-        return "";
+        return "未知角色";
     }
   };
 
   const getStatusDescription = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return "用戶可以正常登入和使用系統";
+        return "帳號正常運作，可以登入系統";
       case "INACTIVE":
-        return "用戶暫時無法登入，但資料保留";
+        return "帳號暫時停用，無法登入系統";
       case "BANNED":
-        return "用戶被永久禁止使用系統";
+        return "帳號被永久封鎖，無法登入系統";
       default:
-        return "";
+        return "未知狀態";
     }
-  };
-
-  const hasChanges = () => {
-    if (!originalData) return false;
-    return (
-      form.email !== originalData.email ||
-      form.status !== originalData.status ||
-      (canEditRole && form.role !== originalData.role)
-    );
   };
 
   if (!isDataLoaded && loading) {
@@ -281,6 +291,77 @@ export default function AdminUserEditPage() {
             </div>
           </div>
 
+          {/* 安全設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🔒</span>
+              安全設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="ip_whitelist" className="form-label">
+                  IP 白名單
+                </label>
+                <input
+                  id="ip_whitelist"
+                  name="ip_whitelist"
+                  type="text"
+                  value={form.ip_whitelist}
+                  onChange={handleChange}
+                  className={`form-input ${fieldErrors.ip_whitelist ? 'error' : form.ip_whitelist && /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(form.ip_whitelist) ? 'success' : ''}`}
+                  placeholder="例：192.168.1.100 (留空表示不限制IP)"
+                />
+                {fieldErrors.ip_whitelist && (
+                  <div className="field-error">
+                    ❌ {fieldErrors.ip_whitelist}
+                  </div>
+                )}
+                {!fieldErrors.ip_whitelist && form.ip_whitelist && /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(form.ip_whitelist) && (
+                  <div className="field-success">
+                    ✅ IP地址格式正確
+                  </div>
+                )}
+                <div className="form-help">
+                  🛡️ 如果設定IP白名單，該帳號只能從指定的IP地址登入。留空表示不限制登入IP地址。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 部門資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🏢</span>
+              部門資訊
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="department_type" className="form-label">
+                  部門類型
+                </label>
+                <input
+                  id="department_type"
+                  name="department_type"
+                  type="text"
+                  value={form.department_type}
+                  onChange={handleChange}
+                  className={`form-input ${form.department_type ? 'success' : ''}`}
+                  placeholder="例：行銷、後台、客服、財務..."
+                />
+                {form.department_type && (
+                  <div className="field-success">
+                    ✅ 部門類型：{form.department_type}
+                  </div>
+                )}
+                <div className="form-help">
+                  🏢 用於標示該管理員所屬的部門單位，方便後續管理和識別（選填）
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* 狀態設定區塊 */}
           <div className="form-section">
             <div className="section-title">
@@ -353,16 +434,16 @@ export default function AdminUserEditPage() {
                 </div>
               )}
 
-              {!canEditRole && (
+              {!canEditRole && form.role && (
                 <div className="form-group">
-                  <label className="form-label">角色權限</label>
-                  <div className="company-info">
-                    🔒 只有超級管理員可以修改用戶角色
-                    <br />
-                    目前角色：{form.role === "SUPER_ADMIN" ? "🔱 超級管理員" :
-                              form.role === "GLOBAL_ADMIN" ? "🌐 全域管理員" :
-                              form.role === "AGENT_OWNER" ? "👑 代理商老闆" :
-                              form.role === "AGENT_SUPPORT" ? "🎧 客服" : form.role}
+                  <div className="role-info">
+                    <div className="role-info-title">目前角色</div>
+                    <div className="role-info-desc">
+                      {form.role === "SUPER_ADMIN" ? "🔱 超級管理員" :
+                       form.role === "GLOBAL_ADMIN" ? "🌐 全域管理員" :
+                       form.role === "AGENT_OWNER" ? "👑 代理商老闆" :
+                       form.role === "AGENT_SUPPORT" ? "🎧 客服" : form.role}
+                    </div>
                   </div>
                 </div>
               )}

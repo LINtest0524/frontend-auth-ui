@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import VerificationNotificationSimple from '@/components/VerificationNotificationSimple'
+import DynamicTabs from '@/components/DynamicTabs'
+import '@/styles/components/dynamic-tabs.css'
 
 export default function DashboardLayout({
   children,
@@ -110,6 +112,8 @@ export default function DashboardLayout({
             <span className="">未登入</span>
           )}
       
+        {/* 動態頁籤區域 */}
+        <DynamicTabs />
 
         {/* 下方區域：頁面內容 */}
         <div className="b-right-bottom-box">

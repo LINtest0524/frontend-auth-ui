@@ -5,16 +5,19 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/hooks/use-user-store";
+import { useTabsStore, routeTitleMap } from "@/hooks/use-tabs-store";
 import "@/styles/components/sidebar.css";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [currentActive, setCurrentActive] = useState<string | null>(null);
 
   const currentUser = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
   const role = currentUser?.role ?? "";
+  const { addTab } = useTabsStore();
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -44,18 +47,44 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
     else if (pathname?.startsWith("/admin/messages")) setActiveMenu("messages");
     else if (pathname?.startsWith("/admin/coupons")) setActiveMenu("coupons");
-    else if (pathname?.startsWith("/lucky-draw")) setActiveMenu("lucky-draw");
+    else if (pathname?.startsWith("/lucky-draw")) {
+      setActiveMenu("mini-activities");
+      setActiveSubMenu("lucky-draw");
+    }
+    else if (pathname?.startsWith("/checkin")) {
+      setActiveMenu("mini-activities");
+      setActiveSubMenu("checkin");
+    }
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
   }, [pathname]);
 
   const toggleMenu = (menu: string) => {
     setActiveMenu((prev) => (prev === menu ? null : menu));
+    if (menu !== "mini-activities") {
+      setActiveSubMenu(null); // 當切換主選單時，關閉子選單
+    }
+  };
+
+  const toggleSubMenu = (subMenu: string) => {
+    setActiveSubMenu((prev) => (prev === subMenu ? null : subMenu));
   };
 
   const resetMenu = () => {
     setCurrentActive(null);
     setActiveMenu(null);
+    setActiveSubMenu(null);
+  };
+
+  const handleNavClick = (path: string) => {
+    // 添加頁籤
+    const title = routeTitleMap[path] || "未知頁面";
+    addTab({
+      title,
+      path,
+      closable: path !== "/dashboard" // 首頁不可關閉
+    });
+    resetMenu();
   };
 
   return (
@@ -63,7 +92,7 @@ export default function Sidebar() {
       <nav>
         <Link
           href="/dashboard"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/dashboard")}
           className={cn("sidebar-item i-dashboard", pathname === "/dashboard" && currentActive === null && "active")}
         >
           <span className="icon" />
@@ -72,7 +101,7 @@ export default function Sidebar() {
 
         <Link
           href="/admin/admin-user"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/admin-user")}
           className={cn("sidebar-item i-admin", pathname === "/admin/admin-user" && currentActive === null && "active")}
         >
           <span className="icon" />
@@ -81,7 +110,7 @@ export default function Sidebar() {
 
         <Link
           href="/users"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/users")}
           className={cn("sidebar-item i-user", pathname === "/users" && currentActive === null && "active")}
         >
           <span className="icon" />
@@ -90,7 +119,7 @@ export default function Sidebar() {
 
         <Link
           href="/admin/messages"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/messages")}
           className={cn("sidebar-item i-user", pathname === "/admin/messages" && currentActive === null && "active")}
         >
           <span className="icon" />
@@ -100,7 +129,7 @@ export default function Sidebar() {
         {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
           <Link
             href="/admin/module"
-            onClick={resetMenu}
+            onClick={() => handleNavClick("/admin/module")}
             className={cn(
               "sidebar-item i-modules",
               pathname?.startsWith("/admin/module") &&
@@ -136,17 +165,31 @@ export default function Sidebar() {
               <div className="sidebar-fd">
                 <Link
                   href="/admin/menu"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/menu")}
                   className={cn("sidebar-subitem", pathname === "/admin/menu" && currentActive === null && "active")}
                 >
                   導航管理
                 </Link>
                 <Link
                   href="/admin/logo"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/logo")}
                   className={cn("sidebar-subitem", pathname === "/admin/logo" && currentActive === null && "active")}
                 >
                   LOGO 管理
+                </Link>
+                <Link
+                  href="/admin/contact-info"
+                  onClick={() => handleNavClick("/admin/contact-info")}
+                  className={cn("sidebar-subitem", pathname === "/admin/contact-info" && currentActive === null && "active")}
+                >
+                  聯絡資訊管理
+                </Link>
+                <Link
+                  href="/admin/ip-blacklist"
+                  onClick={() => handleNavClick("/admin/ip-blacklist")}
+                  className={cn("sidebar-subitem", pathname === "/admin/ip-blacklist" && currentActive === null && "active")}
+                >
+                  IP封鎖管理
                 </Link>
               </div>
             </div>
@@ -156,7 +199,7 @@ export default function Sidebar() {
         {/* BANNER 管理 */}
         <Link
           href="/admin/banner"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/banner")}
           className={cn(
             "sidebar-item i-banner",
             pathname?.startsWith("/admin/banner") && "active"
@@ -170,7 +213,7 @@ export default function Sidebar() {
         {/* 跑馬燈管理 */}
         <Link
           href="/admin/marquee"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/marquee")}
           className={cn(
             "sidebar-item i-marquee",
             pathname?.startsWith("/admin/marquee") && !pathname?.startsWith("/admin/marquee-tags") && "active"
@@ -183,7 +226,7 @@ export default function Sidebar() {
         {/* 標籤管理 */}
         <Link
           href="/admin/marquee-tags"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/marquee-tags")}
           className={cn(
             "sidebar-item i-modules",
             pathname?.startsWith("/admin/marquee-tags") && "active"
@@ -197,7 +240,7 @@ export default function Sidebar() {
         {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
           <Link
             href="/admin/news"
-            onClick={resetMenu}
+            onClick={() => handleNavClick("/admin/news")}
             className={cn(
               "sidebar-item i-modules",
               pathname?.startsWith("/admin/news") && "active"
@@ -229,14 +272,14 @@ export default function Sidebar() {
               <div className="sidebar-fd">
                 <Link
                   href="/admin/article-categories"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/article-categories")}
                   className={cn("sidebar-subitem", pathname === "/admin/article-categories" && currentActive === null && "active")}
                 >
                   文章分類
                 </Link>
                 <Link
                   href="/admin/articles"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/articles")}
                   className={cn("sidebar-subitem", pathname === "/admin/articles" && currentActive === null && "active")}
                 >
                   文章列表
@@ -247,7 +290,7 @@ export default function Sidebar() {
 
         <Link
           href="/admin/id-verification"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/id-verification")}
           className={cn("sidebar-item i-verify", pathname?.startsWith("/admin/id-verification") && currentActive === null && "active")}
         >
           <span className="icon" />
@@ -274,7 +317,7 @@ export default function Sidebar() {
           <div className={cn("sidebar-submenu", activeMenu === "loan-product" && "open")}>
             <Link
               href="/admin/loan-product"
-              onClick={resetMenu}
+              onClick={() => handleNavClick("/admin/loan-product")}
               className={cn("sidebar-subitem", pathname === "/admin/loan-product" && currentActive === null && "active")}
             >
               產品列表
@@ -282,7 +325,7 @@ export default function Sidebar() {
             {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
               <Link
                 href="/admin/loan-product/new"
-                onClick={resetMenu}
+                onClick={() => handleNavClick("/admin/loan-product/new")}
                 className={cn("sidebar-subitem", pathname === "/admin/loan-product/new" && currentActive === null && "active")}
               >
                 新增產品
@@ -313,28 +356,28 @@ export default function Sidebar() {
               <div className="sidebar-fd">
                 <Link
                   href="/admin/product-categories"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/product-categories")}
                   className={cn("sidebar-subitem", pathname === "/admin/product-categories" && currentActive === null && "active")}
                 >
                   商品分類
                 </Link>
                 <Link
                   href="/admin/products"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/products")}
                   className={cn("sidebar-subitem", pathname === "/admin/products" && currentActive === null && "active")}
                 >
                   商品列表
                 </Link>
                 <Link
                   href="/admin/products/new"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/products/new")}
                   className={cn("sidebar-subitem", pathname === "/admin/products/new" && currentActive === null && "active")}
                 >
                   新增商品
                 </Link>
                 <Link
                   href="/admin/shipping-rules"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/shipping-rules")}
                   className={cn("sidebar-subitem", pathname === "/admin/shipping-rules" && currentActive === null && "active")}
                 >
                   運送規則
@@ -366,21 +409,21 @@ export default function Sidebar() {
               <div className="sidebar-fd">
                 <Link
                   href="/admin/promotion-categories"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/promotion-categories")}
                   className={cn("sidebar-subitem", pathname === "/admin/promotion-categories" && currentActive === null && "active")}
                 >
                   活動分類
                 </Link>
                 <Link
                   href="/admin/promotions"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/promotions")}
                   className={cn("sidebar-subitem", pathname === "/admin/promotions" && currentActive === null && "active")}
                 >
                   活動列表
                 </Link>
                 <Link
                   href="/admin/promotions/new"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/promotions/new")}
                   className={cn("sidebar-subitem", pathname === "/admin/promotions/new" && currentActive === null && "active")}
                 >
                   新增活動
@@ -412,14 +455,14 @@ export default function Sidebar() {
               <div className="sidebar-fd">
                 <Link
                   href="/admin/coupons"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/coupons")}
                   className={cn("sidebar-subitem", pathname === "/admin/coupons" && currentActive === null && "active")}
                 >
                   模板管理
                 </Link>
                 <Link
                   href="/admin/coupons/distribute"
-                  onClick={resetMenu}
+                  onClick={() => handleNavClick("/admin/coupons/distribute")}
                   className={cn("sidebar-subitem", pathname === "/admin/coupons/distribute" && currentActive === null && "active")}
                 >
                   發放優惠碼
@@ -432,52 +475,114 @@ export default function Sidebar() {
         {/* 訂單管理 */}
         <Link
           href="/admin/orders"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/orders")}
           className={cn("sidebar-item i-plan", pathname === "/admin/orders" && "active")}
         >
           <span className="icon" />
           訂單管理
         </Link>
 
-        {/* 輪盤管理 */}
+        {/* 小活動 */}
         <div>
           <button
             onClick={() => {
-              toggleMenu("lucky-draw");
-              setCurrentActive("lucky-draw");
+              toggleMenu("mini-activities");
+              setCurrentActive("mini-activities");
             }}
             className={cn(
               "sidebar-item i-plan", 
-              currentActive === "lucky-draw" && "active",
-              activeMenu === "lucky-draw" && "expanded"
+              currentActive === "mini-activities" && "active",
+              activeMenu === "mini-activities" && "expanded"
             )}
           >
             <span className="icon" />
-            輪盤管理
+            小活動
             <span className="i-arrow"></span>
           </button>
-          <div className={cn("sidebar-submenu", activeMenu === "lucky-draw" && "open")}>
-            <Link
-              href="/lucky-draw/prizes"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/lucky-draw/prizes" && currentActive === null && "active")}
-            >
-              轉盤獎項列表
-            </Link>
-            <Link
-              href="/lucky-draw/events"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/lucky-draw/events" && currentActive === null && "active")}
-            >
-              活動管理
-            </Link>
-            <Link
-              href="/lucky-draw/records"
-              onClick={resetMenu}
-              className={cn("sidebar-subitem", pathname === "/lucky-draw/records" && currentActive === null && "active")}
-            >
-              抽獎記錄
-            </Link>
+          <div className={cn("sidebar-submenu", activeMenu === "mini-activities" && "open")}>
+            <div className="sidebar-fd">
+              {/* 簽到活動子選單 */}
+              <div>
+                <button
+                  onClick={() => {
+                    toggleSubMenu("checkin");
+                    setCurrentActive("checkin");
+                  }}
+                  className={cn(
+                    "sidebar-subitem-parent", 
+                    currentActive === "checkin" && "active",
+                    activeSubMenu === "checkin" && "expanded"
+                  )}
+                >
+                  簽到活動
+                  <span className="i-arrow"></span>
+                </button>
+                <div className={cn("sidebar-sub-submenu", activeSubMenu === "checkin" && "open")}>
+                  <Link
+                    href="/checkin/strict-streak"
+                    onClick={() => handleNavClick("/checkin/strict-streak")}
+                    className={cn("sidebar-sub-subitem", pathname === "/checkin/strict-streak" && currentActive === null && "active")}
+                  >
+                    連續簽到
+                  </Link>
+                  <Link
+                    href="/checkin/flex-cumulative"
+                    onClick={() => handleNavClick("/checkin/flex-cumulative")}
+                    className={cn("sidebar-sub-subitem", pathname === "/checkin/flex-cumulative" && currentActive === null && "active")}
+                  >
+                    累積簽到
+                  </Link>
+                  <Link
+                    href="/checkin/daily"
+                    onClick={() => handleNavClick("/checkin/daily")}
+                    className={cn("sidebar-sub-subitem", pathname === "/checkin/daily" && currentActive === null && "active")}
+                  >
+                    每日簽到
+                  </Link>
+                </div>
+              </div>
+              
+              {/* 輪盤管理子選單 */}
+              <div>
+                <button
+                  onClick={() => {
+                    toggleSubMenu("lucky-draw");
+                    setCurrentActive("lucky-draw");
+                  }}
+                  className={cn(
+                    "sidebar-subitem-parent", 
+                    currentActive === "lucky-draw" && "active",
+                    activeSubMenu === "lucky-draw" && "expanded"
+                  )}
+                >
+                  輪盤管理
+                  <span className="i-arrow"></span>
+                </button>
+                <div className={cn("sidebar-sub-submenu", activeSubMenu === "lucky-draw" && "open")}>
+                  <Link
+                    href="/lucky-draw/prizes"
+                    onClick={() => handleNavClick("/lucky-draw/prizes")}
+                    className={cn("sidebar-sub-subitem", pathname === "/lucky-draw/prizes" && currentActive === null && "active")}
+                  >
+                    轉盤獎項列表
+                  </Link>
+                  <Link
+                    href="/lucky-draw/events"
+                    onClick={() => handleNavClick("/lucky-draw/events")}
+                    className={cn("sidebar-sub-subitem", pathname === "/lucky-draw/events" && currentActive === null && "active")}
+                  >
+                    活動管理
+                  </Link>
+                  <Link
+                    href="/lucky-draw/records"
+                    onClick={() => handleNavClick("/lucky-draw/records")}
+                    className={cn("sidebar-sub-subitem", pathname === "/lucky-draw/records" && currentActive === null && "active")}
+                  >
+                    抽獎記錄
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -488,7 +593,7 @@ export default function Sidebar() {
         {/* 浮動廣告管理 */}
         <Link
           href="/admin/floating-ad"
-          onClick={resetMenu}
+          onClick={() => handleNavClick("/admin/floating-ad")}
           className={cn("sidebar-item i-plan", pathname === "/admin/floating-ad" && "active")}
         >
           <span className="icon" />
@@ -522,20 +627,32 @@ export default function Sidebar() {
           <div className={cn("sidebar-submenu", activeMenu === "popup-announcement" && "open")}>
             <Link
               href="/admin/popup-announcement"
-              onClick={resetMenu}
+              onClick={() => handleNavClick("/admin/popup-announcement")}
               className={cn("sidebar-subitem", pathname === "/admin/popup-announcement" && currentActive === null && "active")}
             >
               公告列表
             </Link>
             <Link
               href="/admin/popup-announcement/new"
-              onClick={resetMenu}
+              onClick={() => handleNavClick("/admin/popup-announcement/new")}
               className={cn("sidebar-subitem", pathname === "/admin/popup-announcement/new" && currentActive === null && "active")}
             >
               新增公告
             </Link>
           </div>
         </div>
+
+        {/* 維護管理 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+          <Link
+            href="/admin/maintenance"
+            onClick={() => handleNavClick("/admin/maintenance")}
+            className={cn("sidebar-item i-modules", pathname === "/admin/maintenance" && "active")}
+          >
+            <span className="icon" />
+            維護管理
+          </Link>
+        )}
 
         {/* 操作紀錄 */}
         <div>
@@ -555,29 +672,35 @@ export default function Sidebar() {
             <span className="i-arrow"></span>
           </button>
           <div className={cn("sidebar-submenu", activeMenu === "audit" && "open")}>
-            <Link href="/audit-log/admin-user" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/admin-user" && currentActive === null && "active")}>
+            <Link href="/audit-log/admin-user" onClick={() => handleNavClick("/audit-log/admin-user")} className={cn("sidebar-subitem", pathname === "/audit-log/admin-user" && currentActive === null && "active")}>
               管理員操作紀錄
             </Link>
-            <Link href="/audit-log/back-userstatus" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/back-userstatus" && currentActive === null && "active")}>
+            <Link href="/audit-log/back-userstatus" onClick={() => handleNavClick("/audit-log/back-userstatus")} className={cn("sidebar-subitem", pathname === "/audit-log/back-userstatus" && currentActive === null && "active")}>
               會員狀態紀錄
             </Link>
-            <Link href="/audit-log/back-login" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/back-login" && currentActive === null && "active")}>
+            <Link href="/audit-log/back-login" onClick={() => handleNavClick("/audit-log/back-login")} className={cn("sidebar-subitem", pathname === "/audit-log/back-login" && currentActive === null && "active")}>
               後台登入紀錄
             </Link>
-            <Link href="/audit-log/back-banner" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/back-banner" && currentActive === null && "active")}>
+            <Link href="/audit-log/back-banner" onClick={() => handleNavClick("/audit-log/back-banner")} className={cn("sidebar-subitem", pathname === "/audit-log/back-banner" && currentActive === null && "active")}>
               BANNER紀錄
             </Link>
-            <Link href="/audit-log/back-marquee" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/back-marquee" && currentActive === null && "active")}>
+            <Link href="/audit-log/back-marquee" onClick={() => handleNavClick("/audit-log/back-marquee")} className={cn("sidebar-subitem", pathname === "/audit-log/back-marquee" && currentActive === null && "active")}>
               跑馬燈紀錄
             </Link>
-            <Link href="/audit-log/back-blacklist" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/back-blacklist" && currentActive === null && "active")}>
+            <Link href="/audit-log/back-blacklist" onClick={() => handleNavClick("/audit-log/back-blacklist")} className={cn("sidebar-subitem", pathname === "/audit-log/back-blacklist" && currentActive === null && "active")}>
               黑名單紀錄
             </Link>
-            <Link href="/audit-log/portal-login" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/portal-login" && currentActive === null && "active")}>
+            <Link href="/audit-log/portal-login" onClick={() => handleNavClick("/audit-log/portal-login")} className={cn("sidebar-subitem", pathname === "/audit-log/portal-login" && currentActive === null && "active")}>
               前台登入紀錄
             </Link>
-            <Link href="/audit-log/portal-action" onClick={resetMenu} className={cn("sidebar-subitem", pathname === "/audit-log/portal-action" && currentActive === null && "active")}>
+            <Link href="/audit-log/portal-action" onClick={() => handleNavClick("/audit-log/portal-action")} className={cn("sidebar-subitem", pathname === "/audit-log/portal-action" && currentActive === null && "active")}>
               前台操作紀錄
+            </Link>
+            <Link href="/audit-log/balance-operations" onClick={() => handleNavClick("/audit-log/balance-operations")} className={cn("sidebar-subitem", pathname === "/audit-log/balance-operations" && currentActive === null && "active")}>
+              存扣款紀錄
+            </Link>
+            <Link href="/audit-log/coupon-operations" onClick={() => handleNavClick("/audit-log/coupon-operations")} className={cn("sidebar-subitem", pathname === "/audit-log/coupon-operations" && currentActive === null && "active")}>
+              優惠券紀錄
             </Link>
           </div>
         </div>

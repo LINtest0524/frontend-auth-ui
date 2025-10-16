@@ -1,0 +1,569 @@
+/* 前台每日簽到頁面樣式 */
+.checkin-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 123px 20px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkin-card {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.checkin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+/* 標題區域 */
+.checkin-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.checkin-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.checkin-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 統計信息 */
+.checkin-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: #667eea;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* 簽到動作區域 */
+.checkin-action {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.checkin-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 20px 48px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.checkin-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.checkin-btn:hover::before {
+  left: 100%;
+}
+
+.checkin-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+}
+
+.checkin-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.checkin-btn.checking {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+}
+
+.checkin-icon {
+  font-size: 24px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 已簽到狀態 */
+.checked-status {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border-radius: 20px;
+  border: 2px solid #10b981;
+}
+
+.check-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.check-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 8px;
+}
+
+.check-time {
+  font-size: 14px;
+  color: #047857;
+}
+
+/* 下一個獎勵預覽 */
+.next-reward {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.next-reward-title {
+  font-size: 14px;
+  color: #92400e;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.next-reward-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+/* 簽到日曆 */
+.checkin-calendar {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.calendar-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin: 0 0 24px 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.calendar-day {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.calendar-day.completed {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+}
+
+.calendar-day.current {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+}
+
+.day-number {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.calendar-day.completed .day-number {
+  color: #059669;
+}
+
+.calendar-day.current .day-number {
+  color: #2563eb;
+}
+
+.day-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.reward-icon {
+  font-size: 24px;
+}
+
+.reward-amount {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.calendar-day.completed .reward-amount {
+  color: #059669;
+}
+
+.calendar-day.current .reward-amount {
+  color: #2563eb;
+}
+
+.completed-mark {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 20px;
+}
+
+/* 獎勵彈窗 */
+.reward-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.reward-content {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 48px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  animation: bounceIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.reward-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.reward-content h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 24px 0;
+}
+
+.reward-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reward-type-icon {
+  font-size: 32px;
+}
+
+.reward-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.reward-description {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.consecutive-info {
+  font-size: 16px;
+  font-weight: 600;
+  color: #059669;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border-radius: 12px;
+}
+
+/* 登入提示 */
+.login-prompt {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.login-prompt h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.login-prompt p {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0 0 32px 0;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #ffffff;
+  padding: 16px 32px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+/* 載入狀態樣式 */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.loading-spinner {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: spin 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(10deg); }
+  50% { transform: rotate(-5deg); }
+  75% { transform: rotate(15deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.loading-state h2 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.loading-state p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 沒有活動狀態樣式 */
+.no-activity-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.no-activity-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.no-activity-state h2 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.no-activity-state > p {
+  margin: 0 0 30px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.no-activity-tips {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 30px 0;
+  border-left: 4px solid #007bff;
+}
+
+.no-activity-tips p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #495057;
+  text-align: left;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+}
+
+/* 載入狀態 */
+.loading {
+  text-align: center;
+  font-size: 18px;
+  color: #ffffff;
+  padding: 48px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .checkin-container {
+    padding: 16px;
+  }
+
+  .checkin-card {
+    padding: 24px;
+  }
+
+  .checkin-title {
+    font-size: 28px;
+  }
+
+  .checkin-stats {
+    gap: 32px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+  }
+
+  .checkin-btn {
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .calendar-day {
+    padding: 12px;
+  }
+
+  .reward-content {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkin-stats {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

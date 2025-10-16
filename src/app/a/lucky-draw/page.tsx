@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import './wheel-new.css';
+import './modern-wheel.css';
 
 interface Prize {
   id: number;
@@ -247,187 +247,282 @@ export default function Wheel() {
   ];
 
   return (
-    <div className="lucky-draw-page flex flex-col items-center p-8">
-      <div className="lucky-header flex items-center justify-between w-full max-w-4xl">
-        <h1 className="lucky-title">🎰 幸運大轉盤 🎰</h1>
-        <Link 
-          href="/a/lucky-draw/history"
-          className="history-btn"
-        >
-          📋 抽獎記錄
-        </Link>
+    <div className="modern-lucky-draw">
+      {/* 背景動畫 */}
+      <div className="bg-animation">
+        <div className="floating-shapes">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={`shape shape-${i + 1}`} />
+          ))}
+        </div>
       </div>
-      
-      <div className="luck-relative">
-        {/* 輪盤容器 */}
-        <div
-          className={`wheel-container ${winningClass}`}
-          style={{
-            width: radius * 2,
-            height: radius * 2,
-            borderRadius: '50%',
-            border: '8px solid #4a5568',
-            position: 'relative',
-            margin: '0 auto',
-            background: '#f7fafc',
-            overflow: 'hidden',
-          }}
-        >
-          {/* 色塊扇形區域 */}
-          {prizes.map((_, index) => {
-            const startAngle = anglePerItem * index;
-            const endAngle = anglePerItem * (index + 1);
-            const color = colors[index % colors.length];
+
+      {/* 主要內容容器 */}
+      <div className="content-wrapper">
+        {/* 頂部導航區 */}
+        <div className="top-section">
+          <div className="header-container">
+            <div className="title-section">
+              <h1 className="main-title">
+                <span className="title-icon">🎯</span>
+                <span className="title-text">幸運大轉盤</span>
+                <span className="title-icon">🎯</span>
+              </h1>
+              <p className="subtitle">轉動命運之輪，贏取豐富獎品</p>
+            </div>
             
-            // 使用 clip-path 創建扇形（從12點鐘方向開始）
-            const clipPath = `polygon(50% 50%, 
-              ${50 + 50 * Math.cos((startAngle - 90) * Math.PI / 180)}% ${50 + 50 * Math.sin((startAngle - 90) * Math.PI / 180)}%, 
-              ${50 + 50 * Math.cos((endAngle - 90) * Math.PI / 180)}% ${50 + 50 * Math.sin((endAngle - 90) * Math.PI / 180)}%)`;
-            
-            return (
-              <div
-                key={`sector-${index}`}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: color,
-                  clipPath: clipPath,
-                }}
-              />
-            );
-          })}
+            <Link href="/a/lucky-draw/history" className="history-button">
+              <svg className="history-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M3 3v5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 7v5l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>抽獎記錄</span>
+            </Link>
+          </div>
+        </div>
 
-          {/* 輪盤分割線 */}
-          {prizes.map((_, index) => {
-            const angle = anglePerItem * index;
-            return (
+        {/* 轉盤主體區域 */}
+        <div className="wheel-main-section">
+          <div className="wheel-outer-ring">
+            <div className="wheel-inner-ring">
               <div
-                key={`line-${index}`}
+                className={`wheel-container ${winningClass}`}
                 style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  width: '3px',
-                  height: `${radius}px`,
-                  background: '#2d3748',
-                  transformOrigin: 'top center',
-                  transform: `translate(-50%, -100%) rotate(${angle}deg)`,
-                  zIndex: 10,
-                }}
-              />
-            );
-          })}
-
-          {/* 獎品項目 */}
-          {prizes.map((prize, index) => {
-            // 獎品放在每個扇形區域的中心（從12點鐘方向開始）
-            const angle = anglePerItem * index + (anglePerItem / 2) - 90;
-            const rad = (angle * Math.PI) / 180;
-            const x = center + radius * 0.7 * Math.cos(rad);
-            const y = center + radius * 0.7 * Math.sin(rad);
-
-            return (
-              <div
-                key={prize.id}
-                style={{
-                  position: 'absolute',
-                  top: y,
-                  left: x,
-                  transform: 'translate(-50%, -50%)',
-                  textAlign: 'center',
-                  width: 80,
-                  zIndex: 20,
+                  width: radius * 2,
+                  height: radius * 2,
                 }}
               >
+                {/* 色塊扇形區域 */}
+                {prizes.map((_, index) => {
+                  const startAngle = anglePerItem * index;
+                  const endAngle = anglePerItem * (index + 1);
+                  const color = colors[index % colors.length];
+                  
+                  // 使用 clip-path 創建扇形（從12點鐘方向開始）
+                  const clipPath = `polygon(50% 50%, 
+                    ${50 + 50 * Math.cos((startAngle - 90) * Math.PI / 180)}% ${50 + 50 * Math.sin((startAngle - 90) * Math.PI / 180)}%, 
+                    ${50 + 50 * Math.cos((endAngle - 90) * Math.PI / 180)}% ${50 + 50 * Math.sin((endAngle - 90) * Math.PI / 180)}%)`;
+                  
+                  return (
+                    <div
+                      key={`sector-${index}`}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: color,
+                        clipPath: clipPath,
+                      }}
+                    />
+                  );
+                })}
+
+                {/* 輪盤分割線 */}
+                {prizes.map((_, index) => {
+                  const angle = anglePerItem * index;
+                  return (
+                    <div
+                      key={`line-${index}`}
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        width: '3px',
+                        height: `${radius}px`,
+                        background: '#2d3748',
+                        transformOrigin: 'top center',
+                        transform: `translate(-50%, -100%) rotate(${angle}deg)`,
+                        zIndex: 10,
+                      }}
+                    />
+                  );
+                })}
+
+                {/* 獎品項目 */}
+                {prizes.map((prize, index) => {
+                  // 獎品放在每個扇形區域的中心（從12點鐘方向開始）
+                  const angle = anglePerItem * index + (anglePerItem / 2) - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = center + radius * 0.7 * Math.cos(rad);
+                  const y = center + radius * 0.7 * Math.sin(rad);
+
+                  return (
+                    <div
+                      key={prize.id}
+                      style={{
+                        position: 'absolute',
+                        top: y,
+                        left: x,
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                        width: 80,
+                        zIndex: 20,
+                      }}
+                    >
+                      <img
+                        src={`http://localhost:3001${prize.imageUrl}`}
+                        alt={prize.name}
+                        className="prize-image"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="prize-text">
+                        {prize.name}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* 轉盤指針 */}
+              <div className="modern-pointer">
+                <div className="pointer-triangle"></div>
+                <div className="pointer-circle"></div>
+              </div>
+              
+              {/* 中心抽獎按鈕 */}
+              <button
+                onClick={drawPrize}
+                disabled={isSpinning}
+                className="modern-center-button"
+              >
+                <div className="button-content">
+                  {isSpinning ? (
+                    <>
+                      <div className="spinner"></div>
+                      <span>抽獎中</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="button-icon" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>開始抽獎</span>
+                    </>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 獎品展示區域 */}
+        <div className="prizes-showcase">
+          <div className="showcase-header">
+            <h2 className="showcase-title">
+              <span className="showcase-icon">🎁</span>
+              豐富獎品等你來拿
+            </h2>
+            <p className="showcase-subtitle">每次轉動都有機會獲得精美獎品</p>
+          </div>
+          
+          <div className="prizes-grid">
+            {prizes.map((prize, index) => (
+              <div key={prize.id} className="modern-prize-card" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="prize-card-inner">
+                  <div className="prize-image-container">
+                    <img
+                      src={`http://localhost:3001${prize.imageUrl}`}
+                      alt={prize.name}
+                      className="prize-image"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <div className="prize-overlay">
+                      <div className="prize-probability">{prize.probability}%</div>
+                    </div>
+                  </div>
+                  <div className="prize-info">
+                    <h3 className="prize-name">{prize.name}</h3>
+                    <div className="prize-details">
+                      <span className="probability-badge">
+                        <svg className="badge-icon" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd"/>
+                        </svg>
+                        中獎率 {prize.probability}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 現代化結果彈窗 */}
+      {showResult && result && (
+        <div className="modern-result-modal">
+          <div className="modal-backdrop" onClick={() => setShowResult(false)} />
+          <div className="modal-content">
+            <div className="confetti-animation">
+              {[...Array(20)].map((_, i) => (
+                <div key={i} className={`confetti confetti-${i + 1}`} />
+              ))}
+            </div>
+            
+            <div className="result-header">
+              <div className="celebration-icon">🎉</div>
+              <h2 className="result-title">恭喜中獎！</h2>
+              <p className="result-subtitle">您獲得了超棒的獎品</p>
+            </div>
+            
+            <div className="winning-prize-display">
+              <div className="prize-image-frame">
                 <img
-                  src={`http://localhost:3001${prize.imageUrl}`}
-                  alt={prize.name}
-                  className="prize-image"
+                  src={`http://localhost:3001${result.winningPrize.imageUrl}`}
+                  alt={result.winningPrize.name}
+                  className="winning-prize-image"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <div className="prize-text">
-                  {prize.name}
-                </div>
+                <div className="prize-glow"></div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* 指針 */}
-        <div className="wheel-pointer" />
-
-        {/* 中心按鈕 */}
-        <button
-          onClick={drawPrize}
-          disabled={isSpinning}
-          className="center-button"
-        >
-          {isSpinning ? '🎲 抽獎中...' : '🎯 開始抽獎'}
-        </button>
-      </div>
-
-      {/* 結果顯示 */}
-      {showResult && result && (
-        <div className="result-modal mt-8">
-          <h2 className="result-title">🎉 恭喜中獎！🎉</h2>
-          <img
-            src={`http://localhost:3001${result.winningPrize.imageUrl}`}
-            alt={result.winningPrize.name}
-            className="result-prize-image"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-          <p className="result-message">🏆 {result.message} 🏆</p>
-          <div className="result-buttons">
-            <button
-              onClick={() => setShowResult(false)}
-              className="result-btn result-btn-primary"
-            >
-              🎮 繼續遊戲
-            </button>
-            <button
-              onClick={() => {
-                setShowResult(false);
-                setWinningClass('');
-                setResult(null);
-                // 重置輪盤到初始位置
-                const wheelElement = document.querySelector('.wheel-container');
-                if (wheelElement) {
-                  (wheelElement as HTMLElement).style.transform = 'rotate(0deg)';
-                  (wheelElement as HTMLElement).style.animation = 'none';
-                }
-              }}
-              className="result-btn result-btn-secondary"
-            >
-              🔄 重置輪盤
-            </button>
+              <div className="winning-prize-info">
+                <h3 className="winning-prize-name">{result.winningPrize.name}</h3>
+                <p className="winning-message">{result.message}</p>
+              </div>
+            </div>
+            
+            <div className="result-actions">
+              <button
+                onClick={() => setShowResult(false)}
+                className="action-btn primary-action"
+              >
+                <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd"/>
+                </svg>
+                再試一次
+              </button>
+              <button
+                onClick={() => {
+                  setShowResult(false);
+                  setWinningClass('');
+                  setResult(null);
+                  const wheelElement = document.querySelector('.wheel-container');
+                  if (wheelElement) {
+                    (wheelElement as HTMLElement).style.transform = 'rotate(0deg)';
+                    (wheelElement as HTMLElement).style.animation = 'none';
+                  }
+                }}
+                className="action-btn secondary-action"
+              >
+                <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd"/>
+                </svg>
+                重置轉盤
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* 獎品列表 */}
-      <div className="prizes-grid">
-        {prizes.map((prize) => (
-          <div key={prize.id} className="prize-card">
-            <img
-              src={`http://localhost:3001${prize.imageUrl}`}
-              alt={prize.name}
-              className="prize-card-image"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <p className="prize-card-name">🎁 {prize.name}</p>
-            <p className="prize-card-probability">🎯 中獎機率: {prize.probability}%</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

@@ -1,0 +1,160 @@
+/* styles/components/dynamic-tabs.css */
+
+.dynamic-tabs-container {
+
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #e7e7e7;
+  padding: 0 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  position: sticky;
+  z-index: 5;
+  top: 42px;
+  width: 100%;
+}
+
+.dynamic-tabs-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.dynamic-tabs-wrapper {
+  display: flex;
+  align-items: center;
+  min-height: 55px;
+  gap: 2px;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.dynamic-tab {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #6b7280;
+  position: relative;
+  margin-bottom: -1px;
+}
+
+.dynamic-tab:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.dynamic-tab.active {
+  background-color: #ffffff;
+  color: #1f2937;
+  font-weight: 500;
+  border-color: #d1d5db;
+  z-index: 1;
+}
+
+.dynamic-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #ffffff;
+}
+
+.tab-title {
+  margin-right: 6px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  margin-left: 2px;
+}
+
+.tab-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #ef4444;
+}
+
+.dynamic-tab.active .tab-close-btn:hover {
+  background-color: #fef2f2;
+}
+
+/* 右鍵選單樣式 */
+.context-menu {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 120px;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #374151;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.context-menu-item:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.context-menu-item:active {
+  background-color: #e5e7eb;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .dynamic-tabs-container {
+    padding: 0 8px;
+  }
+  
+  .dynamic-tab {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .tab-title {
+    max-width: 80px;
+  }
+  
+  .tab-close-btn {
+    width: 14px;
+    height: 14px;
+    font-size: 12px;
+  }
+
+  .context-menu {
+    font-size: 12px;
+    min-width: 100px;
+  }
+
+  .context-menu-item {
+    padding: 6px 10px;
+  }
+}

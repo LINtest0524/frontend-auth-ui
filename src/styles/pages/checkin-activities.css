@@ -1,0 +1,681 @@
+/* 簽到活動管理頁面現代化樣式 - 參考輪盤和Banner設計 */
+
+/* 主容器 - 參考其他頁面架構 */
+.checkin-container {
+  padding: 1.5rem;
+  max-width: none;
+  width: 100%;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* 頁面標題區域 - 調整寬度和佈局 */
+.checkin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  background: #ffffff;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.checkin-header-content h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.checkin-header-content p {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 活動類型標籤 - 修正文字顯示問題 */
+.activity-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  margin-left: 0.5rem;
+  color: #1e293b !important;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.activity-type-badge.strict-streak {
+  background: #fbbf24 !important;
+  color: #92400e !important;
+  border-color: #f59e0b;
+  -webkit-text-fill-color: #fff;
+}
+
+.activity-type-badge.flex-cumulative {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #2563eb;
+  -webkit-text-fill-color: #fff;
+}
+
+.activity-type-badge.daily-calendar {
+  background: #22c55e !important;
+  color: #ffffff !important;
+  border-color: #16a34a;
+  -webkit-text-fill-color: #fff;
+}
+
+/* 新增按鈕 */
+.checkin-add-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.39);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkin-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.5);
+}
+
+.checkin-add-btn:active {
+  transform: translateY(0);
+}
+
+.checkin-add-btn::before {
+  content: '+';
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* 搜尋區域 */
+.checkin-search-section {
+  background: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.checkin-search-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.checkin-search-input {
+  flex: 1;
+  max-width: 24rem;
+  padding: 0.625rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+
+.checkin-search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.checkin-search-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.checkin-search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* 活動列表容器 */
+.checkin-list-container {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+/* 表格樣式 */
+.checkin-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 1200px;
+}
+
+.checkin-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 表格列寬度控制 */
+.checkin-table th:nth-child(1),
+.checkin-table td:nth-child(1) {
+  width: 25%; /* 活動資訊 */
+}
+
+.checkin-table th:nth-child(2),
+.checkin-table td:nth-child(2) {
+  width: 20%; /* 活動期間 */
+}
+
+.checkin-table th:nth-child(3),
+.checkin-table td:nth-child(3) {
+  width: 18%; /* 預約上架 */
+}
+
+.checkin-table th:nth-child(4),
+.checkin-table td:nth-child(4) {
+  width: 12%; /* 狀態 */
+}
+
+.checkin-table th:nth-child(5),
+.checkin-table td:nth-child(5) {
+  width: 25%; /* 操作 */
+}
+
+.checkin-table-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.checkin-table-header th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+  position: relative;
+}
+
+.checkin-table-header th::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #667eea 50%, transparent 100%);
+}
+
+.checkin-table tbody tr {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.checkin-table tbody tr:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.checkin-table tbody td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  color: #334155;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 活動標題樣式 */
+.activity-title {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.activity-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* 日期範圍樣式 */
+.date-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.date-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #64748b;
+}
+
+/* 預約上架樣式 */
+.publish-schedule {
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.publish-schedule.scheduled {
+  background: linear-gradient(135deg, #fef3c7, #f59e0b);
+  color: #92400e;
+}
+
+.publish-schedule.none {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* 狀態標籤 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, #dcfce7, #22c55e);
+  color: #166534;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+.status-badge.inactive {
+  background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+  color: #475569;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+}
+
+/* 操作按鈕組 */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 0.5rem 0.875rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.action-btn-edit {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #92400e;
+}
+
+.action-btn-edit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+}
+
+.action-btn-preview {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: white;
+}
+
+.action-btn-preview:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.action-btn-toggle {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  color: #475569;
+  border: 1px solid #d1d5db;
+}
+
+.action-btn-toggle:hover {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  transform: translateY(-1px);
+}
+
+.action-btn-toggle.enable {
+  background: linear-gradient(135deg, #dcfce7, #22c55e);
+  color: #166534;
+  border-color: #22c55e;
+}
+
+.action-btn-toggle.disable {
+  background: linear-gradient(135deg, #fee2e2, #ef4444);
+  color: #dc2626;
+  border-color: #ef4444;
+}
+
+.action-btn-delete {
+  background: linear-gradient(135deg, #fecaca, #dc2626);
+  color: #7f1d1d;
+  border: 1px solid #dc2626;
+}
+
+.action-btn-delete:hover {
+  background: linear-gradient(135deg, #fee2e2, #b91c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* 載入狀態 */
+.loading-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #64748b;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 空狀態 */
+.empty-state {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: #64748b;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #94a3b8;
+}
+
+.empty-state h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+/* 分頁 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  padding: 0.5rem 1rem;
+}
+
+/* 前台連結提醒區塊 */
+.frontend-links-notice {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #22c55e;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+.frontend-links-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.frontend-links-icon {
+  font-size: 1.25rem;
+  background: #22c55e;
+  color: white;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frontend-links-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #166534;
+}
+
+.frontend-links-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.frontend-link-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.link-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #166534;
+  min-width: 4rem;
+}
+
+.frontend-link {
+  background: #ffffff;
+  color: #1e293b;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8125rem;
+  border: 1px solid #d1d5db;
+  flex: 1;
+  user-select: all;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.frontend-link:hover {
+  background: #f8fafc;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+}
+
+.frontend-links-hint {
+  font-size: 0.875rem;
+  color: #166534;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+  text-align: center;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+  .checkin-container {
+    padding: 1rem;
+  }
+  
+  .checkin-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    padding: 1.25rem;
+  }
+  
+  .checkin-search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .checkin-search-input {
+    max-width: none;
+  }
+  
+  .checkin-search-section {
+    padding: 1rem;
+  }
+
+  .frontend-links-notice {
+    padding: 1rem;
+  }
+
+  .frontend-links-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkin-header-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .checkin-table-container {
+    overflow-x: auto;
+  }
+  
+  .checkin-table {
+    min-width: 600px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 動畫效果 */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 表格行動畫 */
+.table-row-enter {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

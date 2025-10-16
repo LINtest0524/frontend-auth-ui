@@ -264,6 +264,7 @@ export default function AdminUserListPage() {
             <thead>
               <tr>
                 <th>ID</th>
+                <th>部門</th>
                 <th>帳號資訊</th>
                 <th>角色</th>
                 <th>狀態</th>
@@ -276,6 +277,11 @@ export default function AdminUserListPage() {
               {adminUsers.map((admin) => (
                 <tr key={admin.id}>
                   <td>#{admin.id}</td>
+                  <td>
+                    <div className="department-info">
+                      🏢 {admin.department_type || "未設定"}
+                    </div>
+                  </td>
                   <td>
                     <div className="user-info">
                       <div className="user-username">{admin.username}</div>

@@ -5,6 +5,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter } from 'next/navigation'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
+import FloatingCustomerService from '@/components/FloatingCustomerService'
 import PortalHeaderBar from '@/components/PortalHeaderBar'
 
 export default function CompanyPortalLayout({ children }: { children: React.ReactNode }) {
@@ -95,6 +96,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
       {children}
       <FloatingAds companyCode="a" />
       <PopupAnnouncement companyCode="a" />
+      <FloatingCustomerService companyCode="a" />
     </>
   )
 }
