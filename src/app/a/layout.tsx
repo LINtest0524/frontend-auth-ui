@@ -64,7 +64,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
 
         // 不再需要檢查公司代碼，因為已經用公司代碼作為鍵名前綴
       } catch (err) {
-        console.warn('    無法解析登入資料', err)
+        // 無法解析登入資料，靜默處理
         localStorage.removeItem(`portalToken_${currentCompanyCode}`)
         localStorage.removeItem(`portalUser_${currentCompanyCode}`)
         localStorage.removeItem(`enabledModules_${currentCompanyCode}`)

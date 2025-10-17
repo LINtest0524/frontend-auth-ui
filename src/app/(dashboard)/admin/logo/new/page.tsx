@@ -73,7 +73,8 @@ export default function LogoCreatePage() {
       router.push('/admin/logo')
     } catch (err: any) {
       alert('新增失敗：' + err.message)
-      console.error('新增失敗', err)
+      // 新增LOGO失敗，靜默處理
+      alert('新增LOGO失敗，請稍後再試')
     } finally {
       setLoading(false)
     }

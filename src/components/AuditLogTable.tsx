@@ -5,6 +5,71 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "@/styles/pages/users.css";
 
+// 角色中文化映射
+const roleMap: Record<string, string> = {
+  SUPER_ADMIN: "超級管理員",
+  GLOBAL_ADMIN: "全域管理員", 
+  AGENT_OWNER: "代理商老闆",
+  AGENT_SUPPORT: "客服",
+  USER: "會員",
+};
+
+// 狀態中文化映射
+const statusMap: Record<string, string> = {
+  active: "啟用",
+  inactive: "停用", 
+  banned: "封鎖",
+  ACTIVE: "啟用",
+  INACTIVE: "停用",
+  BANNED: "封鎖",
+};
+
+// 格式化操作文字，將英文角色和狀態轉換為中文
+const formatActionText = (action: string): string => {
+  let formattedAction = action;
+  
+  // 替換所有角色英文為中文
+  Object.entries(roleMap).forEach(([englishRole, chineseRole]) => {
+    const regex = new RegExp(`角色：${englishRole}`, 'g');
+    formattedAction = formattedAction.replace(regex, `角色：${chineseRole}`);
+  });
+  
+  // 替換狀態變更中的英文狀態為中文
+  Object.entries(statusMap).forEach(([englishStatus, chineseStatus]) => {
+    // 處理 "status - username（oldStatus → newStatus）" 格式
+    const statusRegex = new RegExp(`（([^→]+)\\s*→\\s*${englishStatus}\\s*）`, 'g');
+    formattedAction = formattedAction.replace(statusRegex, (match, beforeArrow) => {
+      const translatedBefore = statusMap[beforeArrow.trim()] || beforeArrow.trim();
+      return `（${translatedBefore} → ${chineseStatus}）`;
+    });
+    
+    // 處理 "status - username（englishStatus → otherStatus）" 格式  
+    const statusRegex2 = new RegExp(`（${englishStatus}\\s*→\\s*([^）]+)）`, 'g');
+    formattedAction = formattedAction.replace(statusRegex2, (match, afterArrow) => {
+      const translatedAfter = statusMap[afterArrow.trim()] || afterArrow.trim();
+      return `（${chineseStatus} → ${translatedAfter}）`;
+    });
+  });
+  
+  return formattedAction;
+};
+
+// 格式化 IP 地址，確保顯示為標準 IPv4 格式
+const formatIpAddress = (ip: string): string => {
+  // 如果是 IPv6 映射的 IPv4 地址（如 ::ffff:127.0.0.1），提取 IPv4 部分
+  if (ip.startsWith('::ffff:')) {
+    return ip.replace('::ffff:', '');
+  }
+  
+  // 如果是 IPv6 loopback（::1），轉換為 IPv4 loopback
+  if (ip === '::1') {
+    return '127.0.0.1';
+  }
+  
+  // 其他情況直接返回原始 IP
+  return ip;
+};
+
 interface AuditLog {
   id: number;
   ip: string;
@@ -63,7 +128,7 @@ export default function AuditLogTable({
       params.append("page", page.toString());
       params.append("limit", limit.toString());
 
-      const res = await fetch(`http://localhost:3001/audit-log?${params.toString()}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/audit-log?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -78,7 +143,7 @@ export default function AuditLogTable({
       setTotalPages(result.totalPages);
       setTotalCount(result.totalCount);
     } catch (err: any) {
-      console.error("API 錯誤:", err);
+      // API 錯誤，靜默處理
       setError(err.message || "API 讀取失敗");
     } finally {
       setLoading(false);
@@ -385,14 +450,14 @@ export default function AuditLogTable({
                     </div>
                   </td>
                   <td>
-                    <div className="ip-address">{log.ip}</div>
+                    <div className="ip-address">{formatIpAddress(log.ip)}</div>
                   </td>
                   <td>
                     <div className="platform-info">{log.platform}</div>
                   </td>
                   <td>
                     <div className="action-info">
-                      <span className="action-badge">{log.action}</span>
+                      <span className="action-badge">{formatActionText(log.action)}</span>
                     </div>
                   </td>
                   <td style={{fontSize: "12px", lineHeight: "1.4"}}>

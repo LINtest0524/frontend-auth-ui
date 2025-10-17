@@ -15,7 +15,8 @@ export default function BankVerificationPage() {
   const fileRef = useRef<HTMLInputElement | null>(null)
   const [previewKey, setPreviewKey] = useState(0)
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_a') : null
+  const companyCode = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : 'a'
+  const token = typeof window !== 'undefined' ? localStorage.getItem(`portalToken_${companyCode}`) : null
 
   //   共用查詢函式
   const fetchStatus = async () => {
@@ -38,7 +39,7 @@ export default function BankVerificationPage() {
 
       }
     } catch (err) {
-      console.error('    查詢銀行驗證狀態失敗', err)
+      // 查詢銀行驗證狀態失敗，靜默處理
     }
   }
 

@@ -29,7 +29,7 @@ export default function AdminUserEditPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/user/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -153,7 +153,7 @@ export default function AdminUserEditPage() {
         return;
       }
       
-      const res = await fetch(`http://localhost:3001/user/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

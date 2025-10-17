@@ -311,11 +311,11 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
 
           <div className="form-field">
             <label htmlFor="startDate" className="form-label required">
-              📅 開始日期
+              📅 開始時間
             </label>
             <input
               id="startDate"
-              type="date"
+              type="datetime-local"
               value={formData.startDate}
               onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
               className={`form-input ${errors.startDate ? 'error' : ''}`}
@@ -325,11 +325,11 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
 
           <div className="form-field">
             <label htmlFor="endDate" className="form-label required">
-              🏁 結束日期
+              🏁 結束時間
             </label>
             <input
               id="endDate"
-              type="date"
+              type="datetime-local"
               value={formData.endDate}
               onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
               className={`form-input ${errors.endDate ? 'error' : ''}`}

@@ -41,7 +41,7 @@ export default function ContactInfoPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/contact-info", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/contact-info`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -49,10 +49,11 @@ export default function ContactInfoPage() {
         const data = await res.json();
         setContactInfos(data);
       } else {
-        console.error("Failed to fetch contact infos");
+        // 載入聯絡資訊失敗，靜默處理
       }
     } catch (err) {
-      console.error("Fetch contact infos failed", err);
+      // 載入聯絡資訊錯誤，靜默處理
+      alert('載入聯絡資訊失敗，請稍後再試');
     } finally {
       setLoading(false);
     }
@@ -85,8 +86,8 @@ export default function ContactInfoPage() {
 
     try {
       const url = editingItem 
-        ? `http://localhost:3001/contact-info/${editingItem.id}`
-        : "http://localhost:3001/contact-info";
+        ? `${process.env.NEXT_PUBLIC_API_BASE}/contact-info/${editingItem.id}`
+        : `${process.env.NEXT_PUBLIC_API_BASE}/contact-info`;
       
       const method = editingItem ? "PATCH" : "POST";
 
@@ -105,7 +106,8 @@ export default function ContactInfoPage() {
         alert(`${editingItem ? "更新" : "新增"}失敗: ${errorData.message || "未知錯誤"}`);
       }
     } catch (err) {
-      console.error("Submit failed", err);
+      // 提交失敗，靜默處理
+      alert('儲存聯絡資訊失敗，請稍後再試');
       alert(`${editingItem ? "更新" : "新增"}失敗，請稍後再試`);
     }
   };
@@ -129,7 +131,7 @@ export default function ContactInfoPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/contact-info/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/contact-info/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -141,7 +143,8 @@ export default function ContactInfoPage() {
         alert("刪除失敗");
       }
     } catch (err) {
-      console.error("Delete failed", err);
+      // 刪除失敗，靜默處理
+      alert('刪除聯絡資訊失敗，請稍後再試');
       alert("刪除失敗，請稍後再試");
     }
   };
@@ -291,7 +294,7 @@ export default function ContactInfoPage() {
                   <td>
                     {item.icon ? (
                       <img 
-                        src={`http://localhost:3001${item.icon}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_BASE}${item.icon}`} 
                         alt="icon" 
                         style={{ width: "32px", height: "32px", borderRadius: "6px" }}
                       />
@@ -340,7 +343,7 @@ export default function ContactInfoPage() {
                   <td>
                     {item.qrCode ? (
                       <img 
-                        src={`http://localhost:3001${item.qrCode}`} 
+                        src={`${process.env.NEXT_PUBLIC_API_BASE}${item.qrCode}`} 
                         alt="QR Code" 
                         style={{ width: "32px", height: "32px", borderRadius: "6px" }}
                       />

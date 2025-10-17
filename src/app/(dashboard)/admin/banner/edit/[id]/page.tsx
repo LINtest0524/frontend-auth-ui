@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import '@/styles/pages/banner-form.css'
 
-const API_BASE = 'http://localhost:3001'
+// 使用環境變數 API 端點
 
 export default function EditBannerPage() {
   const { id } = useParams()
@@ -27,14 +27,14 @@ export default function EditBannerPage() {
 
   const getImageUrl = (url: string) => {
     if (!url) return ''
-    return url.startsWith('http') ? url : `${API_BASE}${url}`
+    return url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_BASE}${url}`
   }
 
   useEffect(() => {
     const fetchBanner = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await fetch(`${API_BASE}/banners/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
@@ -72,7 +72,7 @@ export default function EditBannerPage() {
       const upload = async (file: File) => {
         const fd = new FormData()
         fd.append('file', file)
-        const res = await fetch(`${API_BASE}/banners/upload`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/upload`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: fd,
@@ -87,7 +87,7 @@ export default function EditBannerPage() {
       if (desktopFile) desktopUrl = await upload(desktopFile)
       if (mobileFile) mobileUrl = await upload(mobileFile)
 
-      const res = await fetch(`${API_BASE}/banners/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -49,7 +49,6 @@ export default function OrdersPage() {
       const success = urlParams.get('success')
       const orderId = urlParams.get('orderId')
       
-      console.log('URL 參數:', { success, orderId })
       
       if (success && orderId) {
         setShowSuccessMessage(true)
@@ -83,9 +82,9 @@ export default function OrdersPage() {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const token = localStorage.getItem('portalToken_a')
+        const companyCode = window.location.pathname.split('/')[1]
+        const token = localStorage.getItem(`portalToken_${companyCode}`)
         if (!token) {
-          console.log('未找到登入 token')
           setLoading(false)
           return
         }

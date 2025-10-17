@@ -151,7 +151,7 @@ export default function IdVerificationAdminPage() {
       }
       setNotes(initialNotes);
     } catch (err) {
-      console.error("讀取失敗：", err);
+      // 資料載入失敗，靜默處理
     } finally {
       setLoading(false);
     }
@@ -164,6 +164,7 @@ export default function IdVerificationAdminPage() {
     note: string
   ) => {
     try {
+      const token = localStorage.getItem("token");
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verification/admin/${id}/review`,
         {
@@ -173,13 +174,14 @@ export default function IdVerificationAdminPage() {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       )
       fetchRecords()
     } catch (err) {
-      console.error('送出審核失敗', err)
+      // 審核操作失敗，靜默處理
+      alert('審核操作失敗，請稍後再試');
     }
   }
 

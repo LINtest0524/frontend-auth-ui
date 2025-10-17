@@ -20,7 +20,8 @@ export default function IDVerificationPage() {
   const [note, setNote] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_a') : null;
+  const companyCode = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : 'a';
+  const token = typeof window !== 'undefined' ? localStorage.getItem(`portalToken_${companyCode}`) : null;
 
   const fetchStatus = async () => {
     if (!token) return;
@@ -30,7 +31,6 @@ export default function IDVerificationPage() {
       });
 
       const data = res.data;
-      console.log('  取得驗證資料:', data);
 
       if (data) {
         setStatus(data.status);
@@ -45,7 +45,7 @@ export default function IDVerificationPage() {
         }
       }
     } catch (err) {
-      console.error('    查詢身份驗證狀態失敗', err);
+      // 查詢身份驗證狀態失敗，靜默處理
     }
   };
 
@@ -82,7 +82,7 @@ export default function IDVerificationPage() {
       if (selfieRef.current) selfieRef.current.value = '';
       setPreviewKey((prev) => prev + 1);
     } catch (err) {
-      console.error('    上傳失敗', err);
+      // 上傳失敗，靜默處理
       alert('上傳失敗，請稍後再試');
     }
   };
@@ -106,7 +106,7 @@ export default function IDVerificationPage() {
 
       alert('資料已清除，請重新上傳');
     } catch (err) {
-      console.error('    清除失敗', err);
+      // 清除失敗，靜默處理
       alert('清除失敗，請稍後再試');
     }
   };

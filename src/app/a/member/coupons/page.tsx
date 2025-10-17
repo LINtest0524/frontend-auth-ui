@@ -51,7 +51,8 @@ export default function MyCouponsPage() {
     
     setLoading(true)
     try {
-      const token = localStorage.getItem(`portalToken_a`)
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/my-coupons`, {
         headers: {
           'Authorization': `Bearer ${token}`,

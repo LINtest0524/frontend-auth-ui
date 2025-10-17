@@ -43,7 +43,8 @@ export default function CartPage() {
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_a')
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
         window.location.href = '/a/duplicate-login'
         return
@@ -62,7 +63,7 @@ export default function CartPage() {
         if (result.success && result.data) {
           setShippingMethods(result.data)
         } else {
-          console.error('獲取運送方式失敗:', result.message)
+          // 獲取運送方式失敗，靜默處理
           // 使用預設運送方式作為備用
           setShippingMethods([
             {
@@ -82,7 +83,7 @@ export default function CartPage() {
           ])
         }
       } else {
-        console.error('獲取運送方式失敗')
+        // 獲取運送方式失敗，靜默處理
         // 使用預設運送方式作為備用
         setShippingMethods([
           {
@@ -95,7 +96,7 @@ export default function CartPage() {
         ])
       }
     } catch (error) {
-      console.error('獲取運送方式失敗:', error)
+      // 獲取運送方式失敗，靜默處理
       // 使用預設運送方式作為備用
       setShippingMethods([
         {
@@ -132,7 +133,7 @@ export default function CartPage() {
           })
           sessionStorage.removeItem('checkoutCartData')
         } catch (err) {
-          console.error('恢復購物車失敗:', err)
+          // 恢復購物車失敗，靜默處理
         }
       }
     }
@@ -147,7 +148,6 @@ export default function CartPage() {
 
   // 除錯：監控購物車狀態變化
   useEffect(() => {
-    console.log('Cart page - Current state:', { items, totalItems, totalPrice })
   }, [items, totalItems, totalPrice])
 
   // 驗證優惠碼
@@ -164,13 +164,6 @@ export default function CartPage() {
       // 從 URL 路徑動態獲取公司代碼
       const companyCode = window.location.pathname.split('/')[1] || 'a'
       const token = localStorage.getItem(`portalToken_${companyCode}`)
-      console.log('🎫 購物車優惠碼驗證:', {
-        companyCode,
-        tokenExists: !!token,
-        couponCode: couponCode.trim(),
-        totalPrice,
-        apiUrl: `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/validate`
-      })
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/validate`, {
         method: 'POST',
         headers: {
@@ -183,11 +176,8 @@ export default function CartPage() {
         })
       })
 
-      console.log('🎫 API 響應狀態:', response.status, response.statusText)
-      
       if (response.ok) {
         const result = await response.json()
-        console.log('🎫 API 響應成功:', result)
         if (result.valid) {
           setAppliedCoupon({
             code: couponCode.trim(),
@@ -196,18 +186,16 @@ export default function CartPage() {
           })
           setCouponError('')
         } else {
-          console.log('🎫 優惠碼驗證失敗:', result.message)
           setCouponError(result.message || '優惠碼無效')
           setAppliedCoupon(null)
         }
       } else {
         const error = await response.json()
-        console.log('🎫 API 響應錯誤:', error)
         setCouponError(error.message || '驗證優惠碼失敗')
         setAppliedCoupon(null)
       }
     } catch (error) {
-      console.error('驗證優惠碼失敗:', error)
+      // 驗證優惠碼失敗，靜默處理
       setCouponError('驗證優惠碼失敗，請稍後再試')
       setAppliedCoupon(null)
     } finally {

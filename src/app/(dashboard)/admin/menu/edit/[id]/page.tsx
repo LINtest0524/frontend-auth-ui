@@ -75,7 +75,8 @@ export default function EditMenuPage() {
           router.push('/admin/menu')
         }
       } catch (error) {
-        console.error('載入選單錯誤:', error)
+        // 載入選單錯誤，靜默處理
+        alert('載入選單資料失敗，請稍後再試')
         alert('載入選單失敗')
         router.push('/admin/menu')
       } finally {
@@ -115,7 +116,7 @@ export default function EditMenuPage() {
           setParentMenus(availableParents)
         }
       } catch (error) {
-        console.error('載入父選單失敗:', error)
+        // 載入父選單失敗，靜默處理
       }
     }
 
@@ -159,7 +160,8 @@ export default function EditMenuPage() {
         alert(`更新失敗: ${error.message || '未知錯誤'}`)
       }
     } catch (error) {
-      console.error('更新選單錯誤:', error)
+      // 更新選單錯誤，靜默處理
+      alert('更新選單失敗，請稍後再試')
       alert('更新失敗')
     } finally {
       setLoading(false)

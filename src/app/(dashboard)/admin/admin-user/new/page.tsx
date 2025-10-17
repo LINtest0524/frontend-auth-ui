@@ -68,7 +68,7 @@ export default function AdminUserCreatePage() {
       setCurrentUser(parsed);
 
       if (["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(parsed.role)) {
-        fetch("http://localhost:3001/company", {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/company`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => res.json())
@@ -79,7 +79,7 @@ export default function AdminUserCreatePage() {
               setCompanies(data.data);
             } else {
               setCompanies([]); // fallback 空陣列
-              console.warn("公司資料格式錯誤", data);
+              // 公司資料格式錯誤，靜默處理
             }
           });
 
@@ -150,7 +150,7 @@ export default function AdminUserCreatePage() {
     };
 
     try {
-      const res = await fetch("http://localhost:3001/user", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

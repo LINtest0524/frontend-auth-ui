@@ -76,13 +76,6 @@ export default function NewsListPage() {
   }
 
   const handlePageChange = (page: number) => {
-    console.log(' 頁面切換:', { 
-      from: currentPage, 
-      to: page, 
-      totalPages,
-      searchTerm,
-      selectedCategory 
-    })
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

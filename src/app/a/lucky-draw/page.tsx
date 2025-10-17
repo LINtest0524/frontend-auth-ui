@@ -45,7 +45,8 @@ export default function Wheel() {
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_a')
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
         window.location.href = '/a/duplicate-login'
         return
@@ -72,7 +73,6 @@ export default function Wheel() {
       companyId = user?.company?.id || user?.companyId || 1;
     }
     
-    console.log('A代理商 - 獲取獎品，使用 companyId:', companyId);
     
     const res = await fetch(`http://localhost:3001/lucky-prize/active-event?companyId=${companyId}`, {
       headers: {
@@ -81,13 +81,9 @@ export default function Wheel() {
     });
     const data = await res.json();
     
-    console.log('前台取得的獎品資料:', data);
-    
     // 確保前台也按 ID 排序
     let prizes = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
     prizes = prizes.sort((a: Prize, b: Prize) => a.id - b.id);
-    
-    console.log('排序後的獎品:', prizes);
     setPrizes(prizes);
   };
 
@@ -116,37 +112,19 @@ export default function Wheel() {
       let user: User = {};
       if (portalUser) {
         user = JSON.parse(portalUser) as User;
-        console.log('使用前台用戶資料 (portalUser)');
       } else if (adminUser) {
         user = JSON.parse(adminUser) as User;
-        console.log('使用管理後台用戶資料 (user)');
       }
       
-      console.log('=== 抽獎用戶資料檢查 ===');
-      console.log('localStorage portalUser:', portalUser);
-      console.log('localStorage user (admin):', adminUser);
-      console.log('最終使用的用戶資料:', user);
-      console.log('使用的 token:', token);
       
       // 檢查是否為前台用戶登入
       const isPortalUser = user?.id && user?.company && !user?.userId;
-      console.log('是否為前台用戶:', isPortalUser);
       
       // 前台用戶優先使用 id 欄位（portal登入），管理後台使用 userId 欄位
       const userId = user?.id || user?.userId;
       const companyId = user?.company?.id || user?.companyId;
       
-      console.log('前台用戶資料檢查:');
-      console.log('- user.id:', user?.id, typeof user?.id);
-      console.log('- user.userId:', user?.userId, typeof user?.userId);
-      console.log('- user.company:', user?.company);
-      console.log('- 最終使用的 userId:', userId);
-      console.log('- 最終使用的 companyId:', companyId);
       
-      console.log('解析出的 userId:', userId);
-      console.log('用戶角色:', user?.role);
-      console.log('公司ID:', companyId);
-      console.log('公司資料:', user?.company);
       
       if (!userId) {
         alert('請先登入才能參與抽獎');
@@ -198,14 +176,6 @@ export default function Wheel() {
         `;
         document.head.appendChild(style);
         
-        console.log('生成的 CSS:', style.textContent);
-        
-        console.log('中獎獎品索引:', drawResult.winningIndex);
-        console.log('獎品總數:', prizes.length);
-        console.log('每個獎品角度:', anglePerItem);
-        console.log('目標角度:', targetAngle);
-        console.log('最終旋轉角度:', finalRotation);
-        console.log('使用動畫類別:', animationName);
         
         // 直接應用動畫類別
         setWinningClass(animationName);
@@ -215,7 +185,6 @@ export default function Wheel() {
           const wheelElement = document.querySelector('.wheel-container');
           if (wheelElement) {
             wheelElement.classList.add(animationName);
-            console.log('應用的類別:', wheelElement.className);
           }
         }, 100);
         

@@ -27,7 +27,7 @@ export default function IPBlacklistPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/blacklist", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/blacklist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -35,10 +35,11 @@ export default function IPBlacklistPage() {
         const data = await res.json();
         setBlacklistRecords(data);
       } else {
-        console.error("Failed to fetch blacklist");
+        // 載入黑名單失敗，靜默處理
       }
     } catch (err) {
-      console.error("Fetch blacklist failed", err);
+      // 載入黑名單錯誤，靜默處理
+      alert('載入IP黑名單失敗，請稍後再試');
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ export default function IPBlacklistPage() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/blacklist", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/blacklist`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +83,7 @@ export default function IPBlacklistPage() {
         alert(`新增失敗: ${errorData.message || "未知錯誤"}`);
       }
     } catch (err) {
-      console.error("Add IP blacklist failed", err);
+      // 新增IP黑名單失敗，靜默處理
       alert("新增失敗，請稍後再試");
     } finally {
       setSubmitting(false);
@@ -94,7 +95,7 @@ export default function IPBlacklistPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/blacklist/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/blacklist/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -106,7 +107,7 @@ export default function IPBlacklistPage() {
         alert("移除失敗");
       }
     } catch (err) {
-      console.error("Remove IP blacklist failed", err);
+      // 移除IP黑名單失敗，靜默處理
       alert("移除失敗，請稍後再試");
     }
   };

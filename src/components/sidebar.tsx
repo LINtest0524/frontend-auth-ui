@@ -702,6 +702,9 @@ export default function Sidebar() {
             <Link href="/audit-log/coupon-operations" onClick={() => handleNavClick("/audit-log/coupon-operations")} className={cn("sidebar-subitem", pathname === "/audit-log/coupon-operations" && currentActive === null && "active")}>
               優惠券紀錄
             </Link>
+            <Link href="/audit-log/wallet-transactions" onClick={() => handleNavClick("/audit-log/wallet-transactions")} className={cn("sidebar-subitem", pathname === "/audit-log/wallet-transactions" && currentActive === null && "active")}>
+              錢包記錄
+            </Link>
           </div>
         </div>
       </nav>

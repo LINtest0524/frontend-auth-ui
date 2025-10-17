@@ -46,16 +46,14 @@ export default function MemberProfile({
       const res = await axios.get(`${API_URL}/api/id-verification/me?type=${type}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      console.log(`  ${type} 驗證資料：`, res.data)
       setStatusMap((prev) => ({ ...prev, [type]: res.data?.status || 'NONE' }))
     } catch (err: unknown) {
       const error = err as AxiosError
       if (error.response?.status === 404) {
         // 404 是正常情況，表示用戶還沒有上傳過驗證資料
-        console.log(`ℹ️ ${type} 驗證資料尚未上傳`)
         setStatusMap((prev) => ({ ...prev, [type]: 'NONE' }))
       } else {
-        console.error(`    取得 ${type} 驗證狀態失敗：`, err)
+        // 取得驗證狀態失敗，靜默處理
       }
     }
   }
@@ -71,7 +69,7 @@ export default function MemberProfile({
       })
       setStatusMap((prev) => ({ ...prev, [type]: 'NONE' }))
     } catch (err) {
-      console.error(`    刪除 ${type} 驗證失敗:`, err)
+      // 刪除驗證失敗，靜默處理
       alert('刪除失敗，請稍後再試')
     }
   }

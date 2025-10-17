@@ -46,7 +46,7 @@ export default function MenuManagePage() {
           userStore.setUser(parsed)
         }
       } catch (e) {
-        console.error("無法解析 user JSON", e)
+        // 無法解析用戶資料，靜默處理
       }
     }
   }, [])
@@ -90,10 +90,11 @@ export default function MenuManagePage() {
         const data = await response.json()
         setMenus(data)
       } else {
-        console.error('載入選單失敗:', response.statusText)
+        // 載入選單失敗，靜默處理
       }
     } catch (error) {
-      console.error('載入選單錯誤:', error)
+      // 載入選單錯誤，靜默處理
+      alert('載入選單失敗，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -165,7 +166,8 @@ export default function MenuManagePage() {
         alert('刪除失敗')
       }
     } catch (error) {
-      console.error('刪除錯誤:', error)
+      // 刪除錯誤，靜默處理
+      alert('刪除選單失敗，請稍後再試')
       alert('刪除失敗')
     }
   }
@@ -194,7 +196,8 @@ export default function MenuManagePage() {
         alert('更新狀態失敗')
       }
     } catch (error) {
-      console.error('更新狀態錯誤:', error)
+      // 更新狀態錯誤，靜默處理
+      alert('更新選單狀態失敗，請稍後再試')
       alert('更新狀態失敗')
     }
   }

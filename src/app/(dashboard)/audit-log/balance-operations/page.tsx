@@ -49,10 +49,11 @@ export default function BalanceOperationsPage() {
         page: page.toString(),
         limit: '20',
         search: filters.search || '餘額', // 搜尋包含「餘額」的操作
+        exclude: '簽到', // 排除簽到活動
         ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value && key !== 'search'))
       });
 
-      const res = await fetch(`http://localhost:3001/audit-log?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/audit-log?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -67,7 +68,7 @@ export default function BalanceOperationsPage() {
       setTotalPages(result.totalPages || 1);
       setCurrentPage(page);
     } catch (err) {
-      console.error('後端回傳錯誤:', err);
+      // 後端回傳錯誤，靜默處理
       setLogs([]);
     } finally {
       setLoading(false);
@@ -133,10 +134,20 @@ export default function BalanceOperationsPage() {
   };
 
   const getOperationType = (action: string) => {
-    if (action.includes('存款') || action.includes('ADD')) return { type: '存款', class: 'operation-deposit' };
-    if (action.includes('扣款') || action.includes('DEDUCT')) return { type: '扣款', class: 'operation-withdraw' };
-    if (action.includes('調整') || action.includes('ADJUST')) return { type: '調整', class: 'operation-adjust' };
-    if (action.includes('餘額')) return { type: '餘額操作', class: 'operation-adjust' };
+    // 這裡應該不會再出現簽到活動了，但如果出現就歸類為其他
+    if (action.includes('簽到') || action.includes('checkin')) return { type: '其他操作', class: 'operation-other' };
+    
+    // 檢查具體的操作類型
+    if (action.includes('購買') || action.includes('消費')) return { type: '購買商品', class: 'operation-purchase' };
+    if (action.includes('提現') || action.includes('withdraw')) return { type: '提現', class: 'operation-withdraw' };
+    if (action.includes('充值') || action.includes('deposit')) return { type: '充值', class: 'operation-deposit' };
+    
+    // 管理員直接操作
+    if (action.includes('存款') || action.includes('ADD')) return { type: '管理員存款', class: 'operation-deposit' };
+    if (action.includes('扣款') || action.includes('DEDUCT')) return { type: '管理員扣款', class: 'operation-withdraw' };
+    if (action.includes('調整') || action.includes('ADJUST')) return { type: '管理員調整', class: 'operation-adjust' };
+    if (action.includes('餘額')) return { type: '餘額調整', class: 'operation-adjust' };
+    
     return { type: '未知', class: 'operation-unknown' };
   };
 
@@ -148,6 +159,21 @@ export default function BalanceOperationsPage() {
       isPositive,
       formatted: `${isPositive ? '+' : '-'}${Math.abs(change).toLocaleString('zh-TW')}`
     };
+  };
+
+  const formatPlatform = (platform: string) => {
+    // 平台/裝置中文化映射
+    const platformMap: Record<string, string> = {
+      'Checkin System': '簽到系統',
+      'Web Browser': '網頁瀏覽器',
+      'Mobile App': '手機應用',
+      'Admin Panel': '管理後台',
+      'API': 'API介面',
+      'System': '系統',
+      'Backend': '後台系統'
+    };
+    
+    return platformMap[platform] || platform;
   };
 
   // 移除自動載入，需要手動搜尋
@@ -163,7 +189,7 @@ export default function BalanceOperationsPage() {
           存扣款紀錄
         </h1>
         <p className="audit-log-subtitle">
-          追蹤後台管理者對會員餘額的所有操作記錄
+          追蹤後台管理者對會員餘額的手動調整記錄（不包含簽到獎勵、優惠券兌換等自動操作）
         </p>
       </div>
 
@@ -359,7 +385,7 @@ export default function BalanceOperationsPage() {
                           </span>
                         </td>
                         <td className="ip-cell">{log.ip}</td>
-                        <td className="platform-cell">{log.platform}</td>
+                        <td className="platform-cell">{formatPlatform(log.platform)}</td>
                       </tr>
                     );
                   })}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 type NewsDetail = {
   id: number
@@ -226,7 +227,7 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
               <div className="article-content">
                 <div 
                   className="content-body"
-                  dangerouslySetInnerHTML={{ __html: news.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(news.content) }}
                 />
               </div>
             </article>

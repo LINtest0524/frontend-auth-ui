@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import '@/styles/pages/articles.css'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 type ArticleDetail = {
   id: number
@@ -243,7 +244,7 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
               <div className="article-content">
                 <div 
                   className="content-body"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
                 />
               </div>
             </article>

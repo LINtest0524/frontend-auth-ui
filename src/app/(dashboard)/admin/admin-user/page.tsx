@@ -45,12 +45,11 @@ export default function AdminUserListPage() {
       params.append("page", page.toString());
       params.append("excludeUserRole", "true");
 
-      const res = await fetch(`http://localhost:3001/user?${params.toString()}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const result = await res.json();
-      console.log('Admin users API response:', result);
       
       // 確保 data 是陣列
       if (result && Array.isArray(result.data)) {
@@ -58,13 +57,13 @@ export default function AdminUserListPage() {
         setTotalPages(result.totalPages || 1);
         setTotalCount(result.totalCount || 0);
       } else {
-        console.error('API 返回的資料格式不正確:', result);
+        // API 資料格式錯誤，靜默處理
         setAdminUsers([]);
         setTotalPages(1);
         setTotalCount(0);
       }
     } catch (err) {
-      console.error("Fetch failed", err);
+      // 資料載入失敗，靜默處理
       setAdminUsers([]);
       setTotalPages(1);
       setTotalCount(0);
@@ -98,7 +97,7 @@ export default function AdminUserListPage() {
     if (!confirm("確定要刪除這個管理員？")) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3001/user/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

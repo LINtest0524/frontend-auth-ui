@@ -35,7 +35,7 @@ export default function AgentLoginPage() {
           setEnabledLoginMethods(['USERNAME_PASSWORD', 'FACEBOOK'])
         }
       } catch (error) {
-        console.error('載入登入方式設定失敗:', error)
+        // 載入登入方式設定失敗，使用預設值
         setEnabledLoginMethods(['USERNAME_PASSWORD', 'FACEBOOK'])
       } finally {
         setLoginMethodsLoading(false)

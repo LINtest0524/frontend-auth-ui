@@ -58,7 +58,6 @@ export default function TestEcpayPage() {
       }
 
       const orderResult = await orderResponse.json()
-      console.log('測試訂單建立成功:', orderResult)
 
       // 建立綠界付款
       let ecpayMethod = ''
@@ -95,7 +94,6 @@ export default function TestEcpayPage() {
       }
 
       const paymentResult = await paymentResponse.json()
-      console.log('綠界付款建立成功:', paymentResult)
 
       if (paymentResult.success) {
         setResult({

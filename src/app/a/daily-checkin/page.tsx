@@ -46,7 +46,8 @@ export default function DailyCheckinPage() {
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_a')
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token && !user) {
         window.location.href = '/a/duplicate-login'
         return

@@ -6,6 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// 時間格式化函數
+const formatDateTime = (dateString: string): string => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/\//g, '-').replace(',', '');
+};
+
 interface Activity {
   id: number;
   title: string;
@@ -396,7 +411,7 @@ export default function PreviewActivityPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <span style={{ fontWeight: '600', color: '#64748b', fontSize: '0.95rem' }}>📅 活動期間</span>
-                <span style={{ color: '#1e293b', fontWeight: '600', fontSize: '1rem' }}>{activity.startDate} ~ {activity.endDate}</span>
+                <span style={{ color: '#1e293b', fontWeight: '600', fontSize: '1rem' }}>{formatDateTime(activity.startDate)} ~ {formatDateTime(activity.endDate)}</span>
               </div>
               {activity.days && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>

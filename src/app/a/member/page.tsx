@@ -68,7 +68,7 @@ export default function MemberPage() {
         setUser(userData.user)
         setIsVerifying(false)
       } catch (error) {
-        console.error('Token驗證失敗:', error)
+        // Token驗證失敗，靜默處理
         // 網路錯誤等，清除Token並導向登入頁
         localStorage.removeItem(`portalToken_${companyCode}`)
         localStorage.removeItem(`portalUser_${companyCode}`)

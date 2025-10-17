@@ -52,7 +52,7 @@ export default function ProductsPage() {
           setCategories(data)
         }
       } catch (error) {
-        console.error('載入分類失敗:', error)
+        // 載入分類失敗，靜默處理
       }
     }
     
@@ -83,7 +83,7 @@ export default function ProductsPage() {
           setCurrentPage(data.currentPage || 1)
         }
       } catch (error) {
-        console.error('載入產品失敗:', error)
+        // 載入產品失敗，靜默處理
       } finally {
         setLoading(false)
       }

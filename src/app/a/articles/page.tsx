@@ -56,7 +56,7 @@ export default function ArticlesListPage() {
         setCategories(data)
       }
     } catch (error) {
-      console.error('Failed to fetch categories:', error)
+      // 載入分類失敗，靜默處理
     }
   }
 
@@ -81,10 +81,10 @@ export default function ArticlesListPage() {
         setTotalPages(data.totalPages)
         setCurrentPage(data.page)
       } else {
-        console.error('Failed to fetch articles')
+        // 載入文章失敗，靜默處理
       }
     } catch (error) {
-      console.error('Failed to fetch articles:', error)
+      // 載入文章失敗，靜默處理
     } finally {
       setLoading(false)
     }

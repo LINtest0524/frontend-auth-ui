@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import '@/styles/pages/banner-form.css'
 
-const API_BASE = 'http://localhost:3001'
+// 使用環境變數 API 端點
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export default function BannerPage() {
@@ -39,10 +39,11 @@ export default function BannerPage() {
   const handleUpload = async (file: File): Promise<string> => {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await fetch(`${API_BASE}/banners/upload`, {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/upload`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     })
@@ -101,11 +102,12 @@ export default function BannerPage() {
         company: { id: 1 },
       }
 
-      const res = await fetch(`${API_BASE}/banners`, {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })

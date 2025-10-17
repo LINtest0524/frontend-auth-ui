@@ -55,7 +55,7 @@ async function getArticleData(articleId: string): Promise<ArticleResponse | null
     
     return await response.json()
   } catch (error) {
-    console.error('Failed to fetch article data:', error)
+    // 載入文章資料失敗，靜默處理
     return null
   }
 }

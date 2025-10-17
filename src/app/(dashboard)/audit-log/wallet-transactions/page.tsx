@@ -3,37 +3,26 @@
 import { useEffect, useState } from 'react';
 import '@/styles/pages/audit-log.css';
 
-interface CouponOperationLog {
+interface WalletTransactionLog {
   id: number;
-  ip: string;
-  platform: string;
-  action: string;
-  target: string;
-  before: {
-    templateName?: string;
-    templateId?: number;
-    couponCode?: string;
-    couponId?: number;
-    targetUser?: string;
-    status?: string;
-  };
-  after: {
-    templateName?: string;
-    templateId?: number;
-    couponCode?: string;
-    couponId?: number;
-    targetUser?: string;
-    status?: string;
-  };
-  created_at: string;
+  userId: number;
+  companyId: number;
+  transactionType: string;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  description: string;
+  referenceType: string | null;
+  referenceId: string | null;
+  createdAt: string;
   user: {
     id: number;
     username: string;
   } | null;
 }
 
-export default function CouponOperationsPage() {
-  const [logs, setLogs] = useState<CouponOperationLog[]>([]);
+export default function WalletTransactionsPage() {
+  const [logs, setLogs] = useState<WalletTransactionLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,8 +31,9 @@ export default function CouponOperationsPage() {
     to: '',
     search: '',
     user: '',
-    targetUser: '',
-    ip: '',
+    transactionType: '',
+    minAmount: '',
+    maxAmount: '',
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -54,11 +44,10 @@ export default function CouponOperationsPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
-        search: filters.search || '優惠券', // 搜尋包含「優惠券」的操作
-        ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value && key !== 'search'))
+        ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value))
       });
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/audit-log?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/wallet-transactions/admin/all?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -91,8 +80,9 @@ export default function CouponOperationsPage() {
       to: '',
       search: '',
       user: '',
-      targetUser: '',
-      ip: '',
+      transactionType: '',
+      minAmount: '',
+      maxAmount: '',
     });
     setCurrentPage(1);
     setLogs([]);
@@ -130,114 +120,84 @@ export default function CouponOperationsPage() {
     }
   };
 
-  const getOperationType = (action: string) => {
-    // 優先檢查刪除操作（避免被其他關鍵字覆蓋）
-    if (action.includes('刪除') || action.includes('DELETE')) return { type: '刪除', class: 'operation-delete' };
-    if (action.includes('新增') || action.includes('創建') || action.includes('CREATE')) return { type: '新增', class: 'operation-create' };
-    if (action.includes('發放') || action.includes('分發') || action.includes('DISTRIBUTE')) return { type: '發放', class: 'operation-distribute' };
-    if (action.includes('兌換') || action.includes('USE')) return { type: '兌換', class: 'operation-use' };
-    if (action.includes('優惠券')) return { type: '優惠券操作', class: 'operation-coupon' };
-    return { type: '未知', class: 'operation-unknown' };
+  const formatAmount = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '$0';
+    }
+    // 金額已經是正確的整數，不需要轉換
+    return amount.toLocaleString('zh-TW', {
+      style: 'currency',
+      currency: 'TWD',
+      minimumFractionDigits: 0
+    });
   };
 
-  const getCouponInfo = (log: CouponOperationLog) => {
-    const templateName = log.before?.templateName || log.after?.templateName;
-    const couponCode = log.before?.couponCode || log.after?.couponCode;
-    const templateId = log.before?.templateId || log.after?.templateId;
-    const couponId = log.before?.couponId || log.after?.couponId;
+  const getTransactionType = (type: string) => {
+    const typeMap: Record<string, { name: string; class: string }> = {
+      'coupon_redeem': { name: '優惠券兌換', class: 'type-coupon' },
+      'checkin_reward': { name: '簽到獎勵', class: 'type-checkin' },
+      'manual_recharge': { name: '手動充值', class: 'type-recharge' },
+      'admin_adjustment': { name: '管理員調整', class: 'type-admin' },
+      'admin_deposit': { name: '管理員存款', class: 'type-admin' },
+      'admin_deduct': { name: '管理員扣款', class: 'type-admin' },
+      'admin_deduction': { name: '管理員扣款', class: 'type-admin' },
+      'purchase': { name: '商品購買', class: 'type-purchase' },
+      'withdrawal': { name: '提現', class: 'type-withdrawal' },
+      'refund': { name: '退款', class: 'type-refund' },
+      'system_bonus': { name: '系統獎勵', class: 'type-bonus' },
+      'promotion_reward': { name: '活動獎勵', class: 'type-promotion' },
+    };
+    
+    return typeMap[type] || { name: type, class: 'type-unknown' };
+  };
 
+  const getAmountChange = (amount: number | null | undefined) => {
+    const safeAmount = amount || 0;
+    const isPositive = safeAmount > 0;
     return {
-      name: templateName || couponCode || `模板ID: ${templateId}` || `優惠券ID: ${couponId}` || '未知優惠券',
-      id: templateId || couponId || (log.target && log.target.includes(':') ? log.target.split(':')[1] : 'N/A')
+      isPositive,
+      formatted: `${isPositive ? '+' : ''}${formatAmount(safeAmount)}`
     };
   };
 
-  const getTargetUser = (log: CouponOperationLog) => {
-    const targetUser = log.before?.targetUser || log.after?.targetUser;
-    return targetUser || '系統操作';
-  };
+  const getReferenceInfo = (referenceType: string | null, referenceId: string | null) => {
+    // 關聯類型中文化映射
+    const referenceTypeMap: Record<string, string> = {
+      'checkin_system': '簽到系統',
+      'admin_operation': '管理員操作',
+      'coupon': '優惠券',
+      'purchase': '商品購買',
+      'withdrawal': '提現申請',
+      'refund': '退款處理',
+      'manual': '手動調整',
+      'system': '系統操作',
+    };
 
-  const getStatusChange = (log: CouponOperationLog) => {
-    // 如果有明確的狀態變化，顯示狀態變化
-    if (log.before?.status && log.after?.status) {
+    if (referenceType && referenceId) {
+      const typeName = referenceTypeMap[referenceType] || referenceType;
       return (
         <>
-          <span className="status-before">{log.before.status}</span>
-          <span className="status-arrow"> → </span>
-          <span className="status-after">{log.after.status}</span>
+          <span className="reference-type">{typeName}</span>
+          <span className="reference-id"> ID: {referenceId}</span>
         </>
       );
+    } else if (referenceType) {
+      const typeName = referenceTypeMap[referenceType] || referenceType;
+      return <span className="reference-type">{typeName}</span>;
+    } else {
+      return <span className="reference-none">-</span>;
     }
-    
-    // 如果只有 after 狀態（新增操作）
-    if (!log.before?.status && log.after?.status) {
-      return <span className="status-after">建立: {log.after.status}</span>;
-    }
-    
-    // 如果只有 before 狀態（刪除操作）
-    if (log.before?.status && !log.after?.status) {
-      return <span className="status-before">移除: {log.before.status}</span>;
-    }
-    
-    // 根據操作類型推斷狀態變化
-    if (log.action.includes('新增') || log.action.includes('創建')) {
-      return <span className="status-new">新增優惠券</span>;
-    }
-    
-    if (log.action.includes('發放') || log.action.includes('分發')) {
-      return <span className="status-distribute">發放給用戶</span>;
-    }
-    
-    if (log.action.includes('兌換') || log.action.includes('使用')) {
-      return <span className="status-used">已兌換</span>;
-    }
-    
-    if (log.action.includes('刪除')) {
-      return <span className="status-delete">已刪除</span>;
-    }
-    
-    // 預設顯示
-    return <span className="status-none">-</span>;
   };
-
-  const parseUserAgent = (userAgent: string) => {
-    if (!userAgent) return '未知裝置';
-
-    // 簡化的平台顯示
-    if (/Mobile|Android|iPhone/i.test(userAgent)) {
-      if (/iPhone/i.test(userAgent)) return '手機 (iPhone)';
-      if (/Android/i.test(userAgent)) return '手機 (Android)';
-      return '手機';
-    }
-    
-    if (/iPad/i.test(userAgent)) return '平板 (iPad)';
-    
-    if (/Macintosh|Mac OS X/i.test(userAgent)) return '電腦 (Mac)';
-    if (/Windows/i.test(userAgent)) return '電腦 (Windows)';
-    if (/Linux/i.test(userAgent)) return '電腦 (Linux)';
-    
-    // 檢查是否為已知平台標識
-    if (userAgent === 'Backend' || userAgent === 'System') return '後台系統';
-    if (userAgent === 'Admin Panel') return '管理後台';
-    
-    return '電腦';
-  };
-
-
-  // 移除自動載入，需要手動搜尋
-  // useEffect(() => {
-  //   fetchLogs();
-  // }, []);
 
   return (
     <div className="audit-log-container">
       <div className="audit-log-header">
         <h1 className="audit-log-title">
-          <span className="audit-log-icon">🎫</span>
-          優惠券紀錄
+          <span className="audit-log-icon">💰</span>
+          會員錢包記錄
         </h1>
         <p className="audit-log-subtitle">
-          追蹤後台管理者對優惠券的新增、發放、刪除等操作記錄
+          追蹤所有會員錢包交易記錄：簽到獎勵、優惠券兌換、商品購買、充值提現等
         </p>
       </div>
 
@@ -255,47 +215,64 @@ export default function CouponOperationsPage() {
           <div className="filter-content">
             <div className="filter-grid">
               <div className="form-group">
-                <label className="form-label">操作描述</label>
+                <label className="form-label">描述搜尋</label>
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="搜尋操作內容，例如：新增、發放、刪除"
+                  placeholder="搜尋交易描述"
                   value={filters.search}
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                 />
               </div>
               
               <div className="form-group">
-                <label className="form-label">操作管理員</label>
+                <label className="form-label">會員帳號</label>
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="輸入管理員帳號"
+                  placeholder="輸入會員帳號"
                   value={filters.user}
                   onChange={(e) => setFilters(prev => ({ ...prev, user: e.target.value }))}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">目標用戶</label>
-                <input
-                  type="text"
+                <label className="form-label">交易類型</label>
+                <select
                   className="form-input"
-                  placeholder="輸入會員帳號"
-                  value={filters.targetUser}
-                  onChange={(e) => setFilters(prev => ({ ...prev, targetUser: e.target.value }))}
-                />
+                  value={filters.transactionType}
+                  onChange={(e) => setFilters(prev => ({ ...prev, transactionType: e.target.value }))}
+                >
+                  <option value="">全部類型</option>
+                  <option value="coupon_redeem">優惠券兌換</option>
+                  <option value="checkin_reward">簽到獎勵</option>
+                  <option value="manual_recharge">手動充值</option>
+                  <option value="admin_adjustment">管理員調整</option>
+                  <option value="purchase">商品購買</option>
+                  <option value="withdrawal">提現</option>
+                  <option value="refund">退款</option>
+                </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">IP 位址</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="輸入 IP"
-                  value={filters.ip}
-                  onChange={(e) => setFilters(prev => ({ ...prev, ip: e.target.value }))}
-                />
+                <label className="form-label">金額範圍</label>
+                <div className="amount-range">
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="最小金額"
+                    value={filters.minAmount}
+                    onChange={(e) => setFilters(prev => ({ ...prev, minAmount: e.target.value }))}
+                  />
+                  <span>至</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="最大金額"
+                    value={filters.maxAmount}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxAmount: e.target.value }))}
+                  />
+                </div>
               </div>
             </div>
             
@@ -366,25 +343,24 @@ export default function CouponOperationsPage() {
               <thead>
                 <tr>
                   <th>時間</th>
-                  <th>操作管理員</th>
-                  <th>操作類型</th>
-                  <th>優惠券資訊</th>
-                  <th>目標用戶</th>
-                  <th>狀態變化</th>
-                  <th>IP 位址</th>
-                  <th>裝置</th>
+                  <th>會員</th>
+                  <th>交易類型</th>
+                  <th>交易描述</th>
+                  <th>交易前餘額</th>
+                  <th>交易後餘額</th>
+                  <th>變動金額</th>
+                  <th>關聯資訊</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => {
-                    const operation = getOperationType(log.action);
-                    const couponInfo = getCouponInfo(log);
-                    const targetUser = getTargetUser(log);
+                    const transactionType = getTransactionType(log.transactionType || '');
+                    const amountChange = getAmountChange(log.amount);
                     
                     return (
                       <tr key={log.id}>
                         <td className="time-cell">
-                          {new Date(log.created_at).toLocaleString('zh-TW', {
+                          {log.createdAt ? new Date(log.createdAt).toLocaleString('zh-TW', {
                             timeZone: 'Asia/Taipei',
                             hour12: false,
                             year: 'numeric',
@@ -393,35 +369,42 @@ export default function CouponOperationsPage() {
                             hour: '2-digit',
                             minute: '2-digit',
                             second: '2-digit'
-                          })}
+                          }) : '無效時間'}
                         </td>
-                        <td className="admin-cell">
-                          <div className="admin-info">
-                            <span className="admin-name">{log.user?.username || '未知管理員'}</span>
-                            <span className="admin-id">ID: {log.user?.id || 'N/A'}</span>
+                        <td className="user-cell">
+                          <div className="user-info">
+                            <span className="user-name">{log.user?.username || '未知用戶'}</span>
+                            <span className="user-id"> ID: {log.userId}</span>
                           </div>
                         </td>
-                        <td className="operation-cell">
-                          <span className={`operation-badge ${operation.class}`}>
-                            {operation.type}
+                        <td className="type-cell">
+                          <span className={`type-badge ${transactionType.class}`}>
+                            {transactionType.name}
                           </span>
                         </td>
-                        <td className="coupon-cell">
-                          <div className="coupon-info">
-                            <span className="coupon-name">{couponInfo.name}</span>
-                            <span className="coupon-id">ID: {couponInfo.id}</span>
+                        <td className="description-cell">
+                          <span className="description-text">{log.description}</span>
+                        </td>
+                        <td className="balance-cell">
+                          <span className="balance-amount">
+                            {formatAmount(log.balanceBefore || 0)}
+                          </span>
+                        </td>
+                        <td className="balance-cell">
+                          <span className="balance-amount">
+                            {formatAmount(log.balanceAfter || 0)}
+                          </span>
+                        </td>
+                        <td className="change-cell">
+                          <span className={`change-amount ${amountChange.isPositive ? 'positive' : 'negative'}`}>
+                            {amountChange.formatted}
+                          </span>
+                        </td>
+                        <td className="reference-cell">
+                          <div className="reference-info">
+                            {getReferenceInfo(log.referenceType, log.referenceId)}
                           </div>
                         </td>
-                        <td className="target-user-cell">
-                          <span className="target-user">{targetUser}</span>
-                        </td>
-                        <td className="status-cell">
-                          <div className="status-change">
-                            {getStatusChange(log)}
-                          </div>
-                        </td>
-                        <td className="ip-cell">{log.ip}</td>
-                        <td className="platform-cell">{parseUserAgent(log.platform)}</td>
                       </tr>
                     );
                   })}

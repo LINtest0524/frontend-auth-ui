@@ -48,7 +48,7 @@ async function getNewsData(newsId: string): Promise<NewsResponse | null> {
     
     return await response.json()
   } catch (error) {
-    console.error('Failed to fetch news data:', error)
+    // 載入新聞資料失敗，靜默處理
     return null
   }
 }

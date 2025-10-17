@@ -52,7 +52,7 @@ export default function AdminUserResetPasswordPage() {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/user/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -60,7 +60,7 @@ export default function AdminUserResetPasswordPage() {
           setUserInfo(data);
         }
       } catch (err) {
-        console.error("載入用戶資訊失敗:", err);
+        // 載入用戶資訊失敗，靜默處理
       }
     };
     
@@ -107,7 +107,7 @@ export default function AdminUserResetPasswordPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/user/${id}/password`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user/${id}/password`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

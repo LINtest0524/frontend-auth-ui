@@ -40,10 +40,10 @@ export default function AgentAHomePage() {
         const user = JSON.parse(userData)
         // 驗證 token 並記錄登入紀錄（防重複調用）
         verifyTokenOnce(companyCode).catch(error => {
-          console.error('Token 驗證失敗:', error)
+          // Token 驗證失敗，靜默處理
         })
       } catch (error) {
-        console.error('解析用戶資料失敗:', error)
+        // 解析用戶資料失敗，靜默處理
       }
     }
 

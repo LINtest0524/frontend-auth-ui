@@ -36,7 +36,8 @@ export default function LogoManagePage() {
         setLogos(data)
       }
     } catch (error) {
-      console.error('Failed to fetch logos:', error)
+      // 載入LOGO失敗，靜默處理
+      alert('載入LOGO列表失敗，請稍後再試')
     } finally {
       setLoading(false)
     }
@@ -68,7 +69,8 @@ export default function LogoManagePage() {
         alert('刪除失敗')
       }
     } catch (error) {
-      console.error('Delete failed:', error)
+      // 刪除LOGO失敗，靜默處理
+      alert('刪除LOGO失敗，請稍後再試')
       alert('刪除失敗')
     }
   }

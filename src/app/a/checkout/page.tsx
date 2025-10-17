@@ -122,7 +122,6 @@ export default function CheckoutPage() {
       try {
         const couponData = JSON.parse(savedCoupon)
         setAppliedCoupon(couponData)
-        console.log('🎫 結帳頁面載入優惠碼:', couponData)
       } catch (error) {
         console.error('解析優惠碼資料失敗:', error)
         sessionStorage.removeItem('appliedCoupon')
@@ -158,9 +157,9 @@ export default function CheckoutPage() {
     try {
       // 如果有使用優惠券，先調用使用優惠券 API
       if (appliedCoupon) {
-        console.log('🎫 使用優惠券:', appliedCoupon.code)
         
-        const token = localStorage.getItem('portalToken_a')
+        const companyCode = window.location.pathname.split('/')[1]
+        const token = localStorage.getItem(`portalToken_${companyCode}`)
         const useCouponResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/portal/coupons/use`, {
           method: 'POST',
           headers: {
@@ -179,7 +178,6 @@ export default function CheckoutPage() {
         }
 
         const useCouponResult = await useCouponResponse.json()
-        console.log('🎫 優惠券使用成功:', useCouponResult)
       }
 
       // 調用後端 API 建立訂單
@@ -206,7 +204,6 @@ export default function CheckoutPage() {
         company: 'a'
       }
 
-      console.log('提交訂單:', orderData)
 
       // 確保用戶已登入
       if (!user) {
@@ -215,7 +212,8 @@ export default function CheckoutPage() {
         return
       }
 
-      const token = localStorage.getItem('portalToken_a')
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
         alert('登入狀態已過期，請重新登入')
         window.location.href = '/a/login'

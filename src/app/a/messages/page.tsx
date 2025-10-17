@@ -13,7 +13,8 @@ export default function MessagesPage() {
   useEffect(() => {
     // 檢查用戶是否已登入
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_a')
+      const companyCode = window.location.pathname.split('/')[1]
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token && !user) {
         router.push('/a/login')
         return

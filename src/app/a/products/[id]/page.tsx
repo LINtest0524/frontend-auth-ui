@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import { useFavoritesStore } from '@/hooks/use-favorites-store'
 import './product-detail.css'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 interface FavoriteItem {
   id: number
@@ -338,11 +339,11 @@ export default function ProductDetailPage() {
             }
           }
         } else {
-          console.error('產品不存在')
+          // 產品不存在，靜默處理
           router.push('/a/products')
         }
       } catch (error) {
-        console.error('載入產品失敗:', error)
+        // 載入產品失敗，靜默處理
         router.push('/a/products')
       } finally {
         setLoading(false)
@@ -994,7 +995,7 @@ export default function ProductDetailPage() {
                 {product.description ? (
                   <div 
                     className="tab-text"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }}
                   />
                 ) : (
                   <p className="tab-empty">暫無詳細說明</p>
@@ -1010,7 +1011,7 @@ export default function ProductDetailPage() {
                 {product.specifications_description ? (
                   <div 
                     className="tab-text"
-                    dangerouslySetInnerHTML={{ __html: product.specifications_description }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.specifications_description) }}
                   />
                 ) : (
                   <p className="tab-empty">暫無規格說明</p>
@@ -1026,7 +1027,7 @@ export default function ProductDetailPage() {
                 {product.shipping_description ? (
                   <div 
                     className="tab-text"
-                    dangerouslySetInnerHTML={{ __html: product.shipping_description }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.shipping_description) }}
                   />
                 ) : (
                   <p className="tab-empty">暫無配送說明</p>

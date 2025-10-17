@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
 import '@/styles/pages/promotion-detail-luxury.css'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 interface PromotionCategory {
   id: number
@@ -57,7 +58,7 @@ export default function PromotionDetailPage() {
         router.push('/a/promotions')
       }
     } catch (error) {
-      console.error('獲取優惠活動失敗:', error)
+      // 獲取優惠活動失敗，靜默處理
       router.push('/a/promotions')
     } finally {
       setLoading(false)
@@ -70,7 +71,7 @@ export default function PromotionDetailPage() {
         method: 'POST'
       })
     } catch (error) {
-      console.error('更新瀏覽次數失敗:', error)
+      // 更新瀏覽次數失敗，靜默處理
     }
   }
 
@@ -233,7 +234,7 @@ export default function PromotionDetailPage() {
             <div className="luxury-content-body">
               <div 
                 className="luxury-prose"
-                dangerouslySetInnerHTML={{ __html: promotion.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(promotion.content) }}
               />
             </div>
           </div>

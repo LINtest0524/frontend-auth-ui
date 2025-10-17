@@ -46,7 +46,7 @@ export default function PromotionsPage() {
         url += `?categoryId=${selectedCategory}`
       }
       
-      const token = localStorage.getItem(`portalToken_a`)
+      const token = localStorage.getItem(`portalToken_${companySlug}`)
       const response = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
@@ -57,11 +57,11 @@ export default function PromotionsPage() {
         const promotionsData = Array.isArray(data) ? data : (data.promotions || [])
         setPromotions(promotionsData)
       } else {
-        console.error('API 回應錯誤:', response.status)
+        // API 回應錯誤，靜默處理
         setPromotions([])
       }
     } catch (error) {
-      console.error('獲取優惠活動失敗:', error)
+      // 獲取優惠活動失敗，靜默處理
       setPromotions([])
     } finally {
       setLoading(false)
@@ -77,11 +77,11 @@ export default function PromotionsPage() {
         const data = await response.json()
         setCategories(Array.isArray(data) ? data : [])
       } else {
-        console.error('獲取活動類型失敗:', response.status)
+        // 獲取活動類型失敗，靜默處理
         setCategories([])
       }
     } catch (error) {
-      console.error('獲取活動類型失敗:', error)
+      // 獲取活動類型失敗，靜默處理
       setCategories([])
     }
   }

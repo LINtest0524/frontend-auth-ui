@@ -48,7 +48,7 @@ export default function NewMenuPage() {
           userStore.setUser(parsed)
         }
       } catch (e) {
-        console.error("無法解析 user JSON", e)
+        // 無法解析用戶資料，靜默處理
       }
     }
   }, [])
@@ -98,7 +98,7 @@ export default function NewMenuPage() {
           setParentMenus(availableParents)
         }
       } catch (error) {
-        console.error('載入父選單失敗:', error)
+        // 載入父選單失敗，靜默處理
       }
     }
 
@@ -142,7 +142,8 @@ export default function NewMenuPage() {
         alert(`建立失敗: ${error.message || '未知錯誤'}`)
       }
     } catch (error) {
-      console.error('建立選單錯誤:', error)
+      // 建立選單錯誤，靜默處理
+      alert('建立選單失敗，請稍後再試')
       alert('建立失敗')
     } finally {
       setLoading(false)

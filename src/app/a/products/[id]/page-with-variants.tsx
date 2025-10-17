@@ -79,10 +79,10 @@ export default function ProductDetailWithVariants() {
           setSelectedOptions(defaultVariant.variant_options || {})
         }
       } else {
-        console.error('獲取產品失敗')
+        // 獲取產品失敗，靜默處理
       }
     } catch (error) {
-      console.error('獲取產品失敗:', error)
+      // 獲取產品失敗，靜默處理
     } finally {
       setLoading(false)
     }
@@ -214,7 +214,7 @@ export default function ProductDetailWithVariants() {
       alert('已加入購物車！')
       
     } catch (error) {
-      console.error('加入購物車失敗:', error)
+      // 加入購物車失敗，靜默處理
       alert('加入購物車失敗，請稍後再試')
     } finally {
       setAddingToCart(false)

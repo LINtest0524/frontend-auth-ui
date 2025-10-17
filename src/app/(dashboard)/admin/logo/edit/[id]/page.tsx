@@ -54,7 +54,8 @@ export default function LogoEditPage() {
         router.push('/admin/logo')
       }
     } catch (error) {
-      console.error('Failed to fetch logo:', error)
+      // 載入LOGO資料失敗，靜默處理
+      alert('載入LOGO資料失敗，請稍後再試')
       alert('載入失敗')
       router.push('/admin/logo')
     } finally {
@@ -126,7 +127,8 @@ export default function LogoEditPage() {
       router.push('/admin/logo')
     } catch (err: any) {
       alert('更新失敗：' + err.message)
-      console.error('更新失敗', err)
+      // 更新LOGO失敗，靜默處理
+      alert('更新LOGO失敗，請稍後再試')
     } finally {
       setLoading(false)
     }

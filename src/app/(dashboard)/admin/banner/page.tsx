@@ -15,8 +15,7 @@ type Banner = {
   desktop_image_url: string
   mobile_image_url: string
 }
-// 這是測試 Git 分支流程
-const API_BASE = 'http://localhost:3001'
+// 使用環境變數 API 端點
 
 export default function BannerListPage() {
   const [banners, setBanners] = useState<Banner[]>([])
@@ -26,14 +25,14 @@ export default function BannerListPage() {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await fetch(`${API_BASE}/banners`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
-        console.log(' 撈到 banners:', data) //   印出來比對
         setBanners(data)
       } catch (err) {
-        console.error('載入 Banner 失敗', err)
+        // 載入 Banner 失敗，靜默處理
+        alert('載入橫幅列表失敗，請稍後再試')
       }
     }
 
@@ -47,7 +46,7 @@ export default function BannerListPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch(`${API_BASE}/banners/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -58,7 +57,8 @@ export default function BannerListPage() {
       setBanners(prev => prev.filter(b => b.id !== id))
       alert('  刪除成功')
     } catch (err: any) {
-      console.error('    刪除失敗', err)
+      // 刪除失敗，靜默處理
+      alert('刪除橫幅失敗，請稍後再試')
       alert(`    刪除失敗：${err.message}`)
     }
   }
@@ -136,7 +136,7 @@ export default function BannerListPage() {
                 <td>
                   <button
                     className="image-preview-btn"
-                    onClick={() => setPreviewImage(`${API_BASE}${banner.desktop_image_url}`)}
+                    onClick={() => setPreviewImage(`${process.env.NEXT_PUBLIC_API_BASE}${banner.desktop_image_url}`)}
                   >
                     <span>🖥️</span>
                     預覽
@@ -145,7 +145,7 @@ export default function BannerListPage() {
                 <td>
                   <button
                     className="image-preview-btn"
-                    onClick={() => setPreviewImage(`${API_BASE}${banner.mobile_image_url}`)}
+                    onClick={() => setPreviewImage(`${process.env.NEXT_PUBLIC_API_BASE}${banner.mobile_image_url}`)}
                   >
                     <span>📱</span>
                     預覽
@@ -156,11 +156,12 @@ export default function BannerListPage() {
                     onClick={async () => {
                       const newStatus = banner.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
                       try {
-                        const res = await fetch(`${API_BASE}/banners/${banner.id}`, {
+                        const token = localStorage.getItem('token')
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/banners/${banner.id}`, {
                           method: 'PATCH',
                           headers: {
                             'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            Authorization: `Bearer ${token}`,
                           },
                           body: JSON.stringify({ status: newStatus }),
                         })
@@ -173,7 +174,8 @@ export default function BannerListPage() {
                         )
                       } catch (err) {
                         alert('無法切換狀態')
-                        console.error(err)
+                        // 圖片上傳失敗，靜默處理
+                        alert('圖片上傳失敗，請稍後再試')
                       }
                     }}
                     className={`status-toggle ${
