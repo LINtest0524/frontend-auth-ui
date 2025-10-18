@@ -3,57 +3,59 @@
 import { useEffect, useState } from 'react';
 import '@/styles/pages/audit-log.css';
 
-interface BalanceOperationLog {
+interface WalletTransaction {
   id: number;
-  ip: string;
-  platform: string;
-  action: string;
-  target: string;
-  before: {
-    balance: number;
-    username: string;
-    userId: number;
-  };
-  after: {
-    balance: number;
-    username: string;
-    userId: number;
-  };
-  created_at: string;
-  user: {
+  userId: number;
+  companyId: number;
+  transactionType: string;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  description: string;
+  referenceId?: string;
+  referenceType?: string;
+  ipAddress?: string;
+  createdBy?: number;
+  createdAt: string;
+  user?: {
     id: number;
     username: string;
-  } | null;
+  };
+  operator?: {
+    id: number;
+    username: string;
+  };
 }
 
 export default function BalanceOperationsPage() {
-  const [logs, setLogs] = useState<BalanceOperationLog[]>([]);
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState({
     from: '',
     to: '',
     search: '',
-    user: '',
+    operator: '',
     targetUser: '',
-    ip: '',
+    transactionType: '',
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const fetchLogs = async (page = 1) => {
+  const fetchTransactions = async (page = 1) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
-        search: filters.search || '餘額', // 搜尋包含「餘額」的操作
-        exclude: '簽到', // 排除簽到活動
-        ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value && key !== 'search'))
+        // 只查詢管理員操作的記錄
+        type: 'admin_operations',
+        ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value))
       });
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/audit-log?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/wallet-transactions?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -64,12 +66,13 @@ export default function BalanceOperationsPage() {
       }
 
       const result = await res.json();
-      setLogs(result.data || []);
+      setTransactions(result.data || []);
       setTotalPages(result.totalPages || 1);
+      setTotalCount(result.totalCount || 0);
       setCurrentPage(page);
     } catch (err) {
-      // 後端回傳錯誤，靜默處理
-      setLogs([]);
+      setTransactions([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -77,7 +80,7 @@ export default function BalanceOperationsPage() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchLogs(1);
+    fetchTransactions(1);
   };
 
   const clearFilters = () => {
@@ -85,13 +88,14 @@ export default function BalanceOperationsPage() {
       from: '',
       to: '',
       search: '',
-      user: '',
+      operator: '',
       targetUser: '',
-      ip: '',
+      transactionType: '',
     });
     setCurrentPage(1);
-    setLogs([]);
+    setTransactions([]);
     setTotalPages(1);
+    setTotalCount(0);
   };
 
   const quickSetDate = (type: string) => {
@@ -133,52 +137,28 @@ export default function BalanceOperationsPage() {
     });
   };
 
-  const getOperationType = (action: string) => {
-    // 這裡應該不會再出現簽到活動了，但如果出現就歸類為其他
-    if (action.includes('簽到') || action.includes('checkin')) return { type: '其他操作', class: 'operation-other' };
-    
-    // 檢查具體的操作類型
-    if (action.includes('購買') || action.includes('消費')) return { type: '購買商品', class: 'operation-purchase' };
-    if (action.includes('提現') || action.includes('withdraw')) return { type: '提現', class: 'operation-withdraw' };
-    if (action.includes('充值') || action.includes('deposit')) return { type: '充值', class: 'operation-deposit' };
-    
-    // 管理員直接操作
-    if (action.includes('存款') || action.includes('ADD')) return { type: '管理員存款', class: 'operation-deposit' };
-    if (action.includes('扣款') || action.includes('DEDUCT')) return { type: '管理員扣款', class: 'operation-withdraw' };
-    if (action.includes('調整') || action.includes('ADJUST')) return { type: '管理員調整', class: 'operation-adjust' };
-    if (action.includes('餘額')) return { type: '餘額調整', class: 'operation-adjust' };
-    
-    return { type: '未知', class: 'operation-unknown' };
+  const getOperationType = (transactionType: string, amount: number) => {
+    if (transactionType === 'admin_deposit' || amount > 0) {
+      return { type: '管理員存款', class: 'operation-deposit' };
+    } else if (transactionType === 'admin_deduction' || amount < 0) {
+      return { type: '管理員扣款', class: 'operation-withdraw' };
+    } else {
+      return { type: '管理員調整', class: 'operation-adjust' };
+    }
   };
 
-  const getBalanceChange = (before: number, after: number) => {
-    const change = after - before;
-    const isPositive = change > 0;
+  const formatAmount = (amount: number) => {
+    const isPositive = amount > 0;
     return {
-      amount: Math.abs(change),
+      amount: Math.abs(amount),
       isPositive,
-      formatted: `${isPositive ? '+' : '-'}${Math.abs(change).toLocaleString('zh-TW')}`
+      formatted: `${isPositive ? '+' : '-'}${Math.abs(amount).toLocaleString('zh-TW')}`
     };
-  };
-
-  const formatPlatform = (platform: string) => {
-    // 平台/裝置中文化映射
-    const platformMap: Record<string, string> = {
-      'Checkin System': '簽到系統',
-      'Web Browser': '網頁瀏覽器',
-      'Mobile App': '手機應用',
-      'Admin Panel': '管理後台',
-      'API': 'API介面',
-      'System': '系統',
-      'Backend': '後台系統'
-    };
-    
-    return platformMap[platform] || platform;
   };
 
   // 移除自動載入，需要手動搜尋
   // useEffect(() => {
-  //   fetchLogs();
+  //   fetchTransactions();
   // }, []);
 
   return (
@@ -207,24 +187,26 @@ export default function BalanceOperationsPage() {
           <div className="filter-content">
             <div className="filter-grid">
               <div className="form-group">
-                <label className="form-label">操作描述</label>
-                <input
-                  type="text"
+                <label className="form-label">操作類型</label>
+                <select
                   className="form-input"
-                  placeholder="搜尋操作內容，例如：存款、扣款、調整"
-                  value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                />
+                  value={filters.transactionType}
+                  onChange={(e) => setFilters(prev => ({ ...prev, transactionType: e.target.value }))}
+                >
+                  <option value="">全部類型</option>
+                  <option value="admin_deposit">管理員存款</option>
+                  <option value="admin_deduction">管理員扣款</option>
+                </select>
               </div>
               
               <div className="form-group">
-                <label className="form-label">操作管理員</label>
+                <label className="form-label">操作者</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="輸入管理員帳號"
-                  value={filters.user}
-                  onChange={(e) => setFilters(prev => ({ ...prev, user: e.target.value }))}
+                  value={filters.operator}
+                  onChange={(e) => setFilters(prev => ({ ...prev, operator: e.target.value }))}
                 />
               </div>
 
@@ -240,13 +222,13 @@ export default function BalanceOperationsPage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">IP 位址</label>
+                <label className="form-label">描述關鍵字</label>
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="輸入 IP"
-                  value={filters.ip}
-                  onChange={(e) => setFilters(prev => ({ ...prev, ip: e.target.value }))}
+                  placeholder="搜尋操作描述"
+                  value={filters.search}
+                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                 />
               </div>
             </div>
@@ -291,7 +273,7 @@ export default function BalanceOperationsPage() {
       <div className="content-section">
         <div className="table-controls">
           <div className="records-info">
-            <span>共 {logs.length} 筆紀錄</span>
+            <span>共 {totalCount} 筆紀錄</span>
           </div>
           <div className="page-info">
             <span>第 {currentPage} 頁，共 {totalPages} 頁</span>
@@ -305,38 +287,38 @@ export default function BalanceOperationsPage() {
           </div>
         )}
 
-        {!loading && logs.length === 0 && (
+        {!loading && transactions.length === 0 && (
           <div className="no-data">
             <img src="/no-information.webp" alt="無資料" />
             <p>請使用上方篩選條件進行查詢</p>
           </div>
         )}
 
-        {!loading && logs.length > 0 && (
+        {!loading && transactions.length > 0 && (
           <div className="table-container">
             <table className="audit-table">
               <thead>
                 <tr>
                   <th>時間</th>
-                  <th>操作管理員</th>
+                  <th>操作者</th>
                   <th>操作類型</th>
                   <th>目標會員</th>
                   <th>操作前餘額</th>
                   <th>操作後餘額</th>
                   <th>變動金額</th>
+                  <th>操作描述</th>
                   <th>IP 位址</th>
-                  <th>裝置</th>
                 </tr>
               </thead>
               <tbody>
-                {logs.map((log) => {
-                    const operation = getOperationType(log.action);
-                    const balanceChange = getBalanceChange(log.before?.balance || 0, log.after?.balance || 0);
+                {transactions.map((transaction) => {
+                    const operation = getOperationType(transaction.transactionType, transaction.amount);
+                    const amountFormat = formatAmount(transaction.amount);
                     
                     return (
-                      <tr key={log.id}>
+                      <tr key={transaction.id}>
                         <td className="time-cell">
-                          {new Date(log.created_at).toLocaleString('zh-TW', {
+                          {new Date(transaction.createdAt).toLocaleString('zh-TW', {
                             timeZone: 'Asia/Taipei',
                             hour12: false,
                             year: 'numeric',
@@ -349,8 +331,8 @@ export default function BalanceOperationsPage() {
                         </td>
                         <td className="admin-cell">
                           <div className="admin-info">
-                            <span className="admin-name">{log.user?.username || '未知管理員'}</span>
-                            <span className="admin-id">ID: {log.user?.id || 'N/A'}</span>
+                            <span className="admin-name">{transaction.operator?.username || '系統'}</span>
+                            <span className="admin-id">ID: {transaction.createdBy || 'N/A'}</span>
                           </div>
                         </td>
                         <td className="operation-cell">
@@ -361,31 +343,34 @@ export default function BalanceOperationsPage() {
                         <td className="target-cell">
                           <div className="target-info">
                             <span className="target-name">
-                              {log.before?.username || log.after?.username || '未知帳號'}
+                              {transaction.user?.username || '未知會員'}
                             </span>
                             <span className="target-id">
-                              ID: {log.before?.userId || log.after?.userId || 
-                                   (log.target && log.target.includes(':') ? log.target.split(':')[1] : 'N/A')}
+                              ID: {transaction.userId}
                             </span>
                           </div>
                         </td>
                         <td className="balance-cell">
                           <span className="balance-amount">
-                            {formatBalance(log.before?.balance || 0)}
+                            {formatBalance(transaction.balanceBefore)}
                           </span>
                         </td>
                         <td className="balance-cell">
                           <span className="balance-amount">
-                            {formatBalance(log.after?.balance || 0)}
+                            {formatBalance(transaction.balanceAfter)}
                           </span>
                         </td>
                         <td className="change-cell">
-                          <span className={`change-amount ${balanceChange.isPositive ? 'positive' : 'negative'}`}>
-                            {balanceChange.formatted}
+                          <span className={`change-amount ${amountFormat.isPositive ? 'positive' : 'negative'}`}>
+                            {amountFormat.formatted}
                           </span>
                         </td>
-                        <td className="ip-cell">{log.ip}</td>
-                        <td className="platform-cell">{formatPlatform(log.platform)}</td>
+                        <td className="description-cell">
+                          <span className="description-text" title={transaction.description}>
+                            {transaction.description}
+                          </span>
+                        </td>
+                        <td className="ip-cell">{transaction.ipAddress || '-'}</td>
                       </tr>
                     );
                   })}
@@ -398,7 +383,7 @@ export default function BalanceOperationsPage() {
         {totalPages > 1 && (
           <div className="pagination">
             <button
-              onClick={() => fetchLogs(Math.max(1, currentPage - 1))}
+              onClick={() => fetchTransactions(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="pagination-btn"
             >
@@ -410,7 +395,7 @@ export default function BalanceOperationsPage() {
               return (
                 <button
                   key={page}
-                  onClick={() => fetchLogs(page)}
+                  onClick={() => fetchTransactions(page)}
                   className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
                 >
                   {page}
@@ -419,7 +404,7 @@ export default function BalanceOperationsPage() {
             })}
             
             <button
-              onClick={() => fetchLogs(Math.min(totalPages, currentPage + 1))}
+              onClick={() => fetchTransactions(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="pagination-btn"
             >

@@ -26,6 +26,9 @@ export default function WalletTransactionsPage() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [inputLimit, setInputLimit] = useState(20);
   const [filters, setFilters] = useState({
     from: '',
     to: '',
@@ -43,7 +46,7 @@ export default function WalletTransactionsPage() {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '20',
+        limit: limit.toString(),
         ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value))
       });
 
@@ -60,6 +63,7 @@ export default function WalletTransactionsPage() {
       const result = await res.json();
       setLogs(result.data || []);
       setTotalPages(result.totalPages || 1);
+      setTotalCount(result.total || 0);
       setCurrentPage(page);
     } catch (err) {
       // 後端回傳錯誤，靜默處理
@@ -189,6 +193,13 @@ export default function WalletTransactionsPage() {
     }
   };
 
+  // 監聽 limit 變化，自動重新載入資料
+  useEffect(() => {
+    if (logs.length > 0 || totalCount > 0) { // 只有在已經有資料的情況下才自動重新載入
+      fetchLogs(currentPage);
+    }
+  }, [limit]);
+
   return (
     <div className="audit-log-container">
       <div className="audit-log-header">
@@ -314,14 +325,6 @@ export default function WalletTransactionsPage() {
 
       {/* 紀錄表格 */}
       <div className="content-section">
-        <div className="table-controls">
-          <div className="records-info">
-            <span>共 {logs.length} 筆紀錄</span>
-          </div>
-          <div className="page-info">
-            <span>第 {currentPage} 頁，共 {totalPages} 頁</span>
-          </div>
-        </div>
 
         {loading && (
           <div className="loading-container">
@@ -338,8 +341,41 @@ export default function WalletTransactionsPage() {
         )}
 
         {!loading && logs.length > 0 && (
-          <div className="table-container">
-            <table className="audit-table">
+          <div className="content-section">
+            {/* 表格控制區域 */}
+            <div className="table-controls">
+              <div className="pagination-control">
+                <label htmlFor="page-limit">每頁顯示：</label>
+                <input
+                  type="number"
+                  id="page-limit"
+                  value={inputLimit}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (!isNaN(val)) setInputLimit(val);
+                  }}
+                  min={1}
+                  className="pagination-input"
+                />
+                <button
+                  onClick={() => {
+                    const validLimit = Math.max(1, inputLimit);
+                    setLimit(validLimit);
+                    setCurrentPage(1);
+                    fetchLogs(1);
+                  }}
+                  className="btn-search"
+                >
+                  套用
+                </button>
+              </div>
+              <div className="pagination-info">
+                共 {totalCount} 筆資料
+              </div>
+            </div>
+
+            <div className="table-container">
+              <table className="audit-table">
               <thead>
                 <tr>
                   <th>時間</th>
@@ -409,7 +445,8 @@ export default function WalletTransactionsPage() {
                     );
                   })}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         )}
 

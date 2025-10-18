@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import '@/styles/pages/audit-log.css';
 
 interface CouponOperationLog {
@@ -37,6 +37,9 @@ export default function CouponOperationsPage() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [inputLimit, setInputLimit] = useState(20);
   const [filters, setFilters] = useState({
     from: '',
     to: '',
@@ -47,13 +50,13 @@ export default function CouponOperationsPage() {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const fetchLogs = async (page = 1) => {
+  const fetchLogs = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '20',
+        limit: limit.toString(),
         search: filters.search || '優惠券', // 搜尋包含「優惠券」的操作
         ...Object.fromEntries(Object.entries(filters).filter(([key, value]) => value && key !== 'search'))
       });
@@ -71,6 +74,7 @@ export default function CouponOperationsPage() {
       const result = await res.json();
       setLogs(result.data || []);
       setTotalPages(result.totalPages || 1);
+      setTotalCount(result.totalCount || 0);
       setCurrentPage(page);
     } catch (err) {
       // 後端回傳錯誤，靜默處理
@@ -78,7 +82,7 @@ export default function CouponOperationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit, filters]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -97,6 +101,7 @@ export default function CouponOperationsPage() {
     setCurrentPage(1);
     setLogs([]);
     setTotalPages(1);
+    setTotalCount(0);
   };
 
   const quickSetDate = (type: string) => {
@@ -229,6 +234,13 @@ export default function CouponOperationsPage() {
   //   fetchLogs();
   // }, []);
 
+  // 監聽 limit 變化，自動重新載入資料
+  useEffect(() => {
+    if (logs.length > 0 || totalCount > 0) { // 只有在已經有資料的情況下才自動重新載入
+      fetchLogs(currentPage);
+    }
+  }, [limit]);
+
   return (
     <div className="audit-log-container">
       <div className="audit-log-header">
@@ -266,7 +278,7 @@ export default function CouponOperationsPage() {
               </div>
               
               <div className="form-group">
-                <label className="form-label">操作管理員</label>
+                <label className="form-label">操作者</label>
                 <input
                   type="text"
                   className="form-input"
@@ -337,12 +349,35 @@ export default function CouponOperationsPage() {
 
       {/* 紀錄表格 */}
       <div className="content-section">
+        {/* 表格控制區域 - 總是顯示 */}
         <div className="table-controls">
-          <div className="records-info">
-            <span>共 {logs.length} 筆紀錄</span>
+          <div className="pagination-control">
+            <label htmlFor="page-limit">每頁顯示：</label>
+            <input
+              type="number"
+              id="page-limit"
+              value={inputLimit}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (!isNaN(val)) setInputLimit(val);
+              }}
+              min={1}
+              className="pagination-input"
+            />
+            <button
+              onClick={() => {
+                const validLimit = Math.max(1, inputLimit);
+                setLimit(validLimit);
+                setCurrentPage(1);
+                fetchLogs(1);
+              }}
+              className="btn-search"
+            >
+              套用
+            </button>
           </div>
-          <div className="page-info">
-            <span>第 {currentPage} 頁，共 {totalPages} 頁</span>
+          <div className="pagination-info">
+            共 {totalCount} 筆資料
           </div>
         </div>
 
@@ -366,7 +401,7 @@ export default function CouponOperationsPage() {
               <thead>
                 <tr>
                   <th>時間</th>
-                  <th>操作管理員</th>
+                  <th>操作者</th>
                   <th>操作類型</th>
                   <th>優惠券資訊</th>
                   <th>目標用戶</th>
