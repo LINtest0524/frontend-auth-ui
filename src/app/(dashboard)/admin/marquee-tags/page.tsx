@@ -56,8 +56,8 @@ export default function MarqueeTagListPage() {
       setItems(data);
       setHasSearched(true);
     } catch (err: any) {
-      console.error("Fetch error:", err);
-      setError("資料載入失敗");
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      setError("資料載入失敗，請稍後再試");
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,8 @@ export default function MarqueeTagListPage() {
       // 重新載入資料
       fetchData(searchName);
     } catch (err: any) {
-      setError(err.message || "刪除失敗");
+      // 安全錯誤處理：不直接顯示後端錯誤訊息
+      setError("刪除失敗，請稍後再試");
     }
   };
 

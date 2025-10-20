@@ -164,15 +164,11 @@ export default function ArticleCategoriesPage() {
       const token = localStorage.getItem('token')
       const params = new URLSearchParams()
       
-      if (searchTerm.trim()) params.append('search', searchTerm.trim())
-      if (selectedStatus) params.append('status', selectedStatus)
-      if (createdFrom) params.append('createdFrom', createdFrom + ' 00:00:00')
-      if (createdTo) params.append('createdTo', createdTo + ' 23:59:59')
+      // 注意：目前後端 findByCompany 方法不支援搜尋參數
+      // 我們先獲取所有資料，然後在前端進行篩選
       
-      params.append('limit', limit.toString())
-      params.append('page', page.toString())
-      
-      const url = `${process.env.NEXT_PUBLIC_API_BASE}/article-categories/company/${companyId}?${params}`
+      const url = `${process.env.NEXT_PUBLIC_API_BASE}/article-categories/company/${companyId}`
+      // API 調用（後端不支援搜尋參數，前端篩選）
       
       const response = await fetch(url, {
         headers: {
@@ -180,27 +176,81 @@ export default function ArticleCategoriesPage() {
           'Content-Type': 'application/json',
         },
       })
-
+      
       if (response.ok) {
         const result = await response.json()
-        // 假設 API 返回分頁數據，如果沒有則模擬
-        if (Array.isArray(result)) {
-          setCategories(sortCategories(result))
-          setTotalCount(result.length)
-          setTotalPages(1)
-        } else {
-          setCategories(sortCategories(result.data || result))
-          setTotalPages(result.totalPages || 1)
-          setTotalCount(result.totalCount || result.total || 0)
-        }
+        
+        // 後端只返回基本資料，我們需要在前端進行篩選
+        let allCategories = Array.isArray(result) ? result : (result.data || result)
+        
+        // 前端篩選邏輯
+        let filteredCategories = allCategories.filter((category: ArticleCategory) => {
+          // 名稱搜尋 - 安全處理搜尋內容
+          if (searchTerm.trim()) {
+            // 安全化搜尋詞，移除危險字符
+            const safeSearchTerm = searchTerm.replace(/[<>'"&]/g, '').toLowerCase()
+            if (safeSearchTerm) {
+              const safeName = (category.name || '').replace(/<[^>]*>/g, '').toLowerCase()
+              const safeSlug = (category.slug || '').replace(/<[^>]*>/g, '').toLowerCase()
+              const safeDescription = (category.description || '').replace(/<[^>]*>/g, '').toLowerCase()
+              
+              if (!safeName.includes(safeSearchTerm) && 
+                  !safeSlug.includes(safeSearchTerm) &&
+                  !safeDescription.includes(safeSearchTerm)) {
+                return false
+              }
+            }
+          }
+          
+          // 狀態篩選
+          if (selectedStatus && category.status !== selectedStatus) {
+            return false
+          }
+          
+          // 時間範圍篩選 - 安全驗證日期格式
+          if (createdFrom && /^\d{4}-\d{2}-\d{2}$/.test(createdFrom)) {
+            const categoryDate = new Date(category.createdAt).toISOString().split('T')[0]
+            if (categoryDate < createdFrom) {
+              return false
+            }
+          }
+          
+          if (createdTo && /^\d{4}-\d{2}-\d{2}$/.test(createdTo)) {
+            const categoryDate = new Date(category.createdAt).toISOString().split('T')[0]
+            if (categoryDate > createdTo) {
+              return false
+            }
+          }
+          
+          return true
+        })
+        
+        // 前端分頁 - 安全驗證分頁參數
+        const validPage = Math.max(1, page)
+        const validLimit = Math.max(1, Math.min(1000, limit))
+        const startIndex = (validPage - 1) * validLimit
+        const endIndex = startIndex + validLimit
+        const paginatedCategories = filteredCategories.slice(startIndex, endIndex)
+        
+        setCategories(sortCategories(paginatedCategories))
+        setTotalCount(filteredCategories.length)
+        setTotalPages(Math.ceil(filteredCategories.length / validLimit))
       } else {
-        console.error('獲取分類失敗')
+        // 安全錯誤處理：根據狀態碼提供適當訊息
+        if (response.status === 404) {
+          alert('找不到文章分類資料')
+        } else if (response.status === 403) {
+          alert('權限不足，無法存取文章分類')
+        } else {
+          alert('載入文章分類失敗，請稍後再試')
+        }
         setCategories([])
         setTotalCount(0)
         setTotalPages(1)
       }
     } catch (error) {
-      console.error('獲取分類錯誤:', error)
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      alert('載入失敗，請檢查網路連線後再試')
       setCategories([])
       setTotalCount(0)
       setTotalPages(1)
@@ -220,10 +270,12 @@ export default function ArticleCategoriesPage() {
     setSelectedStatus('')
     setCreatedFrom('')
     setCreatedTo('')
-    setCategories([])
-    setTotalPages(1)
-    setTotalCount(0)
-    setHasSearched(false)
+    setPage(1)
+    setHasSearched(true)
+    // 延遲執行以確保狀態更新完成
+    setTimeout(() => {
+      fetchCategories()
+    }, 100)
   }
 
   // 分頁渲染
@@ -319,11 +371,16 @@ export default function ArticleCategoriesPage() {
         alert('分類刪除成功')
         fetchCategories()
       } else {
-        alert('分類刪除失敗')
+        // 安全錯誤處理：根據狀態碼提供適當訊息
+        const statusMessage = response.status === 404 ? '找不到指定的分類' :
+                             response.status === 403 ? '權限不足，無法刪除此分類' :
+                             response.status === 409 ? '此分類正在使用中，無法刪除' :
+                             '刪除失敗，請稍後再試'
+        alert(statusMessage)
       }
     } catch (error) {
-      console.error('刪除分類錯誤:', error)
-      alert('分類刪除失敗')
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      alert('刪除失敗，請檢查網路連線後再試')
     }
   }
 
@@ -381,8 +438,18 @@ export default function ArticleCategoriesPage() {
                   id="search-term"
                   placeholder="請輸入分類名稱" 
                   value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
+                  onChange={(e) => {
+                    // 輸入長度和安全性限制
+                    const value = e.target.value
+                    if (value.length <= 100) {
+                      // 即時過濾危險字符
+                      const safeValue = value.replace(/[<>'"]/g, '')
+                      setSearchTerm(safeValue)
+                    }
+                  }}
                   className="form-input" 
+                  maxLength={100}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
 
@@ -464,9 +531,17 @@ export default function ArticleCategoriesPage() {
               />
               <button
                 onClick={() => {
-                  const validLimit = Math.max(1, inputLimit);
+                  // 強化分頁驗證
+                  const validLimit = Math.max(1, Math.min(1000, inputLimit));
+                  if (inputLimit !== validLimit) {
+                    alert('每頁顯示數量已調整為有效範圍 (1-1000)')
+                    setInputLimit(validLimit)
+                  }
                   setLimit(validLimit);
                   setPage(1); // 重置到第一頁
+                  setTimeout(() => {
+                    fetchCategories()
+                  }, 100)
                 }}
                 className="btn-search"
               >
@@ -484,19 +559,27 @@ export default function ArticleCategoriesPage() {
             <thead>
               <tr>
                 <th onClick={() => toggleSort("id")}>
-                  ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  <div className="fl4">
+                    ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  </div>
                 </th>
                 <th onClick={() => toggleSort("name")}>
-                  分類名稱 <span className={`sort-icon ${sortKey === "name" ? "active" : ""}`}>{getArrow("name")}</span>
+                  <div className="fl4">
+                    分類名稱 <span className={`sort-icon ${sortKey === "name" ? "active" : ""}`}>{getArrow("name")}</span>
+                  </div>
                 </th>
                 <th>代碼</th>
                 <th>描述</th>
                 <th>狀態</th>
                 <th onClick={() => toggleSort("sort")}>
-                  排序 <span className={`sort-icon ${sortKey === "sort" ? "active" : ""}`}>{getArrow("sort")}</span>
+                  <div className="fl4">
+                    排序 <span className={`sort-icon ${sortKey === "sort" ? "active" : ""}`}>{getArrow("sort")}</span>
+                  </div>
                 </th>
                 <th onClick={() => toggleSort("createdAt")}>
-                  建立時間 <span className={`sort-icon ${sortKey === "createdAt" ? "active" : ""}`}>{getArrow("createdAt")}</span>
+                  <div className="fl4">
+                    建立時間 <span className={`sort-icon ${sortKey === "createdAt" ? "active" : ""}`}>{getArrow("createdAt")}</span>
+                  </div>
                 </th>
                 <th>操作</th>
               </tr>
@@ -507,17 +590,22 @@ export default function ArticleCategoriesPage() {
                   <td>#{category.id}</td>
                   <td>
                     <div className="user-info">
-                      <div className="user-username">{category.name}</div>
+                      <div className="user-username">
+                        {/* 安全顯示：防止 XSS */}
+                        {category.name?.replace(/<[^>]*>/g, '') || '未命名'}
+                      </div>
                     </div>
                   </td>
                   <td>
                     <div className="login-info">
-                      🏷️ {category.slug}
+                      🏷️ {/* 安全顯示：防止 XSS */}
+                      {category.slug?.replace(/<[^>]*>/g, '') || '無代碼'}
                     </div>
                   </td>
                   <td>
                     <div className="login-info">
-                      📝 {category.description || '無描述'}
+                      📝 {/* 安全顯示：防止 XSS */}
+                      {(category.description || '無描述')?.replace(/<[^>]*>/g, '')}
                     </div>
                   </td>
                   <td>

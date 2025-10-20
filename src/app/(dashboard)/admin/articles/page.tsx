@@ -87,23 +87,50 @@ export default function ArticlesPage() {
       if (response.ok) {
         const data = await response.json()
         setCategories(data)
+      } else {
+        // 安全錯誤處理：不輸出敏感資訊
+        if (response.status === 403) {
+          alert('權限不足，無法存取文章分類')
+        }
       }
     } catch (error) {
-      console.error('獲取分類失敗:', error)
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      // 分類載入失敗時靜默處理，不影響主要功能
     }
   }
 
   const fetchArticles = async () => {
     setLoading(true)
     try {
+      // 安全驗證分頁參數
+      const validPage = Math.max(1, currentPage)
+      const validLimit = Math.max(1, Math.min(1000, limit))
+      
       const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: limit.toString(),
+        page: validPage.toString(),
+        limit: validLimit.toString(),
       })
       
-      if (searchTerm) params.append('search', searchTerm)
-      if (selectedStatus) params.append('status', selectedStatus)
-      if (selectedCategory) params.append('categoryId', selectedCategory)
+      // 安全的搜尋參數處理
+      const sanitizedSearchTerm = searchTerm.trim()
+      if (sanitizedSearchTerm && sanitizedSearchTerm.length <= 200) {
+        // 移除潛在的特殊字符，只保留安全字符
+        const safeSearchTerm = sanitizedSearchTerm.replace(/[<>'"&]/g, '')
+        if (safeSearchTerm) {
+          params.append('search', safeSearchTerm)
+        }
+      }
+      
+      // 驗證狀態參數
+      const validStatuses = ['ACTIVE', 'INACTIVE', 'DRAFT']
+      if (selectedStatus && validStatuses.includes(selectedStatus)) {
+        params.append('status', selectedStatus)
+      }
+      
+      // 驗證分類參數
+      if (selectedCategory && /^\d+$/.test(selectedCategory)) {
+        params.append('categoryId', selectedCategory)
+      }
 
       const token = localStorage.getItem('token')
       const response = await fetch(
@@ -122,10 +149,24 @@ export default function ArticlesPage() {
         setTotalPages(data.totalPages)
         setTotalCount(data.total)
       } else {
-        console.error('獲取文章失敗')
+        // 安全錯誤處理：根據狀態碼提供適當訊息
+        if (response.status === 404) {
+          alert('找不到文章資料')
+        } else if (response.status === 403) {
+          alert('權限不足，無法存取文章')
+        } else {
+          alert('載入文章失敗，請稍後再試')
+        }
+        setArticles([])
+        setTotalPages(1)
+        setTotalCount(0)
       }
     } catch (error) {
-      console.error('獲取文章錯誤:', error)
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      alert('載入失敗，請檢查網路連線後再試')
+      setArticles([])
+      setTotalPages(1)
+      setTotalCount(0)
     } finally {
       setLoading(false)
     }
@@ -154,11 +195,16 @@ export default function ArticlesPage() {
         alert('文章刪除成功')
         fetchArticles()
       } else {
-        alert('文章刪除失敗')
+        // 安全錯誤處理：根據狀態碼提供適當訊息
+        const statusMessage = response.status === 404 ? '找不到指定的文章' :
+                             response.status === 403 ? '權限不足，無法刪除此文章' :
+                             response.status === 409 ? '此文章正在使用中，無法刪除' :
+                             '刪除失敗，請稍後再試'
+        alert(statusMessage)
       }
     } catch (error) {
-      console.error('刪除文章錯誤:', error)
-      alert('文章刪除失敗')
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      alert('刪除失敗，請檢查網路連線後再試')
     }
   }
 
@@ -175,10 +221,11 @@ export default function ArticlesPage() {
     setSelectedStatus('')
     setSelectedCategory('')
     setCurrentPage(1)
-    setArticles([])
-    setTotalPages(1)
-    setTotalCount(0)
-    setHasSearched(false)
+    setHasSearched(true)
+    // 延遲執行以確保狀態更新完成
+    setTimeout(() => {
+      fetchArticles()
+    }, 100)
   }
 
   const getStatusText = (status: string) => {
@@ -310,8 +357,18 @@ export default function ArticlesPage() {
                   id="search-term"
                   placeholder="搜尋文章標題、摘要或內容..." 
                   value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
+                  onChange={(e) => {
+                    // 輸入長度和安全性限制
+                    const value = e.target.value
+                    if (value.length <= 200) {
+                      // 即時過濾危險字符
+                      const safeValue = value.replace(/[<>'"]/g, '')
+                      setSearchTerm(safeValue)
+                    }
+                  }}
                   className="form-input" 
+                  maxLength={200}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
 
@@ -341,7 +398,8 @@ export default function ArticlesPage() {
                   <option value="">所有分類</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {/* 安全顯示：防止 XSS */}
+                      {category.name?.replace(/<[^>]*>/g, '') || '未命名分類'}
                     </option>
                   ))}
                 </select>
@@ -382,9 +440,17 @@ export default function ArticlesPage() {
               />
               <button
                 onClick={() => {
-                  const validLimit = Math.max(1, inputLimit);
+                  // 強化分頁驗證
+                  const validLimit = Math.max(1, Math.min(1000, inputLimit));
+                  if (inputLimit !== validLimit) {
+                    alert('每頁顯示數量已調整為有效範圍 (1-1000)')
+                    setInputLimit(validLimit)
+                  }
                   setLimit(validLimit);
                   setCurrentPage(1);
+                  setTimeout(() => {
+                    fetchArticles()
+                  }, 100)
                 }}
                 className="btn-search"
               >
@@ -419,13 +485,17 @@ export default function ArticlesPage() {
                             📌 置頂
                           </span>
                         )}
-                        <div className="user-username">{article.title}</div>
+                        <div className="user-username">
+                          {/* 安全顯示：防止 XSS */}
+                          {article.title?.replace(/<[^>]*>/g, '') || '未命名'}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div className="login-info">
-                      📂 {article.category?.name || "未分類"}
+                      📂 {/* 安全顯示：防止 XSS */}
+                      {article.category?.name?.replace(/<[^>]*>/g, '') || "未分類"}
                     </div>
                   </td>
                   <td>

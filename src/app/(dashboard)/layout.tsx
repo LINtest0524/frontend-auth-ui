@@ -39,7 +39,7 @@ export default function DashboardLayout({
     const newState = !audioEnabled
     setAudioEnabled(newState)
     localStorage.setItem('audioEnabled', newState.toString())
-    console.log(`🔊 驗證通知音效已${newState ? '開啟' : '關閉'}`)
+    // 驗證通知音效狀態已更新
     
     // 觸發自定義事件通知其他組件
     window.dispatchEvent(new CustomEvent('audioToggle', { 

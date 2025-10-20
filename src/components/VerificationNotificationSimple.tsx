@@ -30,8 +30,8 @@ export default function VerificationNotificationSimple() {
   // 獲取未讀通知
   const fetchUnreadNotifications = async () => {
     try {
-      // 只在後台管理介面中運作，檢查路徑是否包含 dashboard
-      if (!window.location.pathname.includes('/dashboard') && !window.location.pathname.includes('/(dashboard)')) {
+      // 只在後台管理介面中運作，統一檢查路徑
+      if (!window.location.pathname.includes('/dashboard')) {
         return
       }
       
@@ -64,15 +64,19 @@ export default function VerificationNotificationSimple() {
           // 立即標記新通知為已處理，避免重複處理
           if (hasNewNotifications) {
             newIds.forEach((id: string) => processedNotificationIds.current.add(id))
+            
+            // 防止記憶體洩漏：保持最多100個已處理的ID
+            if (processedNotificationIds.current.size > 100) {
+              const idsArray = Array.from(processedNotificationIds.current)
+              const keepIds = idsArray.slice(-50) // 保留最新的50個
+              processedNotificationIds.current = new Set(keepIds)
+            }
           }
           
           // 先更新通知狀態，避免重複檢測
           setNotifications(data.notifications)
           
-          // 只在有新通知時才記錄日誌
-          if (hasNewNotifications && newIds.length > 0) {
-            console.log('🔔 檢測到新驗證申請:', `新增 ID: ${newIds.join(', ')}`)
-          }
+          // 檢測到新驗證申請
           
           // 只有在有新通知時才顯示彈窗
           if (hasNewNotifications) {
@@ -100,21 +104,10 @@ export default function VerificationNotificationSimple() {
             // 設置彈窗顯示狀態（移到這裡確保一定會執行）
             setIsDismissed(false) // 有新通知時重置關閉狀態
             
-            // 優化：只在開發環境或需要時輸出詳細日誌
-            if (process.env.NODE_ENV === 'development' || shouldPlaySound) {
-              console.log('🔍 音效播放檢查:', {
-                audioRef: !!audioRef.current,
-                audioEnabled,
-                currentAudioSetting,
-                recentlyClicked,
-                newIds: newIds.length,
-                shouldPlaySound,
-                timeSinceClick: timeSinceClick / 1000
-              })
-            }
+            // 音效播放檢查完成
             
             if (shouldPlaySound) {
-              console.log('🔊 準備播放音效 - 新通知 ID:', newIds.join(', '))
+              // 準備播放音效
               
               // 嘗試播放音效
               const playAudio = async () => {
@@ -123,13 +116,13 @@ export default function VerificationNotificationSimple() {
                     audioRef.current.currentTime = 0
                     await audioRef.current.play()
                   }
-                  console.log('🔊 驗證通知音效播放成功')
+                  // 音效播放成功
                 } catch (err: any) {
                   console.warn('⚠️ 驗證通知音效播放失敗:', err.message)
                   
                   // 如果是用戶互動問題，提示用戶點擊頁面來啟用音效
                   if (err.name === 'NotAllowedError') {
-                    console.log('💡 提示：請點擊頁面任意位置來啟用音效功能')
+                    // 提示用戶啟用音效
                   }
                 }
               }
@@ -139,17 +132,9 @@ export default function VerificationNotificationSimple() {
               // 播放音效後更新 lastSoundTime（重用已計算的 currentTime）
               setLastSoundTime(currentTime)
               localStorage.setItem('lastSoundTime', currentTime)
-              if (process.env.NODE_ENV === 'development') {
-                console.log('🔊 已更新上次音效時間:', toTaiwanDisplayTime(currentTime))
-              }
-            } else if (process.env.NODE_ENV === 'development') {
-              console.log('🔇 音效播放被跳過 - 條件不符合:', {
-                audioRef: !!audioRef.current,
-                currentAudioSetting,
-                recentlyClicked,
-                newIds: newIds.length
-              })
-            }
+              // 已更新上次音效時間
+            } 
+            // 音效播放被跳過
 
             // 更新最後檢查時間（移除重複設置）
             // setLastCheckTime 已在上面設置過了
@@ -165,7 +150,7 @@ export default function VerificationNotificationSimple() {
         // Token 無效，清除並停止檢查
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        console.log('VerificationNotification: Token已失效，已清除')
+        // Token已失效，已清除
         return
       }
     } catch (error) {
@@ -177,7 +162,7 @@ export default function VerificationNotificationSimple() {
   const updateAudioEnabled = () => {
     const enabled = localStorage.getItem('audioEnabled') === 'true'
     setAudioEnabled(enabled)
-    console.log('🔄 音效狀態已更新:', enabled ? 'ON' : 'OFF')
+    // 音效狀態已更新
   }
 
   // 強制同步音效狀態
@@ -185,7 +170,7 @@ export default function VerificationNotificationSimple() {
     const currentAudioSetting = localStorage.getItem('audioEnabled') === 'true'
     if (currentAudioSetting !== audioEnabled) {
       setAudioEnabled(currentAudioSetting)
-      console.log('🔄 強制同步音效狀態:', currentAudioSetting ? 'ON' : 'OFF')
+      // 強制同步音效狀態
     }
   }
 
@@ -195,23 +180,18 @@ export default function VerificationNotificationSimple() {
     forceSyncAudioState()
     
     const currentAudioSetting = localStorage.getItem('audioEnabled') === 'true'
-    console.log('🧪 測試音效播放:', {
-      audioRef: !!audioRef.current,
-      audioEnabled,
-      currentAudioSetting,
-      localStorage: localStorage.getItem('audioEnabled')
-    })
+    // 測試音效播放檢查
     
     if (audioRef.current && currentAudioSetting) {
-      console.log('測試播放音效...')
+      // 測試播放音效
       audioRef.current.currentTime = 0
       audioRef.current.play().then(() => {
-        console.log('音效播放成功')
+        // 音效播放成功
       }).catch((err: any) => {
-        console.log('音效播放失敗:', err)
+        // 音效播放失敗
       })
     } else {
-      console.log('音效未啟用或音效物件不存在')
+      // 音效未啟用或音效物件不存在
     }
   }
 
@@ -228,7 +208,7 @@ export default function VerificationNotificationSimple() {
         audioRef.current.currentTime = 0
         audioRef.current.volume = originalVolume || 0.5
         
-        console.log('🔊 音效上下文已啟用（不改變開關狀態）')
+        // 音效上下文已啟用
       } catch (err: any) {
         console.warn('⚠️ 音效上下文啟用失敗:', err.message)
       }
@@ -253,12 +233,7 @@ export default function VerificationNotificationSimple() {
     setAudioEnabled(currentAudioSetting)
     setLastSoundTime(savedLastSoundTime)
     
-    // 優化：只在開發環境輸出初始化日誌
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 初始化音效狀態:', currentAudioSetting ? 'ON' : 'OFF')
-      console.log('🔄 初始化上次音效時間:', savedLastSoundTime ? toTaiwanDisplayTime(savedLastSoundTime) : '無')
-      console.log('🚀 驗證通知組件已啟動，開始監聽通知...')
-    }
+    // 移除初始化日誌以減少控制台輸出
     
     // 頁面載入時先獲取未讀通知
     fetchUnreadNotifications()
@@ -275,7 +250,7 @@ export default function VerificationNotificationSimple() {
       if (!audioContextEnabled) {
         enableAudioContext() // 只啟用音效上下文，不改變開關狀態
         audioContextEnabled = true
-        console.log('🔊 音效上下文已啟用（一次性）')
+        // 音效上下文已啟用（一次性）
         
         // 移除事件監聽器，避免重複執行
         document.removeEventListener('click', handleUserInteraction)
@@ -291,7 +266,7 @@ export default function VerificationNotificationSimple() {
     const handleAudioToggle = () => {
       const currentSetting = localStorage.getItem('audioEnabled') === 'true'
       setAudioEnabled(currentSetting)
-      console.log('🔄 自定義事件同步音效狀態:', currentSetting ? 'ON' : 'OFF')
+      // 自定義事件同步音效狀態
     }
     window.addEventListener('audioToggle', handleAudioToggle)
 
@@ -300,7 +275,7 @@ export default function VerificationNotificationSimple() {
       if (e.key === 'audioEnabled') {
         const newValue = e.newValue === 'true'
         setAudioEnabled(newValue)
-        console.log('🔄 Storage 事件同步音效狀態:', newValue ? 'ON' : 'OFF')
+        // Storage 事件同步音效狀態
       }
     }
     window.addEventListener('storage', handleStorageChange)
@@ -324,7 +299,7 @@ export default function VerificationNotificationSimple() {
     setLastSoundTime(currentTime)
     localStorage.setItem('lastClickTime', currentTime)
     localStorage.setItem('lastSoundTime', currentTime)
-    console.log('👆 點擊通知，已更新時間:', toTaiwanDisplayTime(currentTime))
+    // 點擊通知，已更新時間
     
     // 如果已經在驗證頁面，強制刷新頁面
     if (window.location.pathname === '/admin/id-verification') {

@@ -151,17 +151,10 @@ export default function AdminMessagesPage() {
       
       if (response.ok) {
         const data = await response.json()
-        console.log('🏷️ 前端收到標籤數據:', data)
+        // 標籤數據載入成功
         setTags(data.tags || [])
         
-        // 顯示調試信息
-        if (data.debug) {
-          console.log('📊 標籤統計:', {
-            活躍標籤數量: data.debug.activeCount,
-            總標籤數量: data.debug.totalCount,
-            返回標籤數量: data.tags?.length || 0
-          })
-        }
+        // 標籤調試信息處理完成
       } else {
         console.error('獲取標籤列表失敗:', response.status, response.statusText)
       }
@@ -202,8 +195,14 @@ export default function AdminMessagesPage() {
         params.append('messageType', filterType)
       }
       
-      if (searchTerm.trim()) {
-        params.append('search', searchTerm.trim())
+      // 安全的搜尋參數處理
+      const sanitizedSearchTerm = searchTerm.trim()
+      if (sanitizedSearchTerm && sanitizedSearchTerm.length <= 100) {
+        // 移除潛在的特殊字符，只保留安全字符
+        const safeSearchTerm = sanitizedSearchTerm.replace(/[<>'"&]/g, '')
+        if (safeSearchTerm) {
+          params.append('search', safeSearchTerm)
+        }
       }
       
       // 如果是初始載入，使用近3天的時間範圍，否則使用篩選條件中的時間
@@ -214,11 +213,12 @@ export default function AdminMessagesPage() {
         params.append('createdFrom', threeDaysAgo)
         params.append('createdTo', todayStr)
       } else {
-        if (createdFrom) {
+        // 驗證日期格式
+        if (createdFrom && /^\d{4}-\d{2}-\d{2}$/.test(createdFrom)) {
           params.append('createdFrom', createdFrom)
         }
         
-        if (createdTo) {
+        if (createdTo && /^\d{4}-\d{2}-\d{2}$/.test(createdTo)) {
           params.append('createdTo', createdTo)
         }
       }
@@ -286,8 +286,36 @@ export default function AdminMessagesPage() {
   }
 
   const sendMessage = async () => {
-    if (!receiverUsername.trim() || !messageTitle.trim() || !messageContent.trim()) {
+    // 輸入驗證
+    const trimmedUsername = receiverUsername.trim()
+    const trimmedTitle = messageTitle.trim()
+    const trimmedContent = messageContent.trim()
+    
+    if (!trimmedUsername || !trimmedTitle || !trimmedContent) {
       alert('請填寫所有必填欄位')
+      return
+    }
+    
+    // 長度限制驗證
+    if (trimmedUsername.length > 50) {
+      alert('收件人帳號不能超過 50 個字符')
+      return
+    }
+    
+    if (trimmedTitle.length > 200) {
+      alert('消息標題不能超過 200 個字符')
+      return
+    }
+    
+    if (trimmedContent.length > 10000) {
+      alert('消息內容不能超過 10000 個字符')
+      return
+    }
+    
+    // 檢查特殊字符
+    const usernameRegex = /^[a-zA-Z0-9_\-@.]+$/
+    if (!usernameRegex.test(trimmedUsername)) {
+      alert('收件人帳號只能包含字母、數字、下底線、連字號、@ 和點號')
       return
     }
 
@@ -301,9 +329,9 @@ export default function AdminMessagesPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          receiverUsername: receiverUsername,
-          title: messageTitle,
-          content: messageContent
+          receiverUsername: trimmedUsername,
+          title: trimmedTitle,
+          content: trimmedContent
         })
       })
 
@@ -317,7 +345,11 @@ export default function AdminMessagesPage() {
         }
       } else {
         const error = await response.json()
-        alert(`發送失敗: ${error.message || '未知錯誤'}`)
+        // 安全錯誤處理：不直接顯示後端錯誤訊息
+        alert(response.status === 404 ? '找不到指定的收件人' : 
+              response.status === 400 ? '請檢查輸入資料格式' :
+              response.status === 403 ? '權限不足，無法執行此操作' :
+              '發送失敗，請稍後再試')
       }
     } catch (error) {
       console.error('發送消息失敗:', error)
@@ -328,8 +360,29 @@ export default function AdminMessagesPage() {
   }
 
   const sendBroadcast = async () => {
-    if (!broadcastTitle.trim() || !broadcastContent.trim()) {
+    // 輸入驗證
+    const trimmedTitle = broadcastTitle.trim()
+    const trimmedContent = broadcastContent.trim()
+    
+    if (!trimmedTitle || !trimmedContent) {
       alert('請填寫廣播標題和內容')
+      return
+    }
+    
+    // 長度限制驗證
+    if (trimmedTitle.length > 200) {
+      alert('廣播標題不能超過 200 個字符')
+      return
+    }
+    
+    if (trimmedContent.length > 10000) {
+      alert('廣播內容不能超過 10000 個字符')
+      return
+    }
+    
+    // 驗證有效天數
+    if (validDays !== undefined && (validDays < 1 || validDays > 365)) {
+      alert('有效天數必須在 1-365 天之間')
       return
     }
 
@@ -343,8 +396,8 @@ export default function AdminMessagesPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: broadcastTitle,
-          content: broadcastContent,
+          title: trimmedTitle,
+          content: trimmedContent,
           broadcastType: broadcastType,
           sendToNewMembers: sendToNewMembers,
           validDays: validDays
@@ -363,7 +416,10 @@ export default function AdminMessagesPage() {
         }
       } else {
         const error = await response.json()
-        alert(`發送失敗: ${error.message || '未知錯誤'}`)
+        // 安全錯誤處理：不直接顯示後端錯誤訊息
+        alert(response.status === 400 ? '請檢查廣播設定' :
+              response.status === 403 ? '權限不足，無法發送系統廣播' :
+              '廣播發送失敗，請稍後再試')
       }
     } catch (error) {
       console.error('發送廣播失敗:', error)
@@ -374,13 +430,34 @@ export default function AdminMessagesPage() {
   }
 
   const sendTagGroupMessage = async () => {
-    if (!tagGroupTitle.trim() || !tagGroupContent.trim()) {
+    // 輸入驗證
+    const trimmedTitle = tagGroupTitle.trim()
+    const trimmedContent = tagGroupContent.trim()
+    
+    if (!trimmedTitle || !trimmedContent) {
       alert('請填寫標題和內容')
       return
     }
 
     if (selectedTagIds.length === 0) {
       alert('請選擇至少一個標籤')
+      return
+    }
+    
+    // 長度限制驗證
+    if (trimmedTitle.length > 200) {
+      alert('標題不能超過 200 個字符')
+      return
+    }
+    
+    if (trimmedContent.length > 10000) {
+      alert('內容不能超過 10000 個字符')
+      return
+    }
+    
+    // 驗證標籤數量限制
+    if (selectedTagIds.length > 20) {
+      alert('最多只能選擇 20 個標籤')
       return
     }
 
@@ -394,8 +471,8 @@ export default function AdminMessagesPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: tagGroupTitle,
-          content: tagGroupContent,
+          title: trimmedTitle,
+          content: trimmedContent,
           tagIds: selectedTagIds
         })
       })
@@ -410,7 +487,10 @@ export default function AdminMessagesPage() {
         }
       } else {
         const error = await response.json()
-        alert(`發送失敗: ${error.message || '未知錯誤'}`)
+        // 安全錯誤處理：不直接顯示後端錯誤訊息
+        alert(response.status === 400 ? '請檢查標籤選擇' :
+              response.status === 403 ? '權限不足，無法發送標籤群組消息' :
+              '標籤群組消息發送失敗，請稍後再試')
       }
     } catch (error) {
       console.error('發送標籤群組消息失敗:', error)
@@ -459,7 +539,10 @@ export default function AdminMessagesPage() {
         }
       } else {
         const error = await response.json()
-        alert(`刪除失敗: ${error.message || '未知錯誤'}`)
+        // 安全錯誤處理：不直接顯示後端錯誤訊息
+        alert(response.status === 404 ? '找不到指定的消息' :
+              response.status === 403 ? '權限不足，無法刪除此消息' :
+              '刪除失敗，請稍後再試')
       }
     } catch (error) {
       console.error('刪除消息失敗:', error)
@@ -468,8 +551,23 @@ export default function AdminMessagesPage() {
   }
 
   const saveEditMessage = async () => {
-    if (!selectedMessage || !editTitle.trim() || !editContent.trim()) {
+    // 輸入驗證
+    const trimmedTitle = editTitle.trim()
+    const trimmedContent = editContent.trim()
+    
+    if (!selectedMessage || !trimmedTitle || !trimmedContent) {
       alert('請填寫標題和內容')
+      return
+    }
+    
+    // 長度限制驗證
+    if (trimmedTitle.length > 200) {
+      alert('標題不能超過 200 個字符')
+      return
+    }
+    
+    if (trimmedContent.length > 10000) {
+      alert('內容不能超過 10000 個字符')
       return
     }
 
@@ -482,8 +580,8 @@ export default function AdminMessagesPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: editTitle,
-          content: editContent
+          title: trimmedTitle,
+          content: trimmedContent
         })
       })
 
@@ -498,7 +596,11 @@ export default function AdminMessagesPage() {
         }
       } else {
         const error = await response.json()
-        alert(`更新失敗: ${error.message || '未知錯誤'}`)
+        // 安全錯誤處理：不直接顯示後端錯誤訊息
+        alert(response.status === 404 ? '找不到指定的消息' :
+              response.status === 403 ? '權限不足，無法編輯此消息' :
+              response.status === 400 ? '請檢查輸入資料格式' :
+              '更新失敗，請稍後再試')
       }
     } catch (error) {
       console.error('更新消息失敗:', error)
@@ -1238,7 +1340,9 @@ export default function AdminMessagesPage() {
             
             <div className="modal-detail-item">
               <div className="modal-detail-label">內容：</div>
-              <div className="modal-content-display" dangerouslySetInnerHTML={{ __html: selectedMessage.content }}>
+              <div className="modal-content-display">
+                {/* 安全顯示：移除 HTML 標籤防止 XSS */}
+                {selectedMessage.content.replace(/<[^>]*>/g, '')}
               </div>
             </div>
             

@@ -53,7 +53,19 @@ export default function AdminNewsPage() {
     const currentLimit = Number(customLimit || limit)
     const currentPage = Number(customPage || page)
     
+    // 強化分頁參數驗證
     if (!Number.isFinite(currentLimit) || !Number.isFinite(currentPage) || !user?.companyId) {
+      return
+    }
+    
+    // 分頁參數範圍限制
+    if (currentLimit < 1 || currentLimit > 1000) {
+      alert('每頁顯示數量必須在 1-1000 之間')
+      return
+    }
+    
+    if (currentPage < 1) {
+      alert('頁碼必須大於 0')
       return
     }
     setLoading(true)
@@ -64,11 +76,35 @@ export default function AdminNewsPage() {
         limit: currentLimit.toString(),
       })
       
-      if (searchTerm.trim()) params.append('search', searchTerm.trim())
-      if (selectedStatus) params.append('status', selectedStatus)
-      if (selectedCategory) params.append('category', selectedCategory)
-      if (createdFrom) params.append('createdFrom', createdFrom + ' 00:00:00')
-      if (createdTo) params.append('createdTo', createdTo + ' 23:59:59')
+      // 安全的搜尋參數處理
+      const sanitizedSearchTerm = searchTerm.trim()
+      if (sanitizedSearchTerm && sanitizedSearchTerm.length <= 100) {
+        // 移除潛在的特殊字符，只保留安全字符
+        const safeSearchTerm = sanitizedSearchTerm.replace(/[<>'"&]/g, '')
+        if (safeSearchTerm) {
+          params.append('search', safeSearchTerm)
+        }
+      }
+      
+      // 驗證狀態參數
+      const validStatuses = ['ACTIVE', 'INACTIVE', 'DRAFT', 'published', 'draft', 'archived']
+      if (selectedStatus && validStatuses.includes(selectedStatus)) {
+        params.append('status', selectedStatus)
+      }
+      
+      // 驗證分類參數
+      const validCategories = ['GENERAL', 'ANNOUNCEMENT', 'PROMOTION', 'UPDATE', 'announcement', 'news', 'event', 'promotion']
+      if (selectedCategory && validCategories.includes(selectedCategory)) {
+        params.append('category', selectedCategory)
+      }
+      
+      // 驗證日期格式
+      if (createdFrom && /^\d{4}-\d{2}-\d{2}$/.test(createdFrom)) {
+        params.append('createdFrom', createdFrom + ' 00:00:00')
+      }
+      if (createdTo && /^\d{4}-\d{2}-\d{2}$/.test(createdTo)) {
+        params.append('createdTo', createdTo + ' 23:59:59')
+      }
       
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/news/admin/company/${user.companyId}?${params}`,
@@ -98,7 +134,7 @@ export default function AdminNewsPage() {
         setTotalPages(1)
       }
     } catch (error) {
-      console.error('載入新聞失敗:', error)
+      // 安全錯誤處理：不輸出敏感資訊到控制台
       setNews([])
       setTotalCount(0)
       setTotalPages(1)
@@ -144,11 +180,15 @@ export default function AdminNewsPage() {
         alert('刪除成功')
         fetchNews()
       } else {
-        alert('刪除失敗')
+        // 安全錯誤處理：根據狀態碼提供適當訊息
+        const statusMessage = response.status === 404 ? '找不到指定的消息' :
+                             response.status === 403 ? '權限不足，無法刪除此消息' :
+                             '刪除失敗，請稍後再試'
+        alert(statusMessage)
       }
     } catch (error) {
-      console.error('刪除失敗:', error)
-      alert('刪除失敗')
+      // 安全錯誤處理：不輸出敏感資訊到控制台
+      alert('刪除失敗，請檢查網路連線後再試')
     }
   }
 
@@ -342,8 +382,15 @@ export default function AdminNewsPage() {
                   id="search-input"
                   placeholder="搜尋標題或內容..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    // 輸入長度限制
+                    const value = e.target.value
+                    if (value.length <= 100) {
+                      setSearchTerm(value)
+                    }
+                  }}
                   className="form-input"
+                  maxLength={100}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
@@ -451,7 +498,12 @@ export default function AdminNewsPage() {
               />
               <button
                 onClick={() => {
-                  const validLimit = Math.max(1, inputLimit);
+                  // 強化分頁驗證
+                  const validLimit = Math.max(1, Math.min(1000, inputLimit));
+                  if (inputLimit !== validLimit) {
+                    alert('每頁顯示數量已調整為有效範圍 (1-1000)')
+                    setInputLimit(validLimit)
+                  }
                   setLimit(validLimit);
                   setPage(1);
                   setHasSearched(true);
@@ -494,7 +546,8 @@ export default function AdminNewsPage() {
                             📌 置頂
                           </span>
                         )}
-                        {item.title}
+                        {/* 安全顯示：防止 XSS */}
+                        {item.title?.replace(/<[^>]*>/g, '') || '未命名'}
                       </div>
                       <div className="user-id" style={{ 
                         display: '-webkit-box',
@@ -503,7 +556,8 @@ export default function AdminNewsPage() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
                       }}>
-                        {item.summary || '無摘要'}
+                        {/* 安全顯示：防止 XSS */}
+                        {item.summary?.replace(/<[^>]*>/g, '') || '無摘要'}
                       </div>
                     </div>
                   </td>
