@@ -31,6 +31,7 @@ type WinLossRow = {
   id: string;
   rank: number;
   username: string;
+  cacheBalance: number;
   betCount: number;
   betAmount: number;
   validBetAmount: number;
@@ -88,8 +89,14 @@ export default function WinLossReportPage() {
 
   // 快速設定日期
   const quickSetDate = (type: string) => {
+    // 確保使用本地時區的日期
     const today = new Date();
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     
     switch (type) {
       case 'today':
@@ -283,7 +290,7 @@ export default function WinLossReportPage() {
       console.log('獲取到的結算數據:', allRounds);
 
       // 按玩家 ID 分組並計算統計
-      const playerStats = processPlayerStats(allRounds, usernameFilter);
+      const playerStats = await processPlayerStats(allRounds, usernameFilter);
       
       // 分頁處理
       const startIndex = (page - 1) * limit;
@@ -363,6 +370,13 @@ export default function WinLossReportPage() {
         allRounds = Array.isArray(data) ? data : (data.items || []);
       }
 
+      // 按投注時間排序 - 最新的在前
+      allRounds.sort((a, b) => {
+        const timeA = new Date(a.settledAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.settledAt || b.createdAt || 0).getTime();
+        return timeB - timeA; // 降序排列，最新的在前
+      });
+
       // 轉換為會員明細格式
       const details: MemberDetail[] = allRounds.map((round, index) => {
         // 直接使用 API 回傳的數據
@@ -378,19 +392,20 @@ export default function WinLossReportPage() {
         // 輸贏結果 = 派彩金額 - 下注金額
         const winLossAmount = payoutAmount - betAmount;
         
-        // 計算賠率
-        let odds = '0:1';
+        // 計算賠率 - 只顯示後面的數字
+        let odds = '1';
         if (betAmount > 0) {
           if (winLossAmount > 0) {
             // 有贏錢，計算賠率 
             const ratio = winLossAmount / betAmount;
-            odds = `1:${ratio.toFixed(0)}`;
+            // 如果是整數就不顯示小數點，否則顯示一位小數
+            odds = ratio % 1 === 0 ? ratio.toString() : ratio.toFixed(1);
           } else if (winLossAmount === 0) {
             // 平手
-            odds = '1:0';
+            odds = '0';
           } else {
             // 輸錢
-            odds = '0:1';
+            odds = '0';
           }
         }
         
@@ -460,6 +475,7 @@ export default function WinLossReportPage() {
     const csvData = rows.map(row => ({
       '排序': row.rank,
       '帳號': row.username,
+      '快取餘額': row.cacheBalance,
       '投注次數': row.betCount,
       '投注金額': row.betAmount,
       '有效投注': row.validBetAmount,
@@ -726,11 +742,11 @@ export default function WinLossReportPage() {
               <tr>
                 <th>排序</th>
                 <th>帳號</th>
+                <th>快取餘額</th>
                 <th>投注次數</th>
                 <th>投注金額</th>
                 <th>有效投注</th>
                 <th>輸贏結果</th>
-                <th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -754,19 +770,12 @@ export default function WinLossReportPage() {
                             {row.username}
                           </button>
                         </td>
+                        <td className="cache-balance-cell">{row.cacheBalance.toLocaleString()}</td>
                         <td className="count-cell">{row.betCount.toLocaleString()}</td>
                         <td className="amount-cell">{row.betAmount.toLocaleString()}</td>
                         <td className="amount-cell">{row.validBetAmount.toLocaleString()}</td>
                         <td className={`winloss-cell ${row.winLossAmount >= 0 ? 'profit' : 'loss'}`}>
                           {row.winLossAmount >= 0 ? '+' : ''}{row.winLossAmount.toLocaleString()}
-                        </td>
-                        <td className="action-cell">
-                          <button
-                            onClick={() => handleMemberExpand(row.username)}
-                            className="btn-detail"
-                          >
-                            {expandedMember === row.username ? '收合' : '明細'}
-                          </button>
                         </td>
                       </tr>
                       
@@ -855,7 +864,7 @@ export default function WinLossReportPage() {
 }
 
 // 處理玩家統計數據
-function processPlayerStats(rounds: any[], usernameFilter?: string): WinLossRow[] {
+async function processPlayerStats(rounds: any[], usernameFilter?: string): Promise<WinLossRow[]> {
   // 按玩家 ID 分組
   const playerGroups: { [key: string]: any[] } = {};
   
@@ -873,13 +882,51 @@ function processPlayerStats(rounds: any[], usernameFilter?: string): WinLossRow[
   // 計算每個玩家的統計
   const playerStats: WinLossRow[] = [];
   
-  Object.entries(playerGroups).forEach(([playerId, playerRounds], index) => {
+  for (const [playerId, playerRounds] of Object.entries(playerGroups)) {
     const betCount = playerRounds.length;
     
     // 使用 API 回傳的實際數據
     const totalBetAmount = playerRounds.reduce((sum, round) => sum + Number(round.betAmount || 0), 0);
-    const totalWinLoss = playerRounds.reduce((sum, round) => sum + Number(round.winAmount || 0), 0);
+    // 計算真正的輸贏結果：派彩金額 - 下注金額
+    const totalWinLoss = playerRounds.reduce((sum, round) => {
+      const betAmount = Number(round.betAmount || 0);
+      const winAmount = Number(round.winAmount || 0);
+      // 輸贏結果 = 派彩金額 - 下注金額
+      return sum + (winAmount - betAmount);
+    }, 0);
     const validBetAmount = totalBetAmount; // 假設有效投注等於投注金額
+    
+    // 計算快取餘額：下注後結果最後錢包的錢
+    let cacheBalance = 0;
+    try {
+      // 獲取用戶當前餘額
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/user?username=${playerId}&limit=1`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        console.log(`用戶 ${playerId} 餘額資料:`, userData);
+        if (userData && userData.data && userData.data.length > 0) {
+          // 後端回傳格式: { data: [], totalPages: number, totalCount: number }
+          cacheBalance = userData.data[0].balance || 0;
+        } else if (userData && userData.balance !== undefined) {
+          // 如果直接返回用戶對象而不是列表
+          cacheBalance = userData.balance || 0;
+        }
+      } else {
+        console.warn(`API 回應錯誤 ${playerId}:`, response.status, response.statusText);
+      }
+    } catch (e) {
+      console.warn(`無法獲取用戶 ${playerId} 的餘額:`, e);
+      // 如果無法獲取餘額，使用計算值
+      cacheBalance = totalWinLoss;
+    }
     
     // 最後投注時間
     const lastBetTime = playerRounds
@@ -890,15 +937,16 @@ function processPlayerStats(rounds: any[], usernameFilter?: string): WinLossRow[
 
     playerStats.push({
       id: `player_${playerId}`,
-      rank: index + 1,
+      rank: 0, // 後面會重新排序
       username: playerId,
+      cacheBalance,
       betCount,
       betAmount: totalBetAmount,
       validBetAmount,
       winLossAmount: totalWinLoss,
       lastBetTime
     });
-  });
+  }
 
   // 按輸贏金額排序（由高到低）
   playerStats.sort((a, b) => b.winLossAmount - a.winLossAmount);

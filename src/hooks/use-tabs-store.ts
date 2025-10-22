@@ -68,8 +68,6 @@ const routeTitleMap: Record<string, string> = {
   "/audit-log/coupon-operations": "優惠券紀錄",
   "/audit-log/wallet-transactions": "錢包記錄",
   // 報表管理
-  "/reports/bets": "下注歷史報表",
-  "/reports/rounds": "結算歷史報表",
   "/reports/winloss": "輸贏報表",
   // 編輯頁面
   "/admin/admin-user/new": "新增管理員",

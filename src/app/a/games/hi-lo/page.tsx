@@ -95,6 +95,8 @@ export default function HiLoPage() {
     
     if (userBalance !== null && betAmount > userBalance) {
       setErr('餘額不足');
+      // 3秒後自動清除錯誤訊息
+      setTimeout(() => setErr(null), 3000);
       return;
     }
 
@@ -155,7 +157,8 @@ export default function HiLoPage() {
     setErr(null);
   };
 
-  if (err && !balance) return (
+  // 只有在初始化失敗時才顯示完整錯誤頁面，餘額不足等遊戲內錯誤不應該讓整個遊戲消失
+  if (err && !balance && !currentUser) return (
     <div className="error-container">
       <div className="error-content">
         <div className="error-icon">⚠️</div>
@@ -319,7 +322,7 @@ export default function HiLoPage() {
             {/* Bet Button */}
             <button 
               onClick={doBet} 
-              disabled={isPlaying || !sessionToken || betAmount <= 0}
+              disabled={isPlaying || !sessionToken || betAmount <= 0 || (userBalance !== null && betAmount > userBalance)}
               className="bet-button"
             >
               {isPlaying ? (
@@ -327,6 +330,10 @@ export default function HiLoPage() {
                   <div className="loading-spinner-small"></div>
                   遊戲進行中...
                 </span>
+              ) : userBalance !== null && userBalance === 0 ? (
+                '💰 餘額不足，請聯繫客服充值'
+              ) : userBalance !== null && betAmount > userBalance ? (
+                '💰 下注金額超過餘額'
               ) : (
                 '🚀 立即下注'
               )}

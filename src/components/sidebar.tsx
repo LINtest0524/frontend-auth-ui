@@ -147,20 +147,6 @@ export default function Sidebar() {
           <div className={cn("sidebar-submenu", activeMenu === "reports" && "open")}>
             <div className="sidebar-fd">
               <Link
-                href="/reports/bets"
-                onClick={() => handleNavClick("/reports/bets")}
-                className={cn("sidebar-subitem", pathname === "/reports/bets" && currentActive === null && "active")}
-              >
-                下注歷史報表
-              </Link>
-              <Link
-                href="/reports/rounds"
-                onClick={() => handleNavClick("/reports/rounds")}
-                className={cn("sidebar-subitem", pathname === "/reports/rounds" && currentActive === null && "active")}
-              >
-                結算歷史報表
-              </Link>
-              <Link
                 href="/reports/winloss"
                 onClick={() => handleNavClick("/reports/winloss")}
                 className={cn("sidebar-subitem", pathname === "/reports/winloss" && currentActive === null && "active")}

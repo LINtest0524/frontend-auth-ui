@@ -221,6 +221,13 @@
   width: 150px;
 }
 
+.cache-balance-cell {
+  width: 120px;
+  text-align: right;
+  font-weight: 600;
+  color: #059669;
+}
+
 .username-button {
   background: none;
   border: none;
