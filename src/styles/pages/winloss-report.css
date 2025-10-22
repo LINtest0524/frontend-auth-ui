@@ -285,6 +285,18 @@
   width: 120px;
 }
 
+.amount-cell.profit {
+  color: #059669;
+}
+
+.amount-cell.loss {
+  color: #dc2626;
+}
+
+.amount-cell.break-even {
+  color: #6b7280;
+}
+
 .winloss-cell {
   text-align: right;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;

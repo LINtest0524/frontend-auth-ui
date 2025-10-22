@@ -1,13 +1,18 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
 
-// 前台正確的 token key：portalToken_a
-function getPortalTokenA(): string | null {
+// 動態獲取當前公司的 token
+function getPortalToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('portalToken_a');
+  
+  // 從當前路徑獲取公司代碼
+  const pathname = window.location.pathname;
+  const companyCode = pathname.split('/')[1] || 'a'; // 預設為 'a'
+  
+  return localStorage.getItem(`portalToken_${companyCode}`);
 }
 
 export async function apiGet(path: string) {
-  const token = getPortalTokenA();
+  const token = getPortalToken();
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'GET',
     headers: {
@@ -24,7 +29,7 @@ export async function apiGet(path: string) {
 }
 
 export async function apiPost(path: string, body?: any) {
-  const token = getPortalTokenA();
+  const token = getPortalToken();
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: {

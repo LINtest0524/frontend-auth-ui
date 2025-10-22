@@ -63,9 +63,10 @@ export function createAuthInterceptor(config: AuthInterceptorConfig) {
           consecutive500Errors++;
           last500ErrorTime = now;
           
-          // If we have 1 or more 500 errors on portal APIs, immediately assume it's a session invalidation issue
-          if (consecutive500Errors >= 1 && url.includes('/portal/')) {
-            handleSessionInvalidation(config);
+          // If we have 2 or more consecutive 500 errors on portal APIs, try to validate token first
+          if (consecutive500Errors >= 2 && url.includes('/portal/')) {
+            // Try to validate token before assuming session invalidation
+            validateTokenAndHandle(config);
             return response;
           }
         } else {
@@ -117,6 +118,64 @@ export function createAuthInterceptor(config: AuthInterceptorConfig) {
       throw error;
     }
   };
+}
+
+/**
+ * Validate token before handling session invalidation
+ */
+async function validateTokenAndHandle(config: AuthInterceptorConfig) {
+  if (isRedirecting) return;
+  
+  try {
+    const token = getToken(config.companyCode);
+    if (!token) {
+      handleSessionInvalidation(config);
+      return;
+    }
+    
+    const response = await fetch('/api/portal/validate-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      // Token 確實無效，清除並重定向到登入頁面
+      handleTokenInvalidation(config);
+    } else {
+      // Token 有效，可能是暫時的伺服器問題，重置錯誤計數器
+      consecutive500Errors = 0;
+    }
+  } catch (error) {
+    // 網路錯誤或其他問題，也重定向到登入頁面
+    handleTokenInvalidation(config);
+  }
+}
+
+/**
+ * Handle token invalidation by clearing local data and redirecting to login
+ */
+function handleTokenInvalidation(config: AuthInterceptorConfig) {
+  if (isRedirecting) return;
+  
+  isRedirecting = true;
+  
+  // Clear local storage for this company
+  logout(config.companyCode);
+  
+  // Also clear additional session-related data
+  localStorage.removeItem(`sessionId_${config.companyCode}`);
+  localStorage.removeItem(`tokenCreatedTime_${config.companyCode}`);
+  
+  // Reset consecutive error counter
+  consecutive500Errors = 0;
+  
+  // Redirect to login page instead of duplicate-login page
+  setTimeout(() => {
+    window.location.href = `/${config.companyCode}/login`;
+  }, 100);
 }
 
 /**

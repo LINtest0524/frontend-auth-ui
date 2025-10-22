@@ -36,7 +36,6 @@ export default function GamesPageA() {
           const userProfile = await apiGet('/user/profile');
           setUserBalance(userProfile.balance || 0);
         } catch (e) {
-          console.warn('無法獲取用戶錢包餘額:', e);
           setUserBalance(0);
         }
         
@@ -53,7 +52,6 @@ export default function GamesPageA() {
         const b = await apiGet(`/mock-games/balance?sessionToken=${encodeURIComponent(s.sessionToken)}`);
         setBalance(b.balance);
       } catch (e: any) {
-        console.error('Games page error:', e);
         setErr(e.message || '載入失敗');
       } finally {
         setLoading(false);
@@ -73,7 +71,7 @@ export default function GamesPageA() {
         setBalance(b.balance);
       }
     } catch (e: any) {
-      console.error('Refresh balance error:', e);
+      // 靜默處理錯誤
     }
   };
 
@@ -182,18 +180,6 @@ export default function GamesPageA() {
           <div className="footer-disclaimer">
             * 此為測試環境，所有資料僅供展示使用
           </div>
-          {sessionToken && (
-            <div className="tech-info">
-              <details>
-                <summary className="tech-summary">
-                  🔧 技術資訊
-                </summary>
-                <div className="tech-details">
-                  Session: {sessionToken}
-                </div>
-              </details>
-            </div>
-          )}
         </div>
       </div>
     </div>

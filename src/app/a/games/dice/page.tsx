@@ -55,7 +55,6 @@ export default function DicePage() {
           const userProfile = await apiGet('/user/profile');
           setUserBalance(userProfile.balance || 0);
         } catch (e) {
-          console.warn('無法獲取用戶錢包餘額:', e);
           setUserBalance(0);
         }
         
@@ -67,7 +66,6 @@ export default function DicePage() {
         const b = await apiGet(`/mock-games/balance?sessionToken=${encodeURIComponent(s.sessionToken)}`);
         setBalance(b.balance);
       } catch (e: any) {
-        console.error('Dice init error:', e);
         setErr(e.message || '初始化失敗');
       }
     })();
@@ -112,7 +110,11 @@ export default function DicePage() {
       setResult(null);
       setErr(null);
       
-      const roundId = `round_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // 生成更安全的隨機 roundId
+      const timestamp = Date.now();
+      const random1 = Math.random().toString(36).substr(2, 9);
+      const random2 = Math.random().toString(36).substr(2, 9);
+      const roundId = `dice_${timestamp}_${random1}${random2}`;
       
       const betPayload = betType === 'size' 
         ? { choice: sizeChoice }
@@ -153,7 +155,6 @@ export default function DicePage() {
       }
       
     } catch (e: any) {
-      console.error('Bet error:', e);
       setMessage('');
       setErr(e.message ?? '下注失敗');
     } finally {

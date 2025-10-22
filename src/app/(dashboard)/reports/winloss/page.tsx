@@ -39,19 +39,6 @@ type WinLossRow = {
   lastBetTime?: string;
 };
 
-type MemberDetail = {
-  id: string;
-  roundId: string;
-  gameProvider: string;
-  gameName: string;
-  betTime: string;
-  betAmount: number;
-  validBetAmount: number;
-  payoutAmount: number;
-  winLossAmount: number;
-  odds: string;
-  status: string;
-};
 
 export default function WinLossReportPage() {
   const [loading, setLoading] = useState(false);
@@ -74,10 +61,6 @@ export default function WinLossReportPage() {
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // 會員明細
-  const [expandedMember, setExpandedMember] = useState<string | null>(null);
-  const [memberDetails, setMemberDetails] = useState<MemberDetail[]>([]);
-  const [loadingDetails, setLoadingDetails] = useState(false);
 
   // 初始化選中的遊戲供應商
   useEffect(() => {
@@ -183,7 +166,6 @@ export default function WinLossReportPage() {
       effectiveDateFrom = thirtyDaysAgo.toISOString().split('T')[0];
       effectiveDateTo = today.toISOString().split('T')[0];
       
-      console.log(`為玩家 ${usernameFilter} 自動設定日期範圍: ${effectiveDateFrom} 到 ${effectiveDateTo}`);
     }
 
     setLoading(true);
@@ -218,7 +200,7 @@ export default function WinLossReportPage() {
                 allRounds = allRounds.concat(gameRounds);
               }
             } catch (e) {
-              console.warn(`查詢失敗 - 玩家: ${usernameFilter}, 遊戲: ${provider}`, e);
+              // 靜默處理查詢錯誤
             }
           }
         } else {
@@ -234,7 +216,7 @@ export default function WinLossReportPage() {
               allRounds = allRounds.concat(rounds);
             }
           } catch (e) {
-            console.warn(`查詢失敗 - 玩家: ${usernameFilter}`, e);
+            // 靜默處理查詢錯誤
           }
         }
       } else {
@@ -259,10 +241,9 @@ export default function WinLossReportPage() {
                 const gameData = await gameResponse.json();
                 const gameRounds = Array.isArray(gameData) ? gameData : (gameData.items || []);
                 allRounds = allRounds.concat(gameRounds);
-                console.log(`${provider} 遊戲找到 ${gameRounds.length} 筆記錄`);
               }
             } catch (e) {
-              console.warn(`查詢失敗 - 遊戲: ${provider}`, e);
+              // 靜默處理查詢錯誤
             }
           }
         } else {
@@ -276,18 +257,13 @@ export default function WinLossReportPage() {
               const data = await response.json();
               const rounds = Array.isArray(data) ? data : (data.items || []);
               allRounds = allRounds.concat(rounds);
-              console.log(`找到 ${rounds.length} 筆所有遊戲記錄`);
             }
           } catch (e) {
-            console.warn('查詢所有遊戲失敗:', e);
+            // 靜默處理查詢錯誤
           }
         }
-        
-        console.log(`總共找到 ${allRounds.length} 筆記錄`);
       }
 
-      console.log('選中的遊戲供應商:', selectedProviders);
-      console.log('獲取到的結算數據:', allRounds);
 
       // 按玩家 ID 分組並計算統計
       const playerStats = await processPlayerStats(allRounds, usernameFilter);
@@ -301,7 +277,6 @@ export default function WinLossReportPage() {
       setTotalCount(playerStats.length);
       
     } catch (e: any) {
-      console.error('載入輸贏報表失敗:', e);
       setError(e.message || '載入失敗');
       setRows([]);
       setTotalCount(0);
@@ -310,148 +285,6 @@ export default function WinLossReportPage() {
     }
   };
 
-  // 載入會員明細
-  const loadMemberDetails = async (username: string) => {
-    setLoadingDetails(true);
-    try {
-      console.log('載入會員明細:', username);
-      
-      // 構建查詢參數
-      const baseParams = new URLSearchParams();
-      baseParams.append('playerId', username);
-      
-      // 使用與主搜尋相同的日期邏輯
-      let detailDateFrom = dateFrom;
-      let detailDateTo = dateTo;
-      
-      if (!dateFrom && !dateTo) {
-        // 如果沒有設定日期，使用30天範圍
-        const today = new Date();
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        
-        detailDateFrom = thirtyDaysAgo.toISOString().split('T')[0];
-        detailDateTo = today.toISOString().split('T')[0];
-      }
-      
-      if (detailDateFrom) baseParams.append('dateFrom', detailDateFrom + ' 00:00:00');
-      if (detailDateTo) baseParams.append('dateTo', detailDateTo + ' 23:59:59');
-      baseParams.append('limit', '500'); // 會員明細設定較大限制
-
-      let allRounds: any[] = [];
-      
-      if (selectedProviders.length > 0) {
-        // 為每個選中的遊戲分別查詢該會員的記錄
-        for (const provider of selectedProviders) {
-          const queryParams = new URLSearchParams(baseParams);
-          queryParams.append('gameId', provider);
-          
-          const response = await fetch(`${API_BASE}/mock-games/history/rounds?${queryParams.toString()}`, {
-            cache: 'no-store'
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            const rounds = Array.isArray(data) ? data : (data.items || []);
-            allRounds = allRounds.concat(rounds);
-          }
-        }
-      } else {
-        // 如果沒有選擇特定遊戲，查詢該會員的所有記錄
-        const response = await fetch(`${API_BASE}/mock-games/history/rounds?${baseParams.toString()}`, {
-          cache: 'no-store'
-        });
-        
-        if (!response.ok) {
-          throw new Error(`API 錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        allRounds = Array.isArray(data) ? data : (data.items || []);
-      }
-
-      // 按投注時間排序 - 最新的在前
-      allRounds.sort((a, b) => {
-        const timeA = new Date(a.settledAt || a.createdAt || 0).getTime();
-        const timeB = new Date(b.settledAt || b.createdAt || 0).getTime();
-        return timeB - timeA; // 降序排列，最新的在前
-      });
-
-      // 轉換為會員明細格式
-      const details: MemberDetail[] = allRounds.map((round, index) => {
-        // 直接使用 API 回傳的數據
-        const betAmount = Number(round.betAmount || 0);
-        const winAmount = Number(round.winAmount || 0);
-        
-        // 修正後的派彩計算邏輯：
-        // 我們的後端現在保存的 winAmount 就是派彩金額
-        // - 贏了：winAmount = 本金 + 獎金（例如 8）
-        // - 輸了：winAmount = 0（沒有派彩）
-        const payoutAmount = winAmount;
-        
-        // 輸贏結果 = 派彩金額 - 下注金額
-        const winLossAmount = payoutAmount - betAmount;
-        
-        // 計算賠率 - 只顯示後面的數字
-        let odds = '1';
-        if (betAmount > 0) {
-          if (winLossAmount > 0) {
-            // 有贏錢，計算賠率 
-            const ratio = winLossAmount / betAmount;
-            // 如果是整數就不顯示小數點，否則顯示一位小數
-            odds = ratio % 1 === 0 ? ratio.toString() : ratio.toFixed(1);
-          } else if (winLossAmount === 0) {
-            // 平手
-            odds = '0';
-          } else {
-            // 輸錢
-            odds = '0';
-          }
-        }
-        
-        console.log('Round數據:', {
-          roundId: round.roundId,
-          betAmount,
-          winAmount,
-          payoutAmount,
-          winLossAmount
-        });
-        
-        return {
-          id: round.id || `detail_${index}`,
-          roundId: round.roundId,
-          gameProvider: getGameProviderName(round.gameId),
-          gameName: getGameName(round.gameId),
-          betTime: round.settledAt || round.createdAt,
-          betAmount,
-          validBetAmount: betAmount,
-          payoutAmount,
-          winLossAmount,
-          odds,
-          status: round.finished ? '已結算' : '待結算'
-        };
-      });
-
-      setMemberDetails(details);
-      
-    } catch (e: any) {
-      console.error('載入會員明細失敗:', e);
-      setMemberDetails([]);
-    } finally {
-      setLoadingDetails(false);
-    }
-  };
-
-  // 處理會員明細展開/收合
-  const handleMemberExpand = (username: string) => {
-    if (expandedMember === username) {
-      setExpandedMember(null);
-      setMemberDetails([]);
-    } else {
-      setExpandedMember(username);
-      loadMemberDetails(username);
-    }
-  };
 
   // 重置篩選
   const clearFilter = () => {
@@ -759,76 +592,25 @@ export default function WinLossReportPage() {
               ) : (
                 <>
                   {rows.map((row, index) => (
-                    <React.Fragment key={row.id}>
-                      <tr className={expandedMember === row.username ? 'expanded-row' : ''}>
-                        <td className="rank-cell">{row.rank}</td>
-                        <td className="username-cell">
-                          <button
-                            onClick={() => handleMemberExpand(row.username)}
-                            className="username-button-blue"
-                          >
-                            {row.username}
-                          </button>
-                        </td>
-                        <td className="cache-balance-cell">{row.cacheBalance.toLocaleString()}</td>
-                        <td className="count-cell">{row.betCount.toLocaleString()}</td>
-                        <td className="amount-cell">{row.betAmount.toLocaleString()}</td>
-                        <td className="amount-cell">{row.validBetAmount.toLocaleString()}</td>
-                        <td className={`winloss-cell ${row.winLossAmount >= 0 ? 'profit' : 'loss'}`}>
-                          {row.winLossAmount >= 0 ? '+' : ''}{row.winLossAmount.toLocaleString()}
-                        </td>
-                      </tr>
-                      
-                      {/* 會員明細行 */}
-                      {expandedMember === row.username && (
-                        <tr className="member-detail-row">
-                          <td colSpan={7}>
-                            <div className="member-detail-container">
-                              {loadingDetails ? (
-                                <div className="detail-loading">載入明細中...</div>
-                              ) : (
-                                <table className="detail-table">
-                                  <thead>
-                                    <tr>
-                                      <th>遊戲商</th>
-                                      <th>遊戲名稱</th>
-                                      <th>投注時間</th>
-                                      <th>投注金額</th>
-                                      <th>有效投注</th>
-                                      <th>派彩金額</th>
-                                      <th>輸贏結果</th>
-                                      <th>賠率</th>
-                                      <th>狀態</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {memberDetails.map(detail => (
-                                      <tr key={detail.id}>
-                                        <td>{detail.gameProvider}</td>
-                                        <td>{detail.gameName}</td>
-                                        <td>{formatDateTime(detail.betTime)}</td>
-                                        <td className="amount-cell">{detail.betAmount.toLocaleString()}</td>
-                                        <td className="amount-cell">{detail.validBetAmount.toLocaleString()}</td>
-                                        <td className="amount-cell">{detail.payoutAmount.toLocaleString()}</td>
-                                        <td className={`amount-cell ${detail.winLossAmount > 0 ? 'profit' : detail.winLossAmount < 0 ? 'loss' : 'break-even'}`}>
-                                          {detail.winLossAmount > 0 ? '+' : ''}{detail.winLossAmount.toLocaleString()}
-                                        </td>
-                                        <td className="odds-cell">{detail.odds}</td>
-                                        <td>
-                                          <span className={`status-badge status-${detail.status.toLowerCase()}`}>
-                                            {detail.status}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                    <tr key={row.id}>
+                      <td className="rank-cell">{row.rank}</td>
+                      <td className="username-cell">
+                        <a
+                          href={`/reports/winloss/member/${encodeURIComponent(row.username)}`}
+                          className="username-button-blue"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          {row.username}
+                        </a>
+                      </td>
+                      <td className="cache-balance-cell">{row.cacheBalance.toLocaleString()}</td>
+                      <td className="count-cell">{row.betCount.toLocaleString()}</td>
+                      <td className="amount-cell">{row.betAmount.toLocaleString()}</td>
+                      <td className="amount-cell">{row.validBetAmount.toLocaleString()}</td>
+                      <td className={`winloss-cell ${row.winLossAmount >= 0 ? 'profit' : 'loss'}`}>
+                        {row.winLossAmount >= 0 ? '+' : ''}{row.winLossAmount.toLocaleString()}
+                      </td>
+                    </tr>
                   ))}
                 </>
               )}
@@ -901,6 +683,10 @@ async function processPlayerStats(rounds: any[], usernameFilter?: string): Promi
     try {
       // 獲取用戶當前餘額
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('未找到認證 token');
+      }
+      
       const response = await fetch(`${API_BASE}/user?username=${playerId}&limit=1`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -911,7 +697,6 @@ async function processPlayerStats(rounds: any[], usernameFilter?: string): Promi
       
       if (response.ok) {
         const userData = await response.json();
-        console.log(`用戶 ${playerId} 餘額資料:`, userData);
         if (userData && userData.data && userData.data.length > 0) {
           // 後端回傳格式: { data: [], totalPages: number, totalCount: number }
           cacheBalance = userData.data[0].balance || 0;
@@ -919,11 +704,8 @@ async function processPlayerStats(rounds: any[], usernameFilter?: string): Promi
           // 如果直接返回用戶對象而不是列表
           cacheBalance = userData.balance || 0;
         }
-      } else {
-        console.warn(`API 回應錯誤 ${playerId}:`, response.status, response.statusText);
       }
     } catch (e) {
-      console.warn(`無法獲取用戶 ${playerId} 的餘額:`, e);
       // 如果無法獲取餘額，使用計算值
       cacheBalance = totalWinLoss;
     }

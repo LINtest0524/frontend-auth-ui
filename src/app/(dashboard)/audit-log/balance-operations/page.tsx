@@ -100,7 +100,13 @@ export default function BalanceOperationsPage() {
 
   const quickSetDate = (type: string) => {
     const today = new Date();
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    // 使用本地時區的日期格式化，避免時區偏移問題
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     
     switch (type) {
       case 'today':

@@ -14,7 +14,7 @@ export interface DuplicateLoginConfig {
  * @param config 配置選項
  * @returns 是否有效登入
  */
-export function checkDuplicateLogin(config: DuplicateLoginConfig): boolean {
+export async function checkDuplicateLogin(config: DuplicateLoginConfig): Promise<boolean> {
   if (typeof window === 'undefined') return true
 
   const token = localStorage.getItem(config.tokenKey)
@@ -25,14 +25,38 @@ export function checkDuplicateLogin(config: DuplicateLoginConfig): boolean {
     return false
   }
 
-  return true
+  // 驗證 token 是否仍然有效
+  try {
+    const response = await fetch('/api/portal/validate-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    if (!response.ok) {
+      // Token 無效，清除 localStorage 並重定向到登入頁面
+      localStorage.removeItem(config.tokenKey)
+      // 不重定向到重複登入頁面，而是重定向到登入頁面
+      window.location.href = `/${config.companyCode}/login`
+      return false
+    }
+    
+    return true
+  } catch (error) {
+    // 網路錯誤或其他問題，清除 token 並重定向到登入頁面
+    localStorage.removeItem(config.tokenKey)
+    window.location.href = `/${config.companyCode}/login`
+    return false
+  }
 }
 
 /**
  * A公司重複登入檢查
  */
-export function checkCompanyALogin(): boolean {
-  return checkDuplicateLogin({
+export async function checkCompanyALogin(): Promise<boolean> {
+  return await checkDuplicateLogin({
     tokenKey: 'portalToken_a',
     companyCode: 'a',
     redirectPath: '/a/duplicate-login'
@@ -42,8 +66,8 @@ export function checkCompanyALogin(): boolean {
 /**
  * B公司重複登入檢查
  */
-export function checkCompanyBLogin(): boolean {
-  return checkDuplicateLogin({
+export async function checkCompanyBLogin(): Promise<boolean> {
+  return await checkDuplicateLogin({
     tokenKey: 'portalToken_b',
     companyCode: 'b',
     redirectPath: '/b/duplicate-login'
@@ -54,12 +78,12 @@ export function checkCompanyBLogin(): boolean {
  * 根據公司代碼自動選擇檢查方式
  * @param companyCode 公司代碼 ('a' 或 'b')
  */
-export function checkLoginByCompany(companyCode: string): boolean {
+export async function checkLoginByCompany(companyCode: string): Promise<boolean> {
   switch (companyCode) {
     case 'a':
-      return checkCompanyALogin()
+      return await checkCompanyALogin()
     case 'b':
-      return checkCompanyBLogin()
+      return await checkCompanyBLogin()
     default:
       console.warn(`Unknown company code: ${companyCode}`)
       return false
@@ -85,7 +109,7 @@ export function clearCompanyToken(companyCode: string): void {
 export function useDuplicateLoginCheck(companyCode: string, dependencies: any[] = []) {
   if (typeof window !== 'undefined') {
     React.useEffect(() => {
-      checkLoginByCompany(companyCode)
+      checkLoginByCompany(companyCode).catch(console.error)
     }, dependencies)
   }
 }
