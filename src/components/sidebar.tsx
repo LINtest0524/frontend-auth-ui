@@ -55,6 +55,7 @@ export default function Sidebar() {
       setActiveMenu("mini-activities");
       setActiveSubMenu("checkin");
     }
+    else if (pathname?.startsWith("/reports")) setActiveMenu("reports");
     else if (pathname?.startsWith("/audit-log")) setActiveMenu("audit");
     else setActiveMenu(null);
   }, [pathname]);
@@ -125,6 +126,50 @@ export default function Sidebar() {
           <span className="icon" />
           站內信管理
         </Link>
+
+        {/* 報表管理 */}
+        <div>
+          <button
+            onClick={() => {
+              toggleMenu("reports");
+              setCurrentActive("reports");
+            }}
+            className={cn(
+              "sidebar-item i-log", 
+              currentActive === "reports" && "active",
+              activeMenu === "reports" && "expanded"
+            )}
+          >
+            <span className="icon" />
+            報表管理
+            <span className="i-arrow"></span>
+          </button>
+          <div className={cn("sidebar-submenu", activeMenu === "reports" && "open")}>
+            <div className="sidebar-fd">
+              <Link
+                href="/reports/bets"
+                onClick={() => handleNavClick("/reports/bets")}
+                className={cn("sidebar-subitem", pathname === "/reports/bets" && currentActive === null && "active")}
+              >
+                下注歷史報表
+              </Link>
+              <Link
+                href="/reports/rounds"
+                onClick={() => handleNavClick("/reports/rounds")}
+                className={cn("sidebar-subitem", pathname === "/reports/rounds" && currentActive === null && "active")}
+              >
+                結算歷史報表
+              </Link>
+              <Link
+                href="/reports/winloss"
+                onClick={() => handleNavClick("/reports/winloss")}
+                className={cn("sidebar-subitem", pathname === "/reports/winloss" && currentActive === null && "active")}
+              >
+                輸贏報表
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
           <Link

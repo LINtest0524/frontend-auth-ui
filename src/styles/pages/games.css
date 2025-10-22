@@ -1,0 +1,314 @@
+/* 遊戲大廳樣式 */
+.games-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  padding-top: 120px;
+}
+
+.games-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2rem 0;
+}
+
+.games-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.games-subtitle {
+  text-align: center;
+  color: #93c5fd;
+}
+
+.games-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.balance-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balance-info h3 {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.balance-amount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.balance-currency {
+  font-size: 1.2rem;
+  color: #93c5fd;
+  margin-left: 0.5rem;
+}
+
+.refresh-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.refresh-btn:hover {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.game-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.game-icon {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 2rem;
+}
+
+.game-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.game-category {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.game-status {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.status-online {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-offline {
+  background: rgba(107, 114, 128, 0.2);
+  color: #d1d5db;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.game-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.game-btn:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+.game-btn:disabled {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+  cursor: not-allowed;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.game-description {
+  font-size: 0.75rem;
+  color: #93c5fd;
+  margin-top: 1rem;
+}
+
+.footer-info {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.footer-features {
+  color: #93c5fd;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-disclaimer {
+  color: #60a5fa;
+  font-size: 0.75rem;
+}
+
+.tech-info {
+  margin-top: 1rem;
+}
+
+.tech-summary {
+  color: #60a5fa;
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.tech-details {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #93c5fd;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+/* Loading 和 Error 狀態 */
+.loading-container, .error-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content, .error-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  margin: 0 1rem;
+}
+
+.loading-spinner {
+  width: 4rem;
+  height: 4rem;
+  border: 4px solid white;
+  border-top: 4px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.25rem;
+}
+
+.error-icon {
+  color: #fca5a5;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.error-btn {
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.error-btn:hover {
+  background: #2563eb;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .games-content {
+    padding: 1rem;
+  }
+  
+  .balance-card {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .games-title {
+    font-size: 2rem;
+  }
+  
+  .balance-amount {
+    font-size: 1.5rem;
+  }
+}

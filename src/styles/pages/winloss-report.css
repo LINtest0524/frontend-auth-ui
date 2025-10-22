@@ -1,0 +1,499 @@
+/* 輸贏報表專用樣式 */
+
+/* 統計卡片 */
+.stats-summary {
+  margin: 20px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stats-card {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.stats-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stats-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.stats-value.profit {
+  color: #059669;
+}
+
+.stats-value.loss {
+  color: #dc2626;
+}
+
+/* 遊戲類別篩選 - 100% 寬度設計 */
+.game-category-group {
+  width: 100%;
+  grid-column: 1 / -1; /* 佔滿整個 grid 寬度 */
+}
+
+.category-select-all {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border: 1px solid #0891b2;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-select-all .checkbox-wrapper {
+  margin: 0;
+  font-weight: 600;
+  color: #0891b2;
+  font-size: 16px;
+}
+
+.category-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.category-item {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+.category-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.category-item.selected {
+  border-color: #059669;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.category-count {
+  display: flex;
+  align-items: center;
+}
+
+.count-badge {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-wrapper:hover {
+  background: #f8fafc;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 15px;
+  color: #1f2937;
+  user-select: none;
+  cursor: pointer;
+}
+
+.provider-checkboxes {
+  margin-left: 0;
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.provider-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  background: white;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+
+.provider-checkbox-wrapper:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.provider-checkbox-wrapper.checked {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.provider-checkbox-wrapper input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #059669;
+  cursor: pointer;
+}
+
+.provider-checkbox-label {
+  font-size: 13px;
+  color: #374151;
+  user-select: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* 輸贏報表表格 */
+.winloss-table {
+  margin-top: 0;
+}
+
+.rank-cell {
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  width: 80px;
+}
+
+.username-cell {
+  width: 150px;
+}
+
+.username-button {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+  font-size: 14px;
+}
+
+.username-button:hover {
+  color: #1d4ed8;
+}
+
+.username-button-blue {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-size: 14px;
+  padding: 0;
+  text-decoration: none;
+}
+
+.username-button-blue:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.expand-icon {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.count-cell {
+  text-align: right;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-weight: 500;
+  width: 100px;
+}
+
+.amount-cell {
+  text-align: right;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-weight: 600;
+  width: 120px;
+}
+
+.winloss-cell {
+  text-align: right;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-weight: 700;
+  width: 120px;
+}
+
+.winloss-cell.profit {
+  color: #059669;
+}
+
+.winloss-cell.loss {
+  color: #dc2626;
+}
+
+.action-cell {
+  text-align: center;
+  width: 80px;
+}
+
+.btn-detail {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-detail:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* 展開行樣式 */
+.expanded-row {
+  background: #eff6ff !important;
+  border-left: 3px solid #3b82f6;
+}
+
+.member-detail-row {
+  background: #f8fafc !important;
+}
+
+.member-detail-container {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.detail-loading {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+
+.detail-table th {
+  background: #374151;
+  color: white;
+  padding: 8px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.detail-table th:first-child {
+  border-top-left-radius: 4px;
+}
+
+.detail-table th:last-child {
+  border-top-right-radius: 4px;
+}
+
+.detail-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.detail-table tr:nth-child(even) td {
+  background: #f9fafb;
+}
+
+.detail-table .profit {
+  color: #059669;
+  font-weight: 600;
+}
+
+.detail-table .loss {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.detail-table .break-even {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* 分頁控制 */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+  padding: 16px;
+}
+
+.btn-pagination {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pagination:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  transform: translateY(-1px);
+}
+
+.btn-pagination:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-current {
+  font-weight: 500;
+  color: #374151;
+  padding: 0 16px;
+}
+
+.pagination-select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+}
+
+/* 響應式設計 */
+@media (max-width: 1200px) {
+  .provider-checkboxes {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .provider-checkboxes {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  
+  .category-item {
+    padding: 12px;
+  }
+  
+  .checkbox-label {
+    font-size: 14px;
+  }
+  
+  .provider-checkbox-label {
+    font-size: 12px;
+  }
+  
+  .winloss-table {
+    font-size: 12px;
+  }
+  
+  .amount-cell,
+  .winloss-cell,
+  .count-cell {
+    width: auto;
+    min-width: 80px;
+  }
+  
+  .username-cell {
+    width: auto;
+    min-width: 100px;
+  }
+  
+  .detail-table {
+    font-size: 10px;
+  }
+  
+  .detail-table th,
+  .detail-table td {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
