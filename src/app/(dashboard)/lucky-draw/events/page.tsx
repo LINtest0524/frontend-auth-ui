@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toTaiwanDisplayTime } from "@/lib/timeUtils";
 import '@/styles/pages/lucky-draw-events.css';
 
 interface LuckyDrawEvent {
@@ -87,7 +88,7 @@ export default function LuckyDrawEventsPage() {
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("zh-TW");
+    return toTaiwanDisplayTime(dateString);
   };
 
   useEffect(() => {

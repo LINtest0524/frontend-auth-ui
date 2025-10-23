@@ -85,6 +85,13 @@ export default function LogoCreatePage() {
       alert('只接受 JPG / PNG / WEBP / GIF 圖片')
       return
     }
+    
+    // 檢查檔案大小 (10MB = 10 * 1024 * 1024 bytes)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('檔案大小不能超過 10MB')
+      return
+    }
+    
     setImage(file)
     setPreview(URL.createObjectURL(file))
   }
@@ -164,14 +171,14 @@ export default function LogoCreatePage() {
                   >
                     <div className="file-upload-icon">📁</div>
                     <div className="file-upload-text">點擊選擇圖片或拖拽到此處</div>
-                    <div className="file-upload-hint">支援 JPG、PNG、WEBP、GIF 格式</div>
+                    <div className="file-upload-hint">支援 JPG、PNG、WEBP、GIF 格式，檔案大小限制 10MB</div>
                   </div>
                 ) : (
                   <div className="image-preview-container">
                     <div className="image-preview">
                       <img src={preview} alt="LOGO 預覽" />
                       <div className="image-info">
-                        📄 {image?.name} ({(image?.size || 0 / 1024).toFixed(1)} KB)
+                        📄 {image?.name} ({((image?.size || 0) / 1024).toFixed(1)} KB)
                       </div>
                       <div className="image-actions">
                         <button

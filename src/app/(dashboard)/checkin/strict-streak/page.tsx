@@ -4,22 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toTaiwanDisplayTime } from "@/lib/timeUtils";
 import "@/styles/pages/checkin-activities.css";
-
-// 時間格式化函數
-const formatDateTime = (dateString: string): string => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  }).replace(/\//g, '-').replace(',', '');
-};
 
 interface Activity {
   id: number;
@@ -211,11 +197,11 @@ export default function StrictStreakPage() {
                       <div className="date-range">
                         <div className="date-item">
                           <span className="date-icon">📅</span>
-                          開始：{formatDateTime(activity.startDate)}
+                          開始：{toTaiwanDisplayTime(activity.startDate)}
                         </div>
                         <div className="date-item">
                           <span className="date-icon">🏁</span>
-                          結束：{formatDateTime(activity.endDate)}
+                          結束：{toTaiwanDisplayTime(activity.endDate)}
                         </div>
                       </div>
                     </td>

@@ -196,8 +196,6 @@ export default function PromotionsPage() {
       }
       
       const url = `http://localhost:3001/promotions?${queryParams.toString()}`;
-      console.log('請求URL:', url);
-      console.log('篩選條件:', { title, categoryId, status, isActive, createdFrom, createdTo });
       
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -206,7 +204,6 @@ export default function PromotionsPage() {
       if (!response.ok) throw new Error("取得優惠活動資料失敗");
       
       const result = await response.json();
-      console.log('後端回應:', result);
       
       // 檢查回傳格式
       if (result && typeof result === 'object' && result.promotions) {
@@ -245,7 +242,7 @@ export default function PromotionsPage() {
         setCategories(data);
       }
     } catch (error) {
-      console.error('獲取活動類型失敗:', error);
+      setError('獲取活動類型失敗，請稍後再試');
     }
   };
 
@@ -321,7 +318,7 @@ export default function PromotionsPage() {
         fetchPromotions();
       }, 500);
     } catch (err) {
-      alert("刪除失敗");
+      setError("刪除促銷活動失敗，請稍後再試");
       setDeletingId(null);
     }
   };

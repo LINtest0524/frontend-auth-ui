@@ -4,6 +4,8 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { User } from "@/types/user";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { toTaiwanDisplayTime, toTaiwanDisplayDate, toTaiwanDatetimeString, fromDatetimeLocalToUTC } from "@/lib/timeUtils";
 import "@/styles/pages/users.css";
 
 type SortKey = "id" | "created_at" | "last_login_at" | null;
@@ -57,26 +59,26 @@ export default function UserListPage() {
 
     switch (type) {
       case "today":
-        fromDate = today.format("YYYY-MM-DD");
-        toDate = today.format("YYYY-MM-DD");
+        fromDate = today.startOf("day").format("YYYY-MM-DDTHH:mm");
+        toDate = today.endOf("day").format("YYYY-MM-DDTHH:mm");
         break;
       case "yesterday":
         const y = today.subtract(1, "day");
-        fromDate = y.format("YYYY-MM-DD");
-        toDate = y.format("YYYY-MM-DD");
+        fromDate = y.startOf("day").format("YYYY-MM-DDTHH:mm");
+        toDate = y.endOf("day").format("YYYY-MM-DDTHH:mm");
         break;
       case "3days":
-        fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
-        toDate = today.format("YYYY-MM-DD");
+        fromDate = today.subtract(2, "day").startOf("day").format("YYYY-MM-DDTHH:mm");
+        toDate = today.endOf("day").format("YYYY-MM-DDTHH:mm");
         break;
       case "thisMonth":
-        fromDate = today.startOf("month").format("YYYY-MM-DD");
-        toDate = today.endOf("month").format("YYYY-MM-DD");
+        fromDate = today.startOf("month").format("YYYY-MM-DDTHH:mm");
+        toDate = today.endOf("month").format("YYYY-MM-DDTHH:mm");
         break;
       case "lastMonth":
         const last = today.subtract(1, "month");
-        fromDate = last.startOf("month").format("YYYY-MM-DD");
-        toDate = last.endOf("month").format("YYYY-MM-DD");
+        fromDate = last.startOf("month").format("YYYY-MM-DDTHH:mm");
+        toDate = last.endOf("month").format("YYYY-MM-DDTHH:mm");
         break;
     }
 
@@ -150,17 +152,17 @@ export default function UserListPage() {
       // 如果是初始載入，使用近3天的時間範圍，否則使用篩選條件中的時間
       if (useInitialFilter) {
         const today = dayjs();
-        const threeDaysAgo = today.subtract(2, "day").format("YYYY-MM-DD");
-        const todayStr = today.format("YYYY-MM-DD");
-        params.append("createdFrom", threeDaysAgo + " 00:00:00");
-        params.append("createdTo", todayStr + " 23:59:59");
+        const threeDaysAgo = today.subtract(2, "day").startOf("day").format("YYYY-MM-DDTHH:mm");
+        const todayEnd = today.endOf("day").format("YYYY-MM-DDTHH:mm");
+        params.append("createdFrom", fromDatetimeLocalToUTC(threeDaysAgo));
+        params.append("createdTo", fromDatetimeLocalToUTC(todayEnd));
       } else {
-        if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-        if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+        if (createdFrom) params.append("createdFrom", fromDatetimeLocalToUTC(createdFrom));
+        if (createdTo) params.append("createdTo", fromDatetimeLocalToUTC(createdTo));
       }
 
-      if (loginFrom) params.append("loginFrom", loginFrom + " 00:00:00");
-      if (loginTo) params.append("loginTo", loginTo + " 23:59:59");
+      if (loginFrom) params.append("loginFrom", fromDatetimeLocalToUTC(loginFrom));
+      if (loginTo) params.append("loginTo", fromDatetimeLocalToUTC(loginTo));
 
       params.append("limit", limit.toString());
       params.append("page", page.toString());
@@ -567,19 +569,19 @@ export default function UserListPage() {
               <div className="form-group date-range-group">
                 <label htmlFor="created-date-from" className="form-label">註冊時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
+                  <DateTimePicker
                     id="created-date-from"
                     value={createdFrom} 
-                    onChange={(e) => setCreatedFrom(e.target.value)} 
+                    onChange={(value) => setCreatedFrom(value)} 
                     className="form-input" 
+                    placeholder="選擇開始時間"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
+                  <DateTimePicker
                     value={createdTo} 
-                    onChange={(e) => setCreatedTo(e.target.value)} 
+                    onChange={(value) => setCreatedTo(value)} 
                     className="form-input" 
+                    placeholder="選擇結束時間"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -594,19 +596,19 @@ export default function UserListPage() {
               <div className="form-group date-range-group">
                 <label htmlFor="login-date-from" className="form-label">登入時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
+                  <DateTimePicker
                     id="login-date-from"
                     value={loginFrom} 
-                    onChange={(e) => setLoginFrom(e.target.value)} 
+                    onChange={(value) => setLoginFrom(value)} 
                     className="form-input" 
+                    placeholder="選擇開始時間"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
+                  <DateTimePicker
                     value={loginTo} 
-                    onChange={(e) => setLoginTo(e.target.value)} 
+                    onChange={(value) => setLoginTo(value)} 
                     className="form-input" 
+                    placeholder="選擇結束時間"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -699,16 +701,23 @@ export default function UserListPage() {
             <thead>
               <tr>
                 <th onClick={() => toggleSort("id")}>
-                  ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  <div className="fl4">
+                    ID <span className={`sort-icon ${sortKey === "id" ? "active" : ""}`}>{getArrow("id")}</span>
+                  </div>
                 </th>
-                <th>會員資訊</th>
+                <th>代理商</th>
+                <th>帳號</th>
                 <th>帳戶餘額</th>
                 <th onClick={() => toggleSort("created_at")}>
-                  註冊時間 <span className={`sort-icon ${sortKey === "created_at" ? "active" : ""}`}>{getArrow("created_at")}</span>
+                  <div className="fl4">
+                    註冊時間 <span className={`sort-icon ${sortKey === "created_at" ? "active" : ""}`}>{getArrow("created_at")}</span>
+                  </div>
                 </th>
                 <th>登入資訊</th>
                 <th onClick={() => toggleSort("last_login_at")}>
-                  最後登入 <span className={`sort-icon ${sortKey === "last_login_at" ? "active" : ""}`}>{getArrow("last_login_at")}</span>
+                  <div className="fl4">
+                    最後登入 <span className={`sort-icon ${sortKey === "last_login_at" ? "active" : ""}`}>{getArrow("last_login_at")}</span>
+                  </div>
                 </th>
                 <th>狀態</th>
                 <th>黑名單</th>
@@ -720,6 +729,20 @@ export default function UserListPage() {
               {users.map((user) => (
                 <tr key={user.id}>
                   <td>#{user.id}</td>
+                  <td>
+                    <div className="agent-info">
+                      {(user as any).parent_agent ? (
+                        <div>
+                          <div className="agent-name">{(user as any).parent_agent.username}</div>
+                          <div className="agent-code" style={{ fontSize: '12px', color: '#666' }}>
+                            {(user as any).parent_agent.agent_code}
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#999' }}>-</span>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <div className="user-info">
                       <div className="user-username">{user.username}</div>
@@ -748,15 +771,7 @@ export default function UserListPage() {
                   </td>
                   <td>
                     <div className="login-info">
-                      📅 {user.created_at ? new Date(user.created_at).toLocaleString("zh-TW", { 
-                        timeZone: "Asia/Taipei", 
-                        hour12: false,
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : "未知"}
+                      📅 {user.created_at ? toTaiwanDisplayTime(user.created_at) : "未知"}
                     </div>
                   </td>
                   <td>
@@ -767,15 +782,7 @@ export default function UserListPage() {
                   </td>
                   <td>
                     <div className="login-info">
-                      🕒 {user.last_login_at ? new Date(user.last_login_at).toLocaleString("zh-TW", { 
-                        timeZone: "Asia/Taipei", 
-                        hour12: false,
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : "未曾登入"}
+                      🕒 {user.last_login_at ? toTaiwanDisplayTime(user.last_login_at) : "未曾登入"}
                     </div>
                   </td>
                   <td>

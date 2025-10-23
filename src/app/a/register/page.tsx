@@ -16,6 +16,7 @@ export default function PortalRegisterPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
+  const [agentCode, setAgentCode] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -40,7 +41,7 @@ export default function PortalRegisterPage() {
         {
           method: 'POST',
           headers: CsrfTokenManager.getHeaders(),
-          body: JSON.stringify({ username, password, email }),
+          body: JSON.stringify({ username, password, email, agent_code: agentCode }),
         }
       )
 
@@ -123,6 +124,19 @@ export default function PortalRegisterPage() {
               onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
             />
             <div className="input-hint">用於接收重要通知和優惠資訊</div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">代理商推廣代碼</label>
+            <input
+              type="text"
+              placeholder="請輸入代理商推廣代碼（選填）"
+              value={agentCode}
+              onChange={(e) => setAgentCode(e.target.value)}
+              className="input-field"
+              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+            <div className="input-hint">若無代理商代碼，將自動分配給預設代理商</div>
           </div>
 
           <button

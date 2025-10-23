@@ -603,7 +603,7 @@ export default function ContactInfoPage() {
                         onChange={(e) => setFormData({ ...formData, icon: e.target.files?.[0] || null })}
                         className="form-input"
                         style={{
-                          padding: "14px 16px",
+                          padding: "2px 16px",
                           fontSize: "14px",
                           borderRadius: "10px",
                           border: "2px dashed #fbbf24",
@@ -636,7 +636,7 @@ export default function ContactInfoPage() {
                         onChange={(e) => setFormData({ ...formData, qrCode: e.target.files?.[0] || null })}
                         className="form-input"
                         style={{
-                          padding: "14px 16px",
+                          padding: "2px 16px",
                           fontSize: "14px",
                           borderRadius: "10px",
                           border: "2px dashed #fbbf24",
@@ -696,7 +696,7 @@ export default function ContactInfoPage() {
                         onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
                         className="form-input"
                         style={{
-                          padding: "14px 16px",
+                          padding: "2px 16px",
                           fontSize: "16px",
                           borderRadius: "10px",
                           border: "2px solid #cbd5e1",
@@ -728,7 +728,7 @@ export default function ContactInfoPage() {
                         onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="form-input"
                         style={{
-                          padding: "14px 16px",
+                          padding: "0px 16px",
                           fontSize: "16px",
                           borderRadius: "10px",
                           border: "2px solid #cbd5e1",

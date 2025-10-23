@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { RewardPlanGrid } from "./RewardPlanGrid";
 import { ThresholdEditor } from "./ThresholdEditor";
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from "@/lib/timeUtils";
 
 interface ActivityFormProps {
   fixedActivityType: string;
@@ -31,6 +33,7 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
   const [thresholds, setThresholds] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+
   // 初始化表單數據
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -38,8 +41,8 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
       setFormData({
         title: initialData.title || '',
         days: initialData.days?.toString() || '',
-        startDate: initialData.startDate || '',
-        endDate: initialData.endDate || '',
+        startDate: toTaiwanDatetimeString(initialData.startDate || ''),
+        endDate: toTaiwanDatetimeString(initialData.endDate || ''),
         publishAt: initialData.publishAt ? initialData.publishAt.split('T')[0] : '',
         isEnabled: initialData.isEnabled || false,
       });
@@ -159,9 +162,9 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
         title: formData.title,
         activityType: fixedActivityType,
         days: formData.days ? parseInt(formData.days) : undefined,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        publishAt: formData.publishAt || undefined,
+        startDate: fromDatetimeLocalToUTC(formData.startDate),
+        endDate: fromDatetimeLocalToUTC(formData.endDate),
+        publishAt: formData.publishAt ? fromDatetimeLocalToUTC(formData.publishAt) : undefined,
         isEnabled: formData.isEnabled,
         configJson: {},
       };
@@ -313,12 +316,12 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
             <label htmlFor="startDate" className="form-label required">
               📅 開始時間
             </label>
-            <input
+            <DateTimePicker
               id="startDate"
-              type="datetime-local"
               value={formData.startDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+              onChange={(value) => setFormData(prev => ({ ...prev, startDate: value }))}
               className={`form-input ${errors.startDate ? 'error' : ''}`}
+              required
             />
             {errors.startDate && <div className="form-error">{errors.startDate}</div>}
           </div>
@@ -327,12 +330,12 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
             <label htmlFor="endDate" className="form-label required">
               🏁 結束時間
             </label>
-            <input
+            <DateTimePicker
               id="endDate"
-              type="datetime-local"
               value={formData.endDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+              onChange={(value) => setFormData(prev => ({ ...prev, endDate: value }))}
               className={`form-input ${errors.endDate ? 'error' : ''}`}
+              required
             />
             {errors.endDate && <div className="form-error">{errors.endDate}</div>}
           </div>
@@ -341,12 +344,12 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
             <label htmlFor="publishAt" className="form-label">
               ⏰ 預約上架時間
             </label>
-            <input
+            <DateTimePicker
               id="publishAt"
-              type="datetime-local"
               value={formData.publishAt}
-              onChange={(e) => setFormData(prev => ({ ...prev, publishAt: e.target.value }))}
+              onChange={(value) => setFormData(prev => ({ ...prev, publishAt: value }))}
               className={`form-input ${errors.publishAt ? 'error' : ''}`}
+              placeholder="選擇預約上架時間（可選）"
             />
             {errors.publishAt && <div className="form-error">{errors.publishAt}</div>}
           </div>

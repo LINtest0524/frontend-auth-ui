@@ -172,6 +172,11 @@
   width: 100%;
   max-width: 500px;
   cursor: pointer;
+  height: 100%;
+}
+
+.image-preview ~ .file-input-hidden{
+  height: 0;
 }
 
 .image-preview-container {

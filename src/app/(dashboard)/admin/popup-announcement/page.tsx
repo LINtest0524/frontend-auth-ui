@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { toTaiwanDisplayTime } from '@/lib/timeUtils'
 import '@/styles/pages/popup-announcement.css'
 
 type PopupAnnouncement = {
@@ -77,7 +78,7 @@ export default function PopupAnnouncementPage() {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleString('zh-TW')
+    return toTaiwanDisplayTime(dateString)
   }
 
   return (

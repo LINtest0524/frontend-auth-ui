@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 import '@/styles/pages/popup-announcement-create.css'
 
 // 格式化日期時間為本地時間格式 (台灣時區)
@@ -145,6 +147,14 @@ export default function NewPopupAnnouncementPage() {
       }
       if (mobileImageFile) {
         submitData.mobile_image_url = await uploadImage(mobileImageFile, 'mobile')
+      }
+
+      // 轉換時間格式給後端
+      if (submitData.start_date) {
+        submitData.start_date = fromDatetimeLocalToUTC(submitData.start_date)
+      }
+      if (submitData.end_date) {
+        submitData.end_date = fromDatetimeLocalToUTC(submitData.end_date)
       }
 
       // 創建彈窗公告
@@ -525,13 +535,11 @@ export default function NewPopupAnnouncementPage() {
                     <span className="label-icon">🟢</span>
                     開始時間
                   </label>
-                  <input
+                  <DateTimePicker
                     id="start_date"
-                    type="datetime-local"
-                    name="start_date"
-                    className="form-input"
                     value={formData.start_date}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData(prev => ({ ...prev, start_date: value }))}
+                    className="form-input"
                   />
                   <div className="form-hint">
                     💡 不設定則立即生效
@@ -543,13 +551,11 @@ export default function NewPopupAnnouncementPage() {
                     <span className="label-icon">🔴</span>
                     結束時間
                   </label>
-                  <input
+                  <DateTimePicker
                     id="end_date"
-                    type="datetime-local"
-                    name="end_date"
-                    className="form-input"
                     value={formData.end_date}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData(prev => ({ ...prev, end_date: value }))}
+                    className="form-input"
                   />
                   <div className="form-hint">
                     💡 不設定則永久有效

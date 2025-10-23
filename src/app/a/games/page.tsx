@@ -162,7 +162,7 @@ export default function GamesPageA() {
               {/* Game Description */}
               <p className="game-description">
                 {g.gameId === 'HI_LO' 
-                  ? '經典猜大小遊戲，1:1 賠率' 
+                  ? '經典猜大小遊戲，1：2 賠率' 
                   : g.gameId === 'DICE'
                   ? '三顆骰子遊戲，多種玩法'
                   : '更多遊戲，敬請期待'

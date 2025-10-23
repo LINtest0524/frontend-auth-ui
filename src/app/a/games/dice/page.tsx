@@ -223,11 +223,11 @@ export default function DicePage() {
                 </div>
                 <div className="rule-item">
                   <span className="rule-icon">💰</span>
-                  <span className="rule-text green">大小賠率：<strong>1 賠 1</strong></span>
+                  <span className="rule-text green">大小賠率：<strong>1 賠 2</strong></span>
                 </div>
                 <div className="rule-item">
                   <span className="rule-icon">🎰</span>
-                  <span className="rule-text purple">指定點數：<strong>1 賠 10</strong></span>
+                  <span className="rule-text purple">指定點數：<strong>1 賠 11</strong></span>
                 </div>
               </div>
             </div>
@@ -327,7 +327,7 @@ export default function DicePage() {
                       <div className="bet-option-icon">🔺</div>
                       <div className="bet-option-title">大（BIG）</div>
                       <div className="bet-option-description">總和 11-17</div>
-                      <div className="bet-option-odds">賠率 1:1</div>
+                      <div className="bet-option-odds">賠率 1：2</div>
                     </div>
                   </label>
                   
@@ -344,7 +344,7 @@ export default function DicePage() {
                       <div className="bet-option-icon">🔻</div>
                       <div className="bet-option-title">小（SMALL）</div>
                       <div className="bet-option-description">總和 4-10</div>
-                      <div className="bet-option-odds">賠率 1:1</div>
+                      <div className="bet-option-odds">賠率 1：2</div>
                     </div>
                   </label>
                 </div>
@@ -365,7 +365,7 @@ export default function DicePage() {
                       />
                       <div className={`bet-option-card ${sumChoice === sum ? 'selected sum' : ''} ${isPlaying ? 'disabled' : ''}`}>
                         <div className="sum-option">{sum}</div>
-                        <div className="bet-option-odds">1:10</div>
+                        <div className="bet-option-odds">1:11</div>
                       </div>
                     </label>
                   ))}

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC, toTaiwanDisplayTime } from '@/lib/timeUtils'
 import './maintenance.css'
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
@@ -91,18 +93,6 @@ export default function MaintenancePage() {
     setConfig(prev => ({ ...prev, [field]: value }))
   }
 
-  // 轉換 ISO 日期格式為 datetime-local 格式
-  const formatDateTimeLocal = (isoString: string | undefined): string => {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    // 格式化為 YYYY-MM-DDTHH:mm
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
 
   return (
     <div className="maintenance-container">
@@ -181,11 +171,11 @@ export default function MaintenancePage() {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">預計結束時間（可選）</label>
-                  <input
-                    type="datetime-local"
+                  <DateTimePicker
                     className="form-input"
-                    value={formatDateTimeLocal(config.estimatedEndTime)}
-                    onChange={(e) => handleInputChange('estimatedEndTime', e.target.value ? new Date(e.target.value).toISOString() : '')}
+                    value={toTaiwanDatetimeString(config.estimatedEndTime || '')}
+                    onChange={(value) => handleInputChange('estimatedEndTime', value ? fromDatetimeLocalToUTC(value) : '')}
+                    placeholder="請選擇預計結束時間"
                   />
                 </div>
                 <div className="form-group">
@@ -263,7 +253,7 @@ export default function MaintenancePage() {
                   <p className="preview-message">{config.message}</p>
                   {config.estimatedEndTime && (
                     <p className="preview-time">
-                      預計完成時間：{new Date(config.estimatedEndTime).toLocaleString('zh-TW')}
+                      預計完成時間：{toTaiwanDisplayTime(config.estimatedEndTime)}
                     </p>
                   )}
                   {config.contactInfo && (

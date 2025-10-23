@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { fromDatetimeLocalToUTC } from "@/lib/timeUtils";
 import '@/styles/pages/lucky-draw-event-create.css';
 
 export default function LuckyDrawEventCreatePage() {
@@ -51,6 +53,8 @@ export default function LuckyDrawEventCreatePage() {
         },
         body: JSON.stringify({
           ...formData,
+          startTime: fromDatetimeLocalToUTC(formData.startTime),
+          endTime: fromDatetimeLocalToUTC(formData.endTime),
           companyId,
         }),
       });
@@ -131,12 +135,11 @@ export default function LuckyDrawEventCreatePage() {
                     開始時間
                     <span className="required">*</span>
                   </label>
-                  <input
+                  <DateTimePicker
                     id="start-time"
-                    type="datetime-local"
-                    className="form-input"
                     value={formData.startTime}
-                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, startTime: value })}
+                    className="form-input"
                     required
                   />
                   <div className="form-hint">
@@ -150,12 +153,11 @@ export default function LuckyDrawEventCreatePage() {
                     結束時間
                     <span className="required">*</span>
                   </label>
-                  <input
+                  <DateTimePicker
                     id="end-time"
-                    type="datetime-local"
-                    className="form-input"
                     value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, endTime: value })}
+                    className="form-input"
                     required
                   />
                   <div className="form-hint">

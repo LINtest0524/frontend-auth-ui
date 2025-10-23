@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 import '@/styles/pages/popup-announcement-create.css'
 
 type PopupAnnouncement = {
@@ -19,12 +21,9 @@ type PopupAnnouncement = {
   company_code: string
 }
 
-// 格式化日期時間為本地時間格式 (台灣時區)
+// 使用統一的時間工具模組
 const formatDateTimeLocal = (dateString: string): string => {
-  const date = new Date(dateString)
-  // 調整為台灣時區 (UTC+8)
-  const taiwanDate = new Date(date.getTime() + (8 * 60 * 60 * 1000))
-  return taiwanDate.toISOString().slice(0, 16)
+  return toTaiwanDatetimeString(dateString)
 }
 
 export default function EditPopupAnnouncementPage() {
@@ -212,6 +211,14 @@ export default function EditPopupAnnouncementPage() {
       }
       if (mobileImageFile) {
         submitData.mobile_image_url = await uploadImage(mobileImageFile, 'mobile')
+      }
+
+      // 轉換時間格式給後端
+      if (submitData.start_date) {
+        submitData.start_date = fromDatetimeLocalToUTC(submitData.start_date)
+      }
+      if (submitData.end_date) {
+        submitData.end_date = fromDatetimeLocalToUTC(submitData.end_date)
       }
 
       // 更新彈窗公告
@@ -596,13 +603,11 @@ export default function EditPopupAnnouncementPage() {
                     <span className="label-icon">🟢</span>
                     開始時間
                   </label>
-                  <input
+                  <DateTimePicker
                     id="start_date"
-                    type="datetime-local"
-                    name="start_date"
-                    className="form-input"
                     value={formData.start_date}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData(prev => ({ ...prev, start_date: value }))}
+                    className="form-input"
                   />
                   <div className="form-hint">
                     💡 不設定則立即生效
@@ -614,13 +619,11 @@ export default function EditPopupAnnouncementPage() {
                     <span className="label-icon">🔴</span>
                     結束時間
                   </label>
-                  <input
+                  <DateTimePicker
                     id="end_date"
-                    type="datetime-local"
-                    name="end_date"
-                    className="form-input"
                     value={formData.end_date}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData(prev => ({ ...prev, end_date: value }))}
+                    className="form-input"
                   />
                   <div className="form-hint">
                     💡 不設定則永久有效
