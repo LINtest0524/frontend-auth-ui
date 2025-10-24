@@ -17,6 +17,7 @@ export default function AdminUserCreatePage() {
     role: "AGENT_SUPPORT",
     companyId: undefined as number | undefined,
     department_type: "",
+    ip_whitelist: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,14 @@ export default function AdminUserCreatePage() {
     if (["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(currentUser?.role) && !form.companyId) {
       errors.companyId = '請選擇所屬公司';
     }
+
+    // IP白名單驗證
+    if (form.ip_whitelist.trim()) {
+      const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      if (!ipPattern.test(form.ip_whitelist.trim())) {
+        errors.ip_whitelist = '請輸入有效的IP地址格式 (例：192.168.1.100)';
+      }
+    }
     
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -92,6 +101,10 @@ export default function AdminUserCreatePage() {
     if (currentUser.role === "SUPER_ADMIN") {
       return [
         { value: "AGENT_OWNER", label: "代理商老闆" },
+        { value: "AGENT_LEVEL_1", label: "一級代理商" },
+        { value: "AGENT_LEVEL_2", label: "二級代理商" },
+        { value: "AGENT_LEVEL_3", label: "三級代理商" },
+        { value: "AGENT_LEVEL_4", label: "四級代理商" },
         { value: "AGENT_SUPPORT", label: "客服" },
         { value: "GLOBAL_ADMIN", label: "全域管理員" },
       ];
@@ -99,10 +112,32 @@ export default function AdminUserCreatePage() {
     if (currentUser.role === "GLOBAL_ADMIN") {
       return [
         { value: "AGENT_OWNER", label: "代理商老闆" },
+        { value: "AGENT_LEVEL_1", label: "一級代理商" },
+        { value: "AGENT_LEVEL_2", label: "二級代理商" },
+        { value: "AGENT_LEVEL_3", label: "三級代理商" },
+        { value: "AGENT_LEVEL_4", label: "四級代理商" },
         { value: "AGENT_SUPPORT", label: "客服" },
       ];
     }
     if (currentUser.role === "AGENT_OWNER") {
+      return [
+        { value: "AGENT_LEVEL_1", label: "一級代理商" },
+        { value: "AGENT_LEVEL_2", label: "二級代理商" },
+        { value: "AGENT_LEVEL_3", label: "三級代理商" },
+        { value: "AGENT_LEVEL_4", label: "四級代理商" },
+        { value: "AGENT_SUPPORT", label: "客服" },
+      ];
+    }
+    if (currentUser.role === "AGENT_LEVEL_1") {
+      return [{ value: "AGENT_SUPPORT", label: "客服" }];
+    }
+    if (currentUser.role === "AGENT_LEVEL_2") {
+      return [{ value: "AGENT_SUPPORT", label: "客服" }];
+    }
+    if (currentUser.role === "AGENT_LEVEL_3") {
+      return [{ value: "AGENT_SUPPORT", label: "客服" }];
+    }
+    if (currentUser.role === "AGENT_LEVEL_4") {
       return [{ value: "AGENT_SUPPORT", label: "客服" }];
     }
     return [];
@@ -143,6 +178,7 @@ export default function AdminUserCreatePage() {
 
     const payload = {
       ...form,
+      ip_whitelist: form.ip_whitelist.trim() || null,
       companyId:
         currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "GLOBAL_ADMIN"
           ? form.companyId
@@ -183,6 +219,14 @@ export default function AdminUserCreatePage() {
         return "可管理多個公司的代理商和客服人員";
       case "AGENT_OWNER":
         return "代理商負責人，可管理該公司的客服人員";
+      case "AGENT_LEVEL_1":
+        return "一級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_2":
+        return "二級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_3":
+        return "三級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_4":
+        return "四級代理商，可管理客服人員";
       case "AGENT_SUPPORT":
         return "客服人員，負責處理客戶服務相關事務";
       default:
@@ -273,6 +317,44 @@ export default function AdminUserCreatePage() {
                 )}
                 <div className="form-help">
                   建議使用包含大小寫字母、數字的組合以提高安全性
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 安全設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🔒</span>
+              安全設定
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="ip_whitelist" className="form-label">
+                  IP 白名單
+                </label>
+                <input
+                  id="ip_whitelist"
+                  name="ip_whitelist"
+                  type="text"
+                  value={form.ip_whitelist}
+                  onChange={handleChange}
+                  className={`form-input ${fieldErrors.ip_whitelist ? 'error' : form.ip_whitelist && /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(form.ip_whitelist) ? 'success' : ''}`}
+                  placeholder="例：192.168.1.100 (留空表示不限制IP)"
+                />
+                {fieldErrors.ip_whitelist && (
+                  <div className="field-error">
+                    ❌ {fieldErrors.ip_whitelist}
+                  </div>
+                )}
+                {!fieldErrors.ip_whitelist && form.ip_whitelist && /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(form.ip_whitelist) && (
+                  <div className="field-success">
+                    ✅ IP地址格式正確
+                  </div>
+                )}
+                <div className="form-help">
+                  🛡️ 如果設定IP白名單，該帳號只能從指定的IP地址登入。留空表示不限制登入IP地址。
                 </div>
               </div>
             </div>

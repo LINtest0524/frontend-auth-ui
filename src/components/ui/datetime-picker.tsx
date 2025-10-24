@@ -157,10 +157,24 @@ export function DateTimePicker({
   // 當日期或時間改變時，組合並回傳完整的 datetime-local 值
   const handleDateTimeChange = (newDate: string, newTime: string) => {
     if (newDate && newTime) {
-      const combinedValue = `${newDate}T${newTime}`;
+      // 確保時間格式為 HH:mm（去除秒數）
+      const normalizedTime = newTime.length > 5 ? newTime.substring(0, 5) : newTime;
+      const combinedValue = `${newDate}T${normalizedTime}`;
+      onChange(combinedValue);
+    } else if (newDate && !newTime) {
+      // 如果只選擇了日期但沒有時間，根據 placeholder 決定預設時間
+      let defaultTime = '00:00';
+      if (placeholder && (placeholder.includes('結束') || placeholder.includes('end') || placeholder.includes('End'))) {
+        defaultTime = '23:59';
+      }
+      const combinedValue = `${newDate}T${defaultTime}`;
       onChange(combinedValue);
     } else if (!newDate && !newTime) {
       onChange('');
+    } else {
+      // 如果只有部分數據，不要清空整個值
+      // 保持原有的值或使用預設值
+      return;
     }
   };
 

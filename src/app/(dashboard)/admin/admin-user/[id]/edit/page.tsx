@@ -75,9 +75,7 @@ export default function AdminUserEditPage() {
   const validateForm = () => {
     const errors: Record<string, string> = {};
     
-    if (!form.email.trim()) {
-      errors.email = '請輸入電子郵件';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       errors.email = '請輸入有效的電子郵件格式';
     }
     
@@ -262,7 +260,7 @@ export default function AdminUserEditPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="email" className="form-label required">
+                <label htmlFor="email" className="form-label">
                   電子郵件
                 </label>
                 <input

@@ -2,10 +2,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import { User } from "@/types/user";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { toTaiwanDisplayTime, toTaiwanDisplayDate, toTaiwanDatetimeString, fromDatetimeLocalToUTC } from "@/lib/timeUtils";
+import { toTaiwanDisplayTime, toTaiwanDisplayDate, toTaiwanDatetimeString } from "@/lib/timeUtils";
 import "@/styles/pages/users.css";
 
 type SortKey = "id" | "created_at" | "last_login_at" | null;
@@ -53,32 +52,47 @@ export default function UserListPage() {
   const [balanceRemark, setBalanceRemark] = useState('');
 
   const quickSetDate = (type: string, target: "created" | "login") => {
-    const today = dayjs();
+    const today = new Date();
     let fromDate = "";
     let toDate = "";
 
     switch (type) {
       case "today":
-        fromDate = today.startOf("day").format("YYYY-MM-DDTHH:mm");
-        toDate = today.endOf("day").format("YYYY-MM-DDTHH:mm");
+        // 今日 00:00:00 到 23:59:59
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
         break;
       case "yesterday":
-        const y = today.subtract(1, "day");
-        fromDate = y.startOf("day").format("YYYY-MM-DDTHH:mm");
-        toDate = y.endOf("day").format("YYYY-MM-DDTHH:mm");
+        // 昨日 00:00:00 到 23:59:59
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const yesterdayStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0);
+        const yesterdayEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59);
+        fromDate = `${yesterdayStart.getFullYear()}-${String(yesterdayStart.getMonth() + 1).padStart(2, '0')}-${String(yesterdayStart.getDate()).padStart(2, '0')}T${String(yesterdayStart.getHours()).padStart(2, '0')}:${String(yesterdayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${yesterdayEnd.getFullYear()}-${String(yesterdayEnd.getMonth() + 1).padStart(2, '0')}-${String(yesterdayEnd.getDate()).padStart(2, '0')}T${String(yesterdayEnd.getHours()).padStart(2, '0')}:${String(yesterdayEnd.getMinutes()).padStart(2, '0')}`;
         break;
       case "3days":
-        fromDate = today.subtract(2, "day").startOf("day").format("YYYY-MM-DDTHH:mm");
-        toDate = today.endOf("day").format("YYYY-MM-DDTHH:mm");
+        // 近三日（前天 00:00:00 到今天 23:59:59）
+        const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const threeDaysStart = new Date(threeDaysAgo.getFullYear(), threeDaysAgo.getMonth(), threeDaysAgo.getDate(), 0, 0);
+        const todayEnd3 = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${threeDaysStart.getFullYear()}-${String(threeDaysStart.getMonth() + 1).padStart(2, '0')}-${String(threeDaysStart.getDate()).padStart(2, '0')}T${String(threeDaysStart.getHours()).padStart(2, '0')}:${String(threeDaysStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd3.getFullYear()}-${String(todayEnd3.getMonth() + 1).padStart(2, '0')}-${String(todayEnd3.getDate()).padStart(2, '0')}T${String(todayEnd3.getHours()).padStart(2, '0')}:${String(todayEnd3.getMinutes()).padStart(2, '0')}`;
         break;
       case "thisMonth":
-        fromDate = today.startOf("month").format("YYYY-MM-DDTHH:mm");
-        toDate = today.endOf("month").format("YYYY-MM-DDTHH:mm");
+        // 本月第一天 00:00:00 到最後一天 23:59:59
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0);
+        const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59);
+        fromDate = `${thisMonthStart.getFullYear()}-${String(thisMonthStart.getMonth() + 1).padStart(2, '0')}-${String(thisMonthStart.getDate()).padStart(2, '0')}T${String(thisMonthStart.getHours()).padStart(2, '0')}:${String(thisMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${thisMonthEnd.getFullYear()}-${String(thisMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(thisMonthEnd.getDate()).padStart(2, '0')}T${String(thisMonthEnd.getHours()).padStart(2, '0')}:${String(thisMonthEnd.getMinutes()).padStart(2, '0')}`;
         break;
       case "lastMonth":
-        const last = today.subtract(1, "month");
-        fromDate = last.startOf("month").format("YYYY-MM-DDTHH:mm");
-        toDate = last.endOf("month").format("YYYY-MM-DDTHH:mm");
+        // 上月第一天 00:00:00 到最後一天 23:59:59
+        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1, 0, 0);
+        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59);
+        fromDate = `${lastMonthStart.getFullYear()}-${String(lastMonthStart.getMonth() + 1).padStart(2, '0')}-${String(lastMonthStart.getDate()).padStart(2, '0')}T${String(lastMonthStart.getHours()).padStart(2, '0')}:${String(lastMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${lastMonthEnd.getFullYear()}-${String(lastMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(lastMonthEnd.getDate()).padStart(2, '0')}T${String(lastMonthEnd.getHours()).padStart(2, '0')}:${String(lastMonthEnd.getMinutes()).padStart(2, '0')}`;
         break;
     }
 
@@ -112,11 +126,46 @@ export default function UserListPage() {
     if (status) params.append("status", status);
     if (blacklist) params.append("blacklist", blacklist);
 
-    if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-    if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+    // 匯出功能也統一使用台灣時間格式
+    if (createdFrom) {
+      let normalizedFrom = createdFrom;
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdFrom)) {
+        normalizedFrom = createdFrom.substring(0, 16);
+      }
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
+        params.append("createdFrom", normalizedFrom + ":00");
+      }
+    }
+    
+    if (createdTo) {
+      let normalizedTo = createdTo;
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdTo)) {
+        normalizedTo = createdTo.substring(0, 16);
+      }
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
+        params.append("createdTo", normalizedTo + ":59");
+      }
+    }
 
-    if (loginFrom) params.append("loginFrom", loginFrom + " 00:00:00");
-    if (loginTo) params.append("loginTo", loginTo + " 23:59:59");
+    if (loginFrom) {
+      let normalizedLoginFrom = loginFrom;
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(loginFrom)) {
+        normalizedLoginFrom = loginFrom.substring(0, 16);
+      }
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedLoginFrom)) {
+        params.append("loginFrom", normalizedLoginFrom + ":00");
+      }
+    }
+    
+    if (loginTo) {
+      let normalizedLoginTo = loginTo;
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(loginTo)) {
+        normalizedLoginTo = loginTo.substring(0, 16);
+      }
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedLoginTo)) {
+        params.append("loginTo", normalizedLoginTo + ":59");
+      }
+    }
     params.append("excludeUserRole", "false");
     params.append("format", format);
     params.append("token", token || "");
@@ -149,20 +198,70 @@ export default function UserListPage() {
       if (status) params.append("status", status);
       if (blacklist) params.append("blacklist", blacklist);
 
-      // 如果是初始載入，使用近3天的時間範圍，否則使用篩選條件中的時間
+      // 時間篩選處理 - 統一使用台灣時間，不轉換UTC
       if (useInitialFilter) {
-        const today = dayjs();
-        const threeDaysAgo = today.subtract(2, "day").startOf("day").format("YYYY-MM-DDTHH:mm");
-        const todayEnd = today.endOf("day").format("YYYY-MM-DDTHH:mm");
-        params.append("createdFrom", fromDatetimeLocalToUTC(threeDaysAgo));
-        params.append("createdTo", fromDatetimeLocalToUTC(todayEnd));
+        // 初始載入使用近3天
+        const today = new Date();
+        const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const threeDaysStart = new Date(threeDaysAgo.getFullYear(), threeDaysAgo.getMonth(), threeDaysAgo.getDate(), 0, 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+        const threeDaysStartStr = `${threeDaysStart.getFullYear()}-${String(threeDaysStart.getMonth() + 1).padStart(2, '0')}-${String(threeDaysStart.getDate()).padStart(2, '0')}T${String(threeDaysStart.getHours()).padStart(2, '0')}:${String(threeDaysStart.getMinutes()).padStart(2, '0')}:${String(threeDaysStart.getSeconds()).padStart(2, '0')}`;
+        const todayEndStr = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}:${String(todayEnd.getSeconds()).padStart(2, '0')}`;
+        params.append("createdFrom", threeDaysStartStr);
+        params.append("createdTo", todayEndStr);
       } else {
-        if (createdFrom) params.append("createdFrom", fromDatetimeLocalToUTC(createdFrom));
-        if (createdTo) params.append("createdTo", fromDatetimeLocalToUTC(createdTo));
+        // 手動搜尋或快速篩選 - 統一使用台灣時間，不轉換UTC
+        if (createdFrom) {
+          // 處理可能的格式差異
+          let normalizedFrom = createdFrom;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdFrom)) {
+            // 如果有秒數，去除秒數
+            normalizedFrom = createdFrom.substring(0, 16);
+          }
+          
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
+            // 統一使用台灣時間，添加秒數後直接發送
+            const taiwanTimeFrom = normalizedFrom + ':00';
+            params.append("createdFrom", taiwanTimeFrom);
+          }
+        }
+        
+        if (createdTo) {
+          // 處理可能的格式差異
+          let normalizedTo = createdTo;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdTo)) {
+            // 如果有秒數，去除秒數
+            normalizedTo = createdTo.substring(0, 16);
+          }
+          
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
+            // 統一使用台灣時間，添加秒數後直接發送
+            const taiwanTimeTo = normalizedTo + ':59';  // 結束時間使用59秒
+            params.append("createdTo", taiwanTimeTo);
+          }
+        }
       }
 
-      if (loginFrom) params.append("loginFrom", fromDatetimeLocalToUTC(loginFrom));
-      if (loginTo) params.append("loginTo", fromDatetimeLocalToUTC(loginTo));
+      // 登入時間篩選 - 統一使用台灣時間
+      if (loginFrom) {
+        let normalizedLoginFrom = loginFrom;
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(loginFrom)) {
+          normalizedLoginFrom = loginFrom.substring(0, 16);
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedLoginFrom)) {
+          params.append("loginFrom", normalizedLoginFrom + ':00');
+        }
+      }
+      
+      if (loginTo) {
+        let normalizedLoginTo = loginTo;
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(loginTo)) {
+          normalizedLoginTo = loginTo.substring(0, 16);
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedLoginTo)) {
+          params.append("loginTo", normalizedLoginTo + ':59');
+        }
+      }
 
       params.append("limit", limit.toString());
       params.append("page", page.toString());

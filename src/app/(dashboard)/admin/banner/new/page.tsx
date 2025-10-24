@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
 import '@/styles/pages/banner-form.css'
 
 // 使用環境變數 API 端點
@@ -34,6 +35,52 @@ export default function BannerPage() {
       ...prev,
       [e.target.name]: e.target.value,
     }))
+  }
+
+  // 快速設定活動時間
+  const quickSetTime = (type: string) => {
+    const now = new Date();
+    let startTime = '';
+    let endTime = '';
+
+    switch (type) {
+      case 'now':
+        // 從現在開始，持續一週
+        const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+        const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(weekLater.getFullYear(), weekLater.getMonth(), weekLater.getDate(), 23, 59);
+        startTime = `${nowStart.getFullYear()}-${String(nowStart.getMonth() + 1).padStart(2, '0')}-${String(nowStart.getDate()).padStart(2, '0')}T${String(nowStart.getHours()).padStart(2, '0')}:${String(nowStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}T${String(weekEnd.getHours()).padStart(2, '0')}:${String(weekEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'today':
+        // 今日整天
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
+        startTime = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'week':
+        // 本週整週
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+        const weekEndDate = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000);
+        const weekEndTime = new Date(weekEndDate.getFullYear(), weekEndDate.getMonth(), weekEndDate.getDate(), 23, 59);
+        startTime = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}T${String(weekStart.getHours()).padStart(2, '0')}:${String(weekStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${weekEndTime.getFullYear()}-${String(weekEndTime.getMonth() + 1).padStart(2, '0')}-${String(weekEndTime.getDate()).padStart(2, '0')}T${String(weekEndTime.getHours()).padStart(2, '0')}:${String(weekEndTime.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'month':
+        // 本月整月
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59);
+        startTime = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}-${String(monthStart.getDate()).padStart(2, '0')}T${String(monthStart.getHours()).padStart(2, '0')}:${String(monthStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}T${String(monthEnd.getHours()).padStart(2, '0')}:${String(monthEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      start_time: startTime,
+      end_time: endTime
+    }));
   }
 
   const handleUpload = async (file: File): Promise<string> => {
@@ -92,13 +139,39 @@ export default function BannerPage() {
       const desktopUrl = await handleUpload(desktopImage)
       const mobileUrl = await handleUpload(mobileImage)
 
+      // 統一時間格式處理 - 使用台灣時間
+      let processedStartTime = '';
+      let processedEndTime = '';
+      
+      if (form.start_time) {
+        // 處理可能的格式差異
+        let normalizedStart = form.start_time;
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(form.start_time)) {
+          normalizedStart = form.start_time.substring(0, 16);
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedStart)) {
+          processedStartTime = normalizedStart + ':00';
+        }
+      }
+      
+      if (form.end_time) {
+        // 處理可能的格式差異
+        let normalizedEnd = form.end_time;
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(form.end_time)) {
+          normalizedEnd = form.end_time.substring(0, 16);
+        }
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedEnd)) {
+          processedEndTime = normalizedEnd + ':59';
+        }
+      }
+
       const payload = {
         ...form,
         sort: Number(form.sort),
         desktop_image_url: desktopUrl,
         mobile_image_url: mobileUrl,
-        start_time: new Date(form.start_time).toISOString(),
-        end_time: new Date(form.end_time).toISOString(),
+        start_time: processedStartTime,
+        end_time: processedEndTime,
         company: { id: 1 },
       }
 
@@ -215,26 +288,93 @@ export default function BannerPage() {
               <div className="form-group">
                 <label className="form-label required">⏰ 活動時間</label>
                 <div className="datetime-range">
-                  <input
-                    type="datetime-local"
-                    name="start_time"
-                    className="form-input datetime-input"
+                  <DateTimePicker
                     value={form.start_time}
-                    onChange={handleChange}
-                    required
+                    onChange={(value) => setForm(prev => ({...prev, start_time: value}))}
+                    placeholder="選擇開始時間"
+                    className="form-input datetime-input"
                   />
                   <span className="datetime-separator">到</span>
-                  <input
-                    type="datetime-local"
-                    name="end_time"
-                    className="form-input datetime-input"
+                  <DateTimePicker
                     value={form.end_time}
-                    onChange={handleChange}
-                    required
+                    onChange={(value) => setForm(prev => ({...prev, end_time: value}))}
+                    placeholder="選擇結束時間"
+                    className="form-input datetime-input"
                   />
                 </div>
+                <div className="quick-time-buttons" style={{
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                  marginTop: '8px'
+                }}>
+                  <button 
+                    type="button" 
+                    onClick={() => quickSetTime("now")} 
+                    className="btn-quick-time"
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #0284c7',
+                      borderRadius: '4px',
+                      color: '#0284c7',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📅 從現在開始一週
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => quickSetTime("today")} 
+                    className="btn-quick-time"
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #0284c7',
+                      borderRadius: '4px',
+                      color: '#0284c7',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📅 今日整天
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => quickSetTime("week")} 
+                    className="btn-quick-time"
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #0284c7',
+                      borderRadius: '4px',
+                      color: '#0284c7',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📅 本週
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => quickSetTime("month")} 
+                    className="btn-quick-time"
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      backgroundColor: '#f0f9ff',
+                      border: '1px solid #0284c7',
+                      borderRadius: '4px',
+                      color: '#0284c7',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📅 本月
+                  </button>
+                </div>
                 <div className="form-hint">
-                  設定 Banner 的顯示時間範圍，超出時間範圍將不會顯示
+                  設定 Banner 的顯示時間範圍，超出時間範圍將不會顯示。開始時間預設為 00 秒，結束時間預設為 59 秒。
                 </div>
               </div>
             </div>

@@ -10,6 +10,10 @@ const roleMap: Record<string, string> = {
   SUPER_ADMIN: "超級管理員",
   GLOBAL_ADMIN: "全域管理員",
   AGENT_OWNER: "代理商老闆",
+  AGENT_LEVEL_1: "一級代理商",
+  AGENT_LEVEL_2: "二級代理商",
+  AGENT_LEVEL_3: "三級代理商",
+  AGENT_LEVEL_4: "四級代理商",
   AGENT_SUPPORT: "客服",
   USER: "會員",
 };
@@ -110,10 +114,14 @@ export default function AdminUserListPage() {
 
   const canSeeActions =
     currentUser?.role !== undefined &&
-    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser.role);
+    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4"].includes(currentUser.role);
 
   const canModify =
     currentUser?.role === "AGENT_OWNER" ||
+    currentUser?.role === "AGENT_LEVEL_1" ||
+    currentUser?.role === "AGENT_LEVEL_2" ||
+    currentUser?.role === "AGENT_LEVEL_3" ||
+    currentUser?.role === "AGENT_LEVEL_4" ||
     currentUser?.role === "SUPER_ADMIN" ||
     currentUser?.role === "GLOBAL_ADMIN";
 
@@ -292,6 +300,10 @@ export default function AdminUserListPage() {
                       admin.role === "SUPER_ADMIN" ? "role-super-admin" :
                       admin.role === "GLOBAL_ADMIN" ? "role-global-admin" :
                       admin.role === "AGENT_OWNER" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_1" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_2" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_3" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_4" ? "role-agent-owner" :
                       admin.role === "AGENT_SUPPORT" ? "role-agent-support" :
                       "role-user"
                     }`}>

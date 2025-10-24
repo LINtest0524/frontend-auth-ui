@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toCsv, downloadCsv, formatDateTime } from '@/lib/csv';
 import { getUser } from '@/lib/useAuth';
 import { useCompanySlug } from '@/hooks/useCompanySlug';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
+import { toTaiwanDisplayTime, toTaiwanDisplayDate } from '@/lib/timeUtils';
 import "@/styles/pages/users.css";
 import "@/styles/pages/winloss-report.css";
 
@@ -70,46 +72,54 @@ export default function WinLossReportPage() {
     setSelectedProviders(allProviders);
   }, [selectedCategories]);
 
-  // 快速設定日期
+  // 快速設定日期 - 統一使用 DateTimePicker 格式
   const quickSetDate = (type: string) => {
-    // 確保使用本地時區的日期
     const today = new Date();
-    const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    
+    let fromDate = '';
+    let toDate = '';
+
     switch (type) {
       case 'today':
-        setDateFrom(formatDate(today));
-        setDateTo(formatDate(today));
+        // 今日 00:00:00 到 23:59:59
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
         break;
       case 'yesterday':
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        setDateFrom(formatDate(yesterday));
-        setDateTo(formatDate(yesterday));
+        // 昨日 00:00:00 到 23:59:59
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const yesterdayStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0);
+        const yesterdayEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59);
+        fromDate = `${yesterdayStart.getFullYear()}-${String(yesterdayStart.getMonth() + 1).padStart(2, '0')}-${String(yesterdayStart.getDate()).padStart(2, '0')}T${String(yesterdayStart.getHours()).padStart(2, '0')}:${String(yesterdayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${yesterdayEnd.getFullYear()}-${String(yesterdayEnd.getMonth() + 1).padStart(2, '0')}-${String(yesterdayEnd.getDate()).padStart(2, '0')}T${String(yesterdayEnd.getHours()).padStart(2, '0')}:${String(yesterdayEnd.getMinutes()).padStart(2, '0')}`;
         break;
       case '7days':
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        setDateFrom(formatDate(sevenDaysAgo));
-        setDateTo(formatDate(today));
+        // 近7日（7天前 00:00:00 到今天 23:59:59）
+        const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const sevenDaysStart = new Date(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth(), sevenDaysAgo.getDate(), 0, 0);
+        const todayEnd7 = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${sevenDaysStart.getFullYear()}-${String(sevenDaysStart.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysStart.getDate()).padStart(2, '0')}T${String(sevenDaysStart.getHours()).padStart(2, '0')}:${String(sevenDaysStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd7.getFullYear()}-${String(todayEnd7.getMonth() + 1).padStart(2, '0')}-${String(todayEnd7.getDate()).padStart(2, '0')}T${String(todayEnd7.getHours()).padStart(2, '0')}:${String(todayEnd7.getMinutes()).padStart(2, '0')}`;
         break;
       case 'thisMonth':
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        setDateFrom(formatDate(monthStart));
-        setDateTo(formatDate(today));
+        // 本月第一天 00:00:00 到今天 23:59:59
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0);
+        const todayEndMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${thisMonthStart.getFullYear()}-${String(thisMonthStart.getMonth() + 1).padStart(2, '0')}-${String(thisMonthStart.getDate()).padStart(2, '0')}T${String(thisMonthStart.getHours()).padStart(2, '0')}:${String(thisMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEndMonth.getFullYear()}-${String(todayEndMonth.getMonth() + 1).padStart(2, '0')}-${String(todayEndMonth.getDate()).padStart(2, '0')}T${String(todayEndMonth.getHours()).padStart(2, '0')}:${String(todayEndMonth.getMinutes()).padStart(2, '0')}`;
         break;
       case 'lastMonth':
-        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-        setDateFrom(formatDate(lastMonthStart));
-        setDateTo(formatDate(lastMonthEnd));
+        // 上月第一天 00:00:00 到最後一天 23:59:59
+        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1, 0, 0);
+        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59);
+        fromDate = `${lastMonthStart.getFullYear()}-${String(lastMonthStart.getMonth() + 1).padStart(2, '0')}-${String(lastMonthStart.getDate()).padStart(2, '0')}T${String(lastMonthStart.getHours()).padStart(2, '0')}:${String(lastMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${lastMonthEnd.getFullYear()}-${String(lastMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(lastMonthEnd.getDate()).padStart(2, '0')}T${String(lastMonthEnd.getHours()).padStart(2, '0')}:${String(lastMonthEnd.getMinutes()).padStart(2, '0')}`;
         break;
     }
+
+    setDateFrom(fromDate);
+    setDateTo(toDate);
   };
 
   // 處理遊戲類別選擇
@@ -160,12 +170,12 @@ export default function WinLossReportPage() {
     if (usernameFilter && !dateFrom && !dateTo) {
       // 為特定玩家搜尋設定預設的30天範圍
       const today = new Date();
-      const thirtyDaysAgo = new Date(today);
-      thirtyDaysAgo.setDate(today.getDate() - 30);
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const thirtyDaysStart = new Date(thirtyDaysAgo.getFullYear(), thirtyDaysAgo.getMonth(), thirtyDaysAgo.getDate(), 0, 0);
+      const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
       
-      effectiveDateFrom = thirtyDaysAgo.toISOString().split('T')[0];
-      effectiveDateTo = today.toISOString().split('T')[0];
-      
+      effectiveDateFrom = `${thirtyDaysStart.getFullYear()}-${String(thirtyDaysStart.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysStart.getDate()).padStart(2, '0')}T${String(thirtyDaysStart.getHours()).padStart(2, '0')}:${String(thirtyDaysStart.getMinutes()).padStart(2, '0')}`;
+      effectiveDateTo = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
     }
 
     setLoading(true);
@@ -179,8 +189,27 @@ export default function WinLossReportPage() {
         // 如果指定了特定玩家，只查詢該玩家
         const baseParams = new URLSearchParams();
         baseParams.append('playerId', usernameFilter);
-        if (effectiveDateFrom) baseParams.append('dateFrom', effectiveDateFrom + ' 00:00:00');
-        if (effectiveDateTo) baseParams.append('dateTo', effectiveDateTo + ' 23:59:59');
+        
+        // 統一時間格式處理 - 使用台灣時間
+        if (effectiveDateFrom) {
+          let normalizedFrom = effectiveDateFrom;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(effectiveDateFrom)) {
+            normalizedFrom = effectiveDateFrom.substring(0, 16);
+          }
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
+            baseParams.append('dateFrom', normalizedFrom + ':00');
+          }
+        }
+        
+        if (effectiveDateTo) {
+          let normalizedTo = effectiveDateTo;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(effectiveDateTo)) {
+            normalizedTo = effectiveDateTo.substring(0, 16);
+          }
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
+            baseParams.append('dateTo', normalizedTo + ':59');
+          }
+        }
         baseParams.append('limit', '500');
         
         if (selectedProviders.length > 0) {
@@ -222,8 +251,27 @@ export default function WinLossReportPage() {
       } else {
         // 如果沒有指定玩家，通過日期範圍和遊戲類型查詢所有資料
         const baseParams = new URLSearchParams();
-        if (effectiveDateFrom) baseParams.append('dateFrom', effectiveDateFrom + ' 00:00:00');
-        if (effectiveDateTo) baseParams.append('dateTo', effectiveDateTo + ' 23:59:59');
+        
+        // 統一時間格式處理 - 使用台灣時間
+        if (effectiveDateFrom) {
+          let normalizedFrom = effectiveDateFrom;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(effectiveDateFrom)) {
+            normalizedFrom = effectiveDateFrom.substring(0, 16);
+          }
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
+            baseParams.append('dateFrom', normalizedFrom + ':00');
+          }
+        }
+        
+        if (effectiveDateTo) {
+          let normalizedTo = effectiveDateTo;
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(effectiveDateTo)) {
+            normalizedTo = effectiveDateTo.substring(0, 16);
+          }
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
+            baseParams.append('dateTo', normalizedTo + ':59');
+          }
+        }
         baseParams.append('limit', '1000'); // 增加限制以獲取更多資料
         
         if (selectedProviders.length > 0) {
@@ -389,23 +437,23 @@ export default function WinLossReportPage() {
               </div>
             </div>
 
-            {/* 日期範圍 */}
+            {/* 日期時間範圍 */}
             <div className="filter-row">
               <div className="form-group date-range-group">
                 <label className="form-label">下注時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
-                    value={dateFrom} 
-                    onChange={e => setDateFrom(e.target.value)}
-                    className="form-input" 
+                  <DateTimePicker
+                    value={dateFrom}
+                    onChange={(value) => setDateFrom(value)}
+                    placeholder="選擇開始時間"
+                    className="form-input"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
-                    value={dateTo} 
-                    onChange={e => setDateTo(e.target.value)}
-                    className="form-input" 
+                  <DateTimePicker
+                    value={dateTo}
+                    onChange={(value) => setDateTo(value)}
+                    placeholder="選擇結束時間"
+                    className="form-input"
                   />
                 </div>
                 <div className="quick-date-buttons">

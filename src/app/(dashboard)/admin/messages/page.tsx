@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import SunEditor from '@/components/SunEditor'
 import { useUserStore } from '@/hooks/use-user-store'
-import dayjs from 'dayjs'
 import '@/styles/pages/messages-admin.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 
 interface Message {
   id: number
@@ -100,37 +101,52 @@ export default function AdminMessagesPage() {
   // 檢查是否有系統廣播權限
   const canUseBroadcast = () => {
     if (!currentUser?.role) return false
-    return ['AGENT_SUPPORT', 'AGENT_OWNER', 'SUPER_ADMIN'].includes(currentUser.role)
+    return ['AGENT_SUPPORT', 'AGENT_OWNER', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'SUPER_ADMIN'].includes(currentUser.role)
   }
 
-  // 快速設定日期
+  // 快速設定日期時間
   const quickSetDate = (type: string) => {
-    const today = dayjs()
+    const today = new Date()
     let fromDate = ''
     let toDate = ''
 
     switch (type) {
       case 'today':
-        fromDate = today.format('YYYY-MM-DD')
-        toDate = today.format('YYYY-MM-DD')
+        // 今日 00:00:00 到 23:59:59
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0)
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59)
+        fromDate = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`
+        toDate = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`
         break
       case 'yesterday':
-        const y = today.subtract(1, 'day')
-        fromDate = y.format('YYYY-MM-DD')
-        toDate = y.format('YYYY-MM-DD')
+        // 昨日 00:00:00 到 23:59:59
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+        const yesterdayStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0)
+        const yesterdayEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59)
+        fromDate = `${yesterdayStart.getFullYear()}-${String(yesterdayStart.getMonth() + 1).padStart(2, '0')}-${String(yesterdayStart.getDate()).padStart(2, '0')}T${String(yesterdayStart.getHours()).padStart(2, '0')}:${String(yesterdayStart.getMinutes()).padStart(2, '0')}`
+        toDate = `${yesterdayEnd.getFullYear()}-${String(yesterdayEnd.getMonth() + 1).padStart(2, '0')}-${String(yesterdayEnd.getDate()).padStart(2, '0')}T${String(yesterdayEnd.getHours()).padStart(2, '0')}:${String(yesterdayEnd.getMinutes()).padStart(2, '0')}`
         break
       case '3days':
-        fromDate = today.subtract(2, 'day').format('YYYY-MM-DD')
-        toDate = today.format('YYYY-MM-DD')
+        // 近三日（前天 00:00:00 到今天 23:59:59）
+        const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000)
+        const threeDaysStart = new Date(threeDaysAgo.getFullYear(), threeDaysAgo.getMonth(), threeDaysAgo.getDate(), 0, 0)
+        const todayEnd3 = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59)
+        fromDate = `${threeDaysStart.getFullYear()}-${String(threeDaysStart.getMonth() + 1).padStart(2, '0')}-${String(threeDaysStart.getDate()).padStart(2, '0')}T${String(threeDaysStart.getHours()).padStart(2, '0')}:${String(threeDaysStart.getMinutes()).padStart(2, '0')}`
+        toDate = `${todayEnd3.getFullYear()}-${String(todayEnd3.getMonth() + 1).padStart(2, '0')}-${String(todayEnd3.getDate()).padStart(2, '0')}T${String(todayEnd3.getHours()).padStart(2, '0')}:${String(todayEnd3.getMinutes()).padStart(2, '0')}`
         break
       case 'thisMonth':
-        fromDate = today.startOf('month').format('YYYY-MM-DD')
-        toDate = today.endOf('month').format('YYYY-MM-DD')
+        // 本月第一天 00:00:00 到最後一天 23:59:59
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0)
+        const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59)
+        fromDate = `${thisMonthStart.getFullYear()}-${String(thisMonthStart.getMonth() + 1).padStart(2, '0')}-${String(thisMonthStart.getDate()).padStart(2, '0')}T${String(thisMonthStart.getHours()).padStart(2, '0')}:${String(thisMonthStart.getMinutes()).padStart(2, '0')}`
+        toDate = `${thisMonthEnd.getFullYear()}-${String(thisMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(thisMonthEnd.getDate()).padStart(2, '0')}T${String(thisMonthEnd.getHours()).padStart(2, '0')}:${String(thisMonthEnd.getMinutes()).padStart(2, '0')}`
         break
       case 'lastMonth':
-        const last = today.subtract(1, 'month')
-        fromDate = last.startOf('month').format('YYYY-MM-DD')
-        toDate = last.endOf('month').format('YYYY-MM-DD')
+        // 上月第一天 00:00:00 到最後一天 23:59:59
+        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1, 0, 0)
+        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59)
+        fromDate = `${lastMonthStart.getFullYear()}-${String(lastMonthStart.getMonth() + 1).padStart(2, '0')}-${String(lastMonthStart.getDate()).padStart(2, '0')}T${String(lastMonthStart.getHours()).padStart(2, '0')}:${String(lastMonthStart.getMinutes()).padStart(2, '0')}`
+        toDate = `${lastMonthEnd.getFullYear()}-${String(lastMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(lastMonthEnd.getDate()).padStart(2, '0')}T${String(lastMonthEnd.getHours()).padStart(2, '0')}:${String(lastMonthEnd.getMinutes()).padStart(2, '0')}`
         break
     }
 
@@ -205,21 +221,48 @@ export default function AdminMessagesPage() {
         }
       }
       
-      // 如果是初始載入，使用近3天的時間範圍，否則使用篩選條件中的時間
+      // 時間篩選處理 - 統一使用台灣時間
+      
       if (useInitialFilter) {
-        const today = dayjs()
-        const threeDaysAgo = today.subtract(2, 'day').format('YYYY-MM-DD')
-        const todayStr = today.format('YYYY-MM-DD')
-        params.append('createdFrom', threeDaysAgo)
-        params.append('createdTo', todayStr)
+        // 初始載入使用近3天 - 統一使用台灣時間
+        const today = new Date()
+        const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000)
+        const threeDaysStart = new Date(threeDaysAgo.getFullYear(), threeDaysAgo.getMonth(), threeDaysAgo.getDate(), 0, 0, 0)
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+        const threeDaysStartStr = `${threeDaysStart.getFullYear()}-${String(threeDaysStart.getMonth() + 1).padStart(2, '0')}-${String(threeDaysStart.getDate()).padStart(2, '0')}T${String(threeDaysStart.getHours()).padStart(2, '0')}:${String(threeDaysStart.getMinutes()).padStart(2, '0')}:${String(threeDaysStart.getSeconds()).padStart(2, '0')}`
+        const todayEndStr = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}:${String(todayEnd.getSeconds()).padStart(2, '0')}`
+        params.append('createdFrom', threeDaysStartStr)
+        params.append('createdTo', todayEndStr)
       } else {
-        // 驗證日期格式
-        if (createdFrom && /^\d{4}-\d{2}-\d{2}$/.test(createdFrom)) {
-          params.append('createdFrom', createdFrom)
+        // 手動搜尋或快速篩選 - 統一使用台灣時間，不轉換UTC
+        if (createdFrom) {
+          // 處理可能的格式差異
+          let normalizedFrom = createdFrom
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdFrom)) {
+            // 如果有秒數，去除秒數
+            normalizedFrom = createdFrom.substring(0, 16)
+          }
+          
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
+            // 統一使用台灣時間，添加秒數後直接發送
+            const taiwanTimeFrom = normalizedFrom + ':00'
+            params.append('createdFrom', taiwanTimeFrom)
+          }
         }
         
-        if (createdTo && /^\d{4}-\d{2}-\d{2}$/.test(createdTo)) {
-          params.append('createdTo', createdTo)
+        if (createdTo) {
+          // 處理可能的格式差異
+          let normalizedTo = createdTo
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdTo)) {
+            // 如果有秒數，去除秒數
+            normalizedTo = createdTo.substring(0, 16)
+          }
+          
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
+            // 統一使用台灣時間，添加秒數後直接發送
+            const taiwanTimeTo = normalizedTo + ':59'  // 結束時間使用59秒
+            params.append('createdTo', taiwanTimeTo)
+          }
         }
       }
       
@@ -726,6 +769,7 @@ export default function AdminMessagesPage() {
     }
   }, [])
 
+  // 只在頁數和每頁顯示數量改變時重新搜尋（不會影響篩選條件）
   useEffect(() => {
     if (hasSearched) {
       fetchMessages()
@@ -817,19 +861,19 @@ export default function AdminMessagesPage() {
                   <div className="form-group date-range-group">
                     <label htmlFor="date-select-1" className="form-label">發送時間範圍</label>
                     <div className="date-inputs">
-                      <input 
-                        type="date" 
-                        id="date-select-1" 
-                        value={createdFrom} 
-                        onChange={(e) => setCreatedFrom(e.target.value)} 
-                        className="form-input" 
+                      <DateTimePicker
+                        id="date-select-1"
+                        value={createdFrom}
+                        onChange={(value) => setCreatedFrom(value)}
+                        placeholder="選擇開始時間"
+                        className="form-input"
                       />
                       <span className="date-separator">至</span>
-                      <input 
-                        type="date" 
-                        value={createdTo} 
-                        onChange={(e) => setCreatedTo(e.target.value)} 
-                        className="form-input" 
+                      <DateTimePicker
+                        value={createdTo}
+                        onChange={(value) => setCreatedTo(value)}
+                        placeholder="選擇結束時間"
+                        className="form-input"
                       />
                     </div>
                     <div className="quick-date-buttons">
@@ -1062,6 +1106,10 @@ export default function AdminMessagesPage() {
           <ul>
             <li>• 客服人員 (AGENT_SUPPORT)</li>
             <li>• 代理商老闆 (AGENT_OWNER)</li>
+            <li>• 一級代理商 (AGENT_LEVEL_1)</li>
+            <li>• 二級代理商 (AGENT_LEVEL_2)</li>
+            <li>• 三級代理商 (AGENT_LEVEL_3)</li>
+            <li>• 四級代理商 (AGENT_LEVEL_4)</li>
             <li>• 超級管理員 (SUPER_ADMIN)</li>
           </ul>
           <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>
@@ -1076,6 +1124,10 @@ export default function AdminMessagesPage() {
           <ul>
             <li>• 客服人員 (AGENT_SUPPORT)</li>
             <li>• 代理商老闆 (AGENT_OWNER)</li>
+            <li>• 一級代理商 (AGENT_LEVEL_1)</li>
+            <li>• 二級代理商 (AGENT_LEVEL_2)</li>
+            <li>• 三級代理商 (AGENT_LEVEL_3)</li>
+            <li>• 四級代理商 (AGENT_LEVEL_4)</li>
             <li>• 超級管理員 (SUPER_ADMIN)</li>
           </ul>
           <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>
