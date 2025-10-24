@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import dayjs from 'dayjs'
 import '@/styles/pages/users.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 
 type Article = {
   id: number
@@ -53,6 +55,10 @@ export default function ArticlesPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [inputLimit, setInputLimit] = useState(20)
   const [limit, setLimit] = useState(20)
+  
+  // 發布時間篩選 (datetime-local 格式)
+  const [publishFrom, setPublishFrom] = useState('')
+  const [publishTo, setPublishTo] = useState('')
 
   useEffect(() => {
     if (user?.companyId) {
@@ -130,6 +136,17 @@ export default function ArticlesPage() {
       // 驗證分類參數
       if (selectedCategory && /^\d+$/.test(selectedCategory)) {
         params.append('categoryId', selectedCategory)
+      }
+      
+      // 發布時間範圍篩選
+      if (publishFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(publishFrom)) {
+        const fromTimeUTC = fromDatetimeLocalToUTC(publishFrom)
+        params.append('publishFrom', fromTimeUTC)
+      }
+      
+      if (publishTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(publishTo)) {
+        const toTimeUTC = fromDatetimeLocalToUTC(publishTo)
+        params.append('publishTo', toTimeUTC)
       }
 
       const token = localStorage.getItem('token')
@@ -220,12 +237,49 @@ export default function ArticlesPage() {
     setSearchTerm('')
     setSelectedStatus('')
     setSelectedCategory('')
+    setPublishFrom('')
+    setPublishTo('')
     setCurrentPage(1)
     setHasSearched(true)
     // 延遲執行以確保狀態更新完成
     setTimeout(() => {
       fetchArticles()
     }, 100)
+  }
+
+  // 快速設定發布時間 (datetime-local 格式)
+  const quickSetPublishDate = (type: string) => {
+    const today = dayjs()
+    let fromDate = ''
+    let toDate = ''
+
+    switch (type) {
+      case 'today':
+        fromDate = today.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
+        break
+      case 'yesterday':
+        const y = today.subtract(1, 'day')
+        fromDate = y.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = y.endOf('day').format('YYYY-MM-DDTHH:mm')
+        break
+      case '3days':
+        fromDate = today.subtract(2, 'day').startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
+        break
+      case 'thisMonth':
+        fromDate = today.startOf('month').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('month').format('YYYY-MM-DDTHH:mm')
+        break
+      case 'lastMonth':
+        const last = today.subtract(1, 'month')
+        fromDate = last.startOf('month').format('YYYY-MM-DDTHH:mm')
+        toDate = last.endOf('month').format('YYYY-MM-DDTHH:mm')
+        break
+    }
+
+    setPublishFrom(fromDate)
+    setPublishTo(toDate)
   }
 
   const getStatusText = (status: string) => {
@@ -406,6 +460,34 @@ export default function ArticlesPage() {
               </div>
             </div>
 
+            <div className="filter-row">
+              <div className="form-group date-range-group">
+                <label className="form-label">發布時間範圍</label>
+                <div className="date-inputs">
+                  <DateTimePicker
+                    value={publishFrom}
+                    onChange={(value) => setPublishFrom(value)}
+                    placeholder="開始時間"
+                    className="form-input"
+                  />
+                  <span className="date-separator">至</span>
+                  <DateTimePicker
+                    value={publishTo}
+                    onChange={(value) => setPublishTo(value)}
+                    placeholder="結束時間"
+                    className="form-input"
+                  />
+                </div>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetPublishDate("today")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetPublishDate("yesterday")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetPublishDate("3days")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetPublishDate("thisMonth")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetPublishDate("lastMonth")} className="btn-quick-date">上月</button>
+                </div>
+              </div>
+            </div>
+
             <div className="filter-actions">
               <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
               <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
@@ -512,7 +594,7 @@ export default function ArticlesPage() {
                   </td>
                   <td>
                     <div className="login-info">
-                      📅 {dayjs(article.publish_date).format('YYYY/MM/DD')}
+                      📅 {toTaiwanDisplayTime(article.publish_date)}
                     </div>
                   </td>
                   <td>

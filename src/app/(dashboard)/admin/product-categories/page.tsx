@@ -209,7 +209,11 @@ export default function ProductCategoriesPage() {
         <div className="admin-user-header-actions">
           {(currentUser?.role === "SUPER_ADMIN" || 
             currentUser?.role === "GLOBAL_ADMIN" || 
-            currentUser?.role === "AGENT_OWNER") && (
+            currentUser?.role === "AGENT_OWNER" ||
+            currentUser?.role === "AGENT_LEVEL_1" ||
+            currentUser?.role === "AGENT_LEVEL_2" ||
+            currentUser?.role === "AGENT_LEVEL_3" ||
+            currentUser?.role === "AGENT_LEVEL_4") && (
             <button
               onClick={() => router.push("/admin/product-categories/new")}
               className="btn-primary"
@@ -383,7 +387,11 @@ export default function ProductCategoriesPage() {
                     <div className="action-buttons">
                       {(currentUser?.role === "SUPER_ADMIN" || 
                         currentUser?.role === "GLOBAL_ADMIN" || 
-                        currentUser?.role === "AGENT_OWNER") && (
+                        currentUser?.role === "AGENT_OWNER" ||
+                        currentUser?.role === "AGENT_LEVEL_1" ||
+                        currentUser?.role === "AGENT_LEVEL_2" ||
+                        currentUser?.role === "AGENT_LEVEL_3" ||
+                        currentUser?.role === "AGENT_LEVEL_4") && (
                         <button
                           onClick={() => router.push(`/admin/product-categories/${category.id}/edit`)}
                           className="btn-edit"

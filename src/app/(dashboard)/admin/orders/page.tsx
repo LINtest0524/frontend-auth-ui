@@ -5,6 +5,8 @@ import { useUserStore } from '@/hooks/use-user-store'
 import dayjs from 'dayjs'
 import '@/styles/order-detail-modal.css'
 import '@/styles/pages/promotions-admin.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 
 interface OrderItem {
   id: number
@@ -132,7 +134,7 @@ export default function OrdersManagePage() {
     );
   };
 
-  // 快速設定日期
+  // 快速設定日期 (datetime-local 格式)
   const quickSetDate = (type: string) => {
     const today = dayjs()
     let fromDate = ""
@@ -140,26 +142,26 @@ export default function OrdersManagePage() {
 
     switch (type) {
       case "today":
-        fromDate = today.format("YYYY-MM-DD")
-        toDate = today.format("YYYY-MM-DD")
+        fromDate = today.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case "yesterday":
         const y = today.subtract(1, "day")
-        fromDate = y.format("YYYY-MM-DD")
-        toDate = y.format("YYYY-MM-DD")
+        fromDate = y.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = y.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case "3days":
-        fromDate = today.subtract(2, "day").format("YYYY-MM-DD")
-        toDate = today.format("YYYY-MM-DD")
+        fromDate = today.subtract(2, "day").startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case "thisMonth":
-        fromDate = today.startOf("month").format("YYYY-MM-DD")
-        toDate = today.endOf("month").format("YYYY-MM-DD")
+        fromDate = today.startOf("month").format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf("month").format('YYYY-MM-DDTHH:mm')
         break
       case "lastMonth":
         const last = today.subtract(1, "month")
-        fromDate = last.startOf("month").format("YYYY-MM-DD")
-        toDate = last.endOf("month").format("YYYY-MM-DD")
+        fromDate = last.startOf("month").format('YYYY-MM-DDTHH:mm')
+        toDate = last.endOf("month").format('YYYY-MM-DDTHH:mm')
         break
     }
 
@@ -239,12 +241,15 @@ export default function OrdersManagePage() {
         params.append('payment_method', paymentMethodFilter)
       }
 
-      if (startDate) {
-        params.append('start_date', startDate)
+      // 訂購日期範圍篩選 - 使用 datetime-local 格式
+      if (startDate && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(startDate)) {
+        const fromTimeUTC = fromDatetimeLocalToUTC(startDate)
+        params.append('start_date', fromTimeUTC)
       }
 
-      if (endDate) {
-        params.append('end_date', endDate)
+      if (endDate && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(endDate)) {
+        const toTimeUTC = fromDatetimeLocalToUTC(endDate)
+        params.append('end_date', toTimeUTC)
       }
 
       if (productNameFilter.trim()) {
@@ -658,21 +663,20 @@ export default function OrdersManagePage() {
               </div>
 
               <div className="form-group date-range-group">
-                <label htmlFor="date-from" className="form-label">訂購日期範圍</label>
+                <label className="form-label">訂購日期範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
-                    id="date-from"
-                    value={startDate} 
-                    onChange={(e) => setStartDate(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={startDate}
+                    onChange={(value) => setStartDate(value)}
+                    placeholder="開始時間"
+                    className="form-input"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
-                    value={endDate} 
-                    onChange={(e) => setEndDate(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={endDate}
+                    onChange={(value) => setEndDate(value)}
+                    placeholder="結束時間"
+                    className="form-input"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -772,15 +776,7 @@ export default function OrdersManagePage() {
                     <div className="order-number">{order.order_number}</div>
                   </td>
                   <td style={{fontSize: "12px", lineHeight: "1.4"}}>
-                    {new Date(order.created_at).toLocaleString('zh-TW', {
-                      timeZone: "Asia/Taipei", 
-                      hour12: false,
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {toTaiwanDisplayTime(order.created_at)}
                   </td>
                   <td>
                     <div className="customer-name">

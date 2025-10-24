@@ -19,8 +19,6 @@ export default function MarqueeTagListPage() {
   const [items, setItems] = useState<MarqueeTag[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [searchName, setSearchName] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
   const router = useRouter();
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE;
@@ -31,7 +29,7 @@ export default function MarqueeTagListPage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const fetchData = async (searchTerm = "") => {
+  const fetchData = async () => {
     if (!token) {
       setError("未登入或 token 遺失，請重新登入");
       return;
@@ -40,12 +38,7 @@ export default function MarqueeTagListPage() {
     setLoading(true);
     setError("");
     try {
-      let url = `${apiBase}/admin/marquee-tags`;
-      if (searchTerm) {
-        url += `?search=${encodeURIComponent(searchTerm)}`;
-      }
-      
-      const res = await fetch(url, {
+      const res = await fetch(`${apiBase}/admin/marquee-tags`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -54,17 +47,12 @@ export default function MarqueeTagListPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setItems(data);
-      setHasSearched(true);
     } catch (err: any) {
       // 安全錯誤處理：不輸出敏感資訊到控制台
       setError("資料載入失敗，請稍後再試");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSearch = () => {
-    fetchData(searchName);
   };
 
   const handleDelete = async (id: number, name: string) => {
@@ -87,7 +75,7 @@ export default function MarqueeTagListPage() {
       }
 
       // 重新載入資料
-      fetchData(searchName);
+      fetchData();
     } catch (err: any) {
       // 安全錯誤處理：不直接顯示後端錯誤訊息
       setError("刪除失敗，請稍後再試");
@@ -113,29 +101,6 @@ export default function MarqueeTagListPage() {
         </div>
       </div>
 
-      {/* 搜尋區域 */}
-      <div className="filter-section">
-        <div className="filter-grid">
-          <div className="form-group">
-            <label htmlFor="name-search" className="form-label">標籤名稱搜尋</label>
-            <input
-              type="text"
-              id="name-search"
-              placeholder="請輸入標籤名稱"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              className="form-input"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            />
-          </div>
-        </div>
-
-        <div className="filter-actions">
-          <button onClick={handleSearch} className="btn-search">
-            🔍 查詢
-          </button>
-        </div>
-      </div>
 
       {/* 錯誤訊息 */}
       {error && (
@@ -289,22 +254,10 @@ export default function MarqueeTagListPage() {
           </table>
 
           {/* 無資料顯示 */}
-          {!loading && hasSearched && items.length === 0 && (
+          {!loading && items.length === 0 && (
             <div className="no-data">
               <img src="/no-information.webp" alt="無資料" />
-              <p>查無符合條件的標籤</p>
-              {searchName && (
-                <button 
-                  onClick={() => {
-                    setSearchName("");
-                    fetchData();
-                  }}
-                  className="btn-search"
-                  style={{ marginTop: '16px' }}
-                >
-                  🔄 顯示全部標籤
-                </button>
-              )}
+              <p>目前沒有標籤資料</p>
             </div>
           )}
         </div>

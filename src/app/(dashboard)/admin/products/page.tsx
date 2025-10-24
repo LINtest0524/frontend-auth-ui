@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/hooks/use-user-store";
 import dayjs from "dayjs";
 import "@/styles/pages/users.css";
+import { DateTimePicker } from '@/components/ui/datetime-picker';
+import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils';
 
 interface ProductVariant {
   id: number;
@@ -102,30 +104,30 @@ export default function ProductListPage() {
 
     switch (type) {
       case "today":
-        fromDate = today.format("YYYY-MM-DD");
-        toDate = today.format("YYYY-MM-DD");
+        fromDate = today.startOf('day').format('YYYY-MM-DDTHH:mm');
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm');
         break;
       case "yesterday":
         const y = today.subtract(1, "day");
-        fromDate = y.format("YYYY-MM-DD");
-        toDate = y.format("YYYY-MM-DD");
+        fromDate = y.startOf('day').format('YYYY-MM-DDTHH:mm');
+        toDate = y.endOf('day').format('YYYY-MM-DDTHH:mm');
         break;
       case "3days":
-        fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
-        toDate = today.format("YYYY-MM-DD");
+        fromDate = today.subtract(2, "day").startOf('day').format('YYYY-MM-DDTHH:mm');
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm');
         break;
       case "7days":
-        fromDate = today.subtract(6, "day").format("YYYY-MM-DD");
-        toDate = today.format("YYYY-MM-DD");
+        fromDate = today.subtract(6, "day").startOf('day').format('YYYY-MM-DDTHH:mm');
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm');
         break;
       case "thisMonth":
-        fromDate = today.startOf("month").format("YYYY-MM-DD");
-        toDate = today.endOf("month").format("YYYY-MM-DD");
+        fromDate = today.startOf("month").format('YYYY-MM-DDTHH:mm');
+        toDate = today.endOf("month").format('YYYY-MM-DDTHH:mm');
         break;
       case "lastMonth":
         const last = today.subtract(1, "month");
-        fromDate = last.startOf("month").format("YYYY-MM-DD");
-        toDate = last.endOf("month").format("YYYY-MM-DD");
+        fromDate = last.startOf("month").format('YYYY-MM-DDTHH:mm');
+        toDate = last.endOf("month").format('YYYY-MM-DDTHH:mm');
         break;
     }
 
@@ -189,8 +191,16 @@ export default function ProductListPage() {
         params.append("createdFrom", threeDaysAgo + " 00:00:00");
         params.append("createdTo", todayStr + " 23:59:59");
       } else {
-        if (createdFrom) params.append("createdFrom", createdFrom + " 00:00:00");
-        if (createdTo) params.append("createdTo", createdTo + " 23:59:59");
+        // 使用 datetime-local 格式處理時間
+        if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
+          const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom);
+          params.append("createdFrom", fromTimeUTC);
+        }
+        
+        if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
+          const toTimeUTC = fromDatetimeLocalToUTC(createdTo);
+          params.append("createdTo", toTimeUTC);
+        }
       }
 
       params.append("limit", limit.toString());
@@ -590,21 +600,20 @@ export default function ProductListPage() {
 
             <div className="filter-row">
               <div className="form-group date-range-group">
-                <label htmlFor="created-date-from" className="form-label">建立時間範圍</label>
+                <label className="form-label">建立時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
-                    id="created-date-from"
-                    value={createdFrom} 
-                    onChange={(e) => setCreatedFrom(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdFrom}
+                    onChange={(value) => setCreatedFrom(value)}
+                    placeholder="開始時間"
+                    className="form-input"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
-                    value={createdTo} 
-                    onChange={(e) => setCreatedTo(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdTo}
+                    onChange={(value) => setCreatedTo(value)}
+                    placeholder="結束時間"
+                    className="form-input"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -767,15 +776,7 @@ export default function ProductListPage() {
                   </td>
                   <td>
                     <div style={{fontSize: "12px", color: "#6b7280"}}>
-                      📅 {product.created_at ? new Date(product.created_at).toLocaleString("zh-TW", { 
-                        timeZone: "Asia/Taipei", 
-                        hour12: false,
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : "未知"}
+                      📅 {product.created_at ? toTaiwanDisplayTime(product.created_at) : "未知"}
                     </div>
                   </td>
                   <td>

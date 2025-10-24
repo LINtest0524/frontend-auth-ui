@@ -7,13 +7,6 @@ import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 import '@/styles/pages/popup-announcement-create.css'
 
-// 格式化日期時間為本地時間格式 (台灣時區)
-const formatDateTimeLocal = (dateString: string): string => {
-  const date = new Date(dateString)
-  // 調整為台灣時區 (UTC+8)
-  const taiwanDate = new Date(date.getTime() + (8 * 60 * 60 * 1000))
-  return taiwanDate.toISOString().slice(0, 16)
-}
 
 export default function NewPopupAnnouncementPage() {
   const router = useRouter()
@@ -150,11 +143,16 @@ export default function NewPopupAnnouncementPage() {
       }
 
       // 轉換時間格式給後端
-      if (submitData.start_date) {
+      if (submitData.start_date && submitData.start_date.trim() !== '') {
         submitData.start_date = fromDatetimeLocalToUTC(submitData.start_date)
+      } else {
+        submitData.start_date = null // 設為 null 而非空字符串
       }
-      if (submitData.end_date) {
+      
+      if (submitData.end_date && submitData.end_date.trim() !== '') {
         submitData.end_date = fromDatetimeLocalToUTC(submitData.end_date)
+      } else {
+        submitData.end_date = null // 設為 null 而非空字符串
       }
 
       // 創建彈窗公告

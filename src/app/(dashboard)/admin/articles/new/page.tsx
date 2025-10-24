@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import SunEditor from '@/components/SunEditor'
 import '@/styles/pages/news-form.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString } from '@/lib/timeUtils'
 
 type ArticleCategory = {
   id: number
@@ -33,12 +35,7 @@ export default function NewArticlePage() {
     status: 'DRAFT',
     is_featured: false,
     sort: 0,
-    publish_date: (() => {
-      const now = new Date();
-      // 加8小時轉換為台灣時間
-      const taiwanTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-      return taiwanTime.toISOString().slice(0, 16);
-    })(),
+    publish_date: toTaiwanDatetimeString(new Date()),
   })
 
   useEffect(() => {
@@ -421,17 +418,16 @@ export default function NewArticlePage() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="publish_date" className="form-label">⏰ 發布時間</label>
-                <input
-                  type="datetime-local"
-                  id="publish_date"
-                  name="publish_date"
-                  className="form-input"
+                <label className="form-label">⏰ 發布時間</label>
+                <DateTimePicker
                   value={formData.publish_date}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, publish_date: value }))}
+                  placeholder="選擇發布時間"
+                  className="form-input"
                 />
                 <div className="form-hint">
-                  設定文章的發布時間，可以預約未來發布
+                  設定文章的發布時間，可以預約未來發布<br />
+                  <strong>⚠️ 預約發布延遲：系統每15分鐘檢查一次，實際發布時間可能延遲最多15分鐘</strong>
                 </div>
               </div>
 

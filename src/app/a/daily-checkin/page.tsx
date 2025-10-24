@@ -61,6 +61,7 @@ export default function DailyCheckinPage() {
       setPageState('loading');
       
       const data = await apiClient.dailyCheckin.getAvailableActivities();
+      
       if (!isMounted) return; // 避免在組件卸載後設置狀態
       
       if (data.data && data.data.length > 0) {

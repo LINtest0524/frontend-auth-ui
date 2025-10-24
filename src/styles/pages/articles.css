@@ -702,7 +702,7 @@
 
 /* 麵包屑導航 */
 .breadcrumb-nav {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -761,7 +761,7 @@
 
 /* 主要內容容器 */
 .article-detail-container {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   position: relative;
@@ -770,9 +770,11 @@
 
 .article-detail-wrapper {
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 3rem;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
   align-items: start;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 /* 主要文章內容 */
@@ -1354,6 +1356,7 @@
   .article-detail-wrapper {
     grid-template-columns: 1fr;
     gap: 2rem;
+    max-width: 100%;
   }
   
   .article-sidebar {

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
 import '@/styles/pages/users.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC, toTaiwanDisplayTime } from '@/lib/timeUtils'
 
 type ArticleCategory = {
   id: number
@@ -41,11 +43,11 @@ export default function ArticleCategoriesPage() {
   const [sortKey, setSortKey] = useState<SortKey>('id')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   
-  // 時間篩選
+  // 時間篩選 (datetime-local 格式)
   const [createdFrom, setCreatedFrom] = useState('')
   const [createdTo, setCreatedTo] = useState('')
 
-  // 快速設定日期
+  // 快速設定日期 (datetime-local 格式)
   const quickSetDate = (type: string) => {
     const today = dayjs()
     let fromDate = ''
@@ -53,26 +55,26 @@ export default function ArticleCategoriesPage() {
 
     switch (type) {
       case 'today':
-        fromDate = today.format('YYYY-MM-DD')
-        toDate = today.format('YYYY-MM-DD')
+        fromDate = today.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case 'yesterday':
         const y = today.subtract(1, 'day')
-        fromDate = y.format('YYYY-MM-DD')
-        toDate = y.format('YYYY-MM-DD')
+        fromDate = y.startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = y.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case '3days':
-        fromDate = today.subtract(2, 'day').format('YYYY-MM-DD')
-        toDate = today.format('YYYY-MM-DD')
+        fromDate = today.subtract(2, 'day').startOf('day').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm')
         break
       case 'thisMonth':
-        fromDate = today.startOf('month').format('YYYY-MM-DD')
-        toDate = today.endOf('month').format('YYYY-MM-DD')
+        fromDate = today.startOf('month').format('YYYY-MM-DDTHH:mm')
+        toDate = today.endOf('month').format('YYYY-MM-DDTHH:mm')
         break
       case 'lastMonth':
         const last = today.subtract(1, 'month')
-        fromDate = last.startOf('month').format('YYYY-MM-DD')
-        toDate = last.endOf('month').format('YYYY-MM-DD')
+        fromDate = last.startOf('month').format('YYYY-MM-DDTHH:mm')
+        toDate = last.endOf('month').format('YYYY-MM-DDTHH:mm')
         break
     }
 
@@ -207,17 +209,19 @@ export default function ArticleCategoriesPage() {
             return false
           }
           
-          // 時間範圍篩選 - 安全驗證日期格式
-          if (createdFrom && /^\d{4}-\d{2}-\d{2}$/.test(createdFrom)) {
-            const categoryDate = new Date(category.createdAt).toISOString().split('T')[0]
-            if (categoryDate < createdFrom) {
+          // 時間範圍篩選 - 使用 datetime-local 格式
+          if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
+            const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom)
+            const categoryTimeUTC = new Date(category.createdAt).toISOString()
+            if (categoryTimeUTC < fromTimeUTC) {
               return false
             }
           }
           
-          if (createdTo && /^\d{4}-\d{2}-\d{2}$/.test(createdTo)) {
-            const categoryDate = new Date(category.createdAt).toISOString().split('T')[0]
-            if (categoryDate > createdTo) {
+          if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
+            const toTimeUTC = fromDatetimeLocalToUTC(createdTo)
+            const categoryTimeUTC = new Date(category.createdAt).toISOString()
+            if (categoryTimeUTC > toTimeUTC) {
               return false
             }
           }
@@ -470,21 +474,20 @@ export default function ArticleCategoriesPage() {
 
             <div className="filter-row">
               <div className="form-group date-range-group">
-                <label htmlFor="created-date-from" className="form-label">建立時間範圍</label>
+                <label className="form-label">建立時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
-                    id="created-date-from"
-                    value={createdFrom} 
-                    onChange={(e) => setCreatedFrom(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdFrom}
+                    onChange={(value) => setCreatedFrom(value)}
+                    placeholder="開始時間"
+                    className="form-input"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
-                    value={createdTo} 
-                    onChange={(e) => setCreatedTo(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdTo}
+                    onChange={(value) => setCreatedTo(value)}
+                    placeholder="結束時間"
+                    className="form-input"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -620,15 +623,7 @@ export default function ArticleCategoriesPage() {
                   </td>
                   <td>
                     <div className="login-info">
-                      📅 {new Date(category.createdAt).toLocaleString("zh-TW", { 
-                        timeZone: "Asia/Taipei", 
-                        hour12: false,
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      📅 {toTaiwanDisplayTime(category.createdAt)}
                     </div>
                   </td>
                   <td>

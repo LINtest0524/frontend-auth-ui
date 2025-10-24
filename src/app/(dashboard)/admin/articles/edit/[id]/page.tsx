@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import SunEditor from '@/components/SunEditor'
 import '@/styles/pages/news-form.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 
 type Article = {
   id: number
@@ -109,21 +111,7 @@ export default function EditArticlePage() {
           status: data.status,
           is_featured: data.is_featured,
           sort: data.sort,
-          publish_date: (() => {
-            // 正確處理時間轉換
-            const serverDate = new Date(data.publish_date);
-            console.log('原始伺服器時間:', data.publish_date);
-            console.log('解析後的時間:', serverDate);
-            
-            // 使用 toLocaleString 轉換為台灣時間，然後格式化為 datetime-local 格式
-            const taiwanTimeString = serverDate.toLocaleString('sv-SE', {
-              timeZone: 'Asia/Taipei'
-            });
-            console.log('台灣時間字串:', taiwanTimeString);
-            
-            // 轉換為 datetime-local 需要的格式 (YYYY-MM-DDTHH:mm)
-            return taiwanTimeString.slice(0, 16);
-          })(),
+          publish_date: toTaiwanDatetimeString(data.publish_date),
         })
         
         // 如果有圖片，設定預覽
@@ -230,58 +218,7 @@ export default function EditArticlePage() {
         body: JSON.stringify({
           ...formData,
           categoryId: parseInt(formData.categoryId.toString()),
-          publish_date: (() => {
-            // 正確處理提交時間
-            console.log('用戶輸入的時間:', formData.publish_date);
-            
-            // 檢查是否有輸入發布時間
-            if (!formData.publish_date || formData.publish_date.trim() === '') {
-              console.log('沒有輸入發布時間，使用當前時間');
-              return new Date().toISOString();
-            }
-            
-            // 檢查時間格式是否正確 (應該包含 'T' 分隔符)
-            if (!formData.publish_date.includes('T')) {
-              console.log('時間格式不正確，使用當前時間');
-              return new Date().toISOString();
-            }
-            
-            try {
-              // 用戶輸入的是台灣時間，需要轉換為 UTC 時間給伺服器
-              // 創建一個 Date 物件，但指定為台灣時區
-              const [datePart, timePart] = formData.publish_date.split('T');
-              
-              // 檢查是否有時間部分
-              if (!datePart || !timePart) {
-                console.log('日期或時間部分缺失，使用當前時間');
-                return new Date().toISOString();
-              }
-              
-              const [year, month, day] = datePart.split('-');
-              const [hour, minute] = timePart.split(':');
-              
-              // 檢查所有部分是否存在
-              if (!year || !month || !day || !hour || !minute) {
-                console.log('日期時間格式不完整，使用當前時間');
-                return new Date().toISOString();
-              }
-              
-              // 創建台灣時間的 Date 物件
-              const taiwanDate = new Date();
-              taiwanDate.setFullYear(parseInt(year), parseInt(month) - 1, parseInt(day));
-              taiwanDate.setHours(parseInt(hour), parseInt(minute), 0, 0);
-              
-              // 轉換為 UTC 時間 (台灣時間 - 8小時)
-              const utcTime = new Date(taiwanDate.getTime() - 8 * 60 * 60 * 1000);
-              console.log('轉換後的 UTC 時間:', utcTime.toISOString());
-              
-              return utcTime.toISOString();
-            } catch (error) {
-              console.error('時間轉換錯誤:', error);
-              console.log('使用當前時間作為備用');
-              return new Date().toISOString();
-            }
-          })(),
+          publish_date: formData.publish_date ? fromDatetimeLocalToUTC(formData.publish_date) : new Date().toISOString(),
         }),
       })
 
@@ -558,17 +495,16 @@ export default function EditArticlePage() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="publish_date" className="form-label">⏰ 發布時間</label>
-                <input
-                  type="datetime-local"
-                  id="publish_date"
-                  name="publish_date"
-                  className="form-input"
+                <label className="form-label">⏰ 發布時間</label>
+                <DateTimePicker
                   value={formData.publish_date}
-                  onChange={handleInputChange}
+                  onChange={(value) => setFormData(prev => ({ ...prev, publish_date: value }))}
+                  placeholder="選擇發布時間"
+                  className="form-input"
                 />
                 <div className="form-hint">
-                  設定文章的發布時間，可以預約未來發布
+                  設定文章的發布時間，可以預約未來發布<br />
+                  <strong>⚠️ 預約發布延遲：系統每15分鐘檢查一次，實際發布時間可能延遲最多15分鐘</strong>
                 </div>
               </div>
 

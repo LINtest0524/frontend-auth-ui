@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import Image from 'next/image'
 import { format } from 'date-fns'
 import '@/styles/pages/users.css'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
 
 interface VerificationRecord {
   id: number
@@ -67,26 +69,26 @@ export default function IdVerificationAdminPage() {
   
       switch (type) {
         case "today":
-          fromDate = today.format("YYYY-MM-DD");
-          toDate = today.format("YYYY-MM-DD");
+          fromDate = today.startOf('day').format('YYYY-MM-DDTHH:mm');
+          toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm');
           break;
         case "yesterday":
           const y = today.subtract(1, "day");
-          fromDate = y.format("YYYY-MM-DD");
-          toDate = y.format("YYYY-MM-DD");
+          fromDate = y.startOf('day').format('YYYY-MM-DDTHH:mm');
+          toDate = y.endOf('day').format('YYYY-MM-DDTHH:mm');
           break;
         case "3days":
-          fromDate = today.subtract(2, "day").format("YYYY-MM-DD");
-          toDate = today.format("YYYY-MM-DD");
+          fromDate = today.subtract(2, "day").startOf('day').format('YYYY-MM-DDTHH:mm');
+          toDate = today.endOf('day').format('YYYY-MM-DDTHH:mm');
           break;
         case "thisMonth":
-          fromDate = today.startOf("month").format("YYYY-MM-DD");
-          toDate = today.endOf("month").format("YYYY-MM-DD");
+          fromDate = today.startOf("month").format('YYYY-MM-DDTHH:mm');
+          toDate = today.endOf("month").format('YYYY-MM-DDTHH:mm');
           break;
         case "lastMonth":
           const last = today.subtract(1, "month");
-          fromDate = last.startOf("month").format("YYYY-MM-DD");
-          toDate = last.endOf("month").format("YYYY-MM-DD");
+          fromDate = last.startOf("month").format('YYYY-MM-DDTHH:mm');
+          toDate = last.endOf("month").format('YYYY-MM-DDTHH:mm');
           break;
       }
   
@@ -119,13 +121,15 @@ export default function IdVerificationAdminPage() {
         params.append("createdFrom", threeDaysAgo + " 00:00:00");
         params.append("createdTo", todayStr + " 23:59:59");
       } else {
-        // 用戶查詢時，只有設定日期時才加入日期篩選
-        if (createdFrom) {
-          params.append("createdFrom", createdFrom + " 00:00:00");
+        // 用戶查詢時，使用 datetime-local 格式處理時間
+        if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
+          const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom);
+          params.append("createdFrom", fromTimeUTC);
         }
         
-        if (createdTo) {
-          params.append("createdTo", createdTo + " 23:59:59");
+        if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
+          const toTimeUTC = fromDatetimeLocalToUTC(createdTo);
+          params.append("createdTo", toTimeUTC);
         }
       }
 
@@ -341,21 +345,20 @@ export default function IdVerificationAdminPage() {
 
             <div className="filter-row">
               <div className="form-group date-range-group">
-                <label htmlFor="created-date-from" className="form-label">申請時間範圍</label>
+                <label className="form-label">申請時間範圍</label>
                 <div className="date-inputs">
-                  <input 
-                    type="date" 
-                    id="created-date-from"
-                    value={createdFrom} 
-                    onChange={(e) => setCreatedFrom(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdFrom}
+                    onChange={(value) => setCreatedFrom(value)}
+                    placeholder="開始時間"
+                    className="form-input"
                   />
                   <span className="date-separator">至</span>
-                  <input 
-                    type="date" 
-                    value={createdTo} 
-                    onChange={(e) => setCreatedTo(e.target.value)} 
-                    className="form-input" 
+                  <DateTimePicker
+                    value={createdTo}
+                    onChange={(value) => setCreatedTo(value)}
+                    placeholder="結束時間"
+                    className="form-input"
                   />
                 </div>
                 <div className="quick-date-buttons">
@@ -452,7 +455,7 @@ export default function IdVerificationAdminPage() {
                   </td>
                   <td>
                     <div className="login-info">
-                      📅 {format(new Date(rec.createdAt), 'yyyy/MM/dd HH:mm')}
+                      📅 {toTaiwanDisplayTime(rec.createdAt)}
                     </div>
                   </td>
                   <td>

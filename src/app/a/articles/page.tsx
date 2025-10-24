@@ -411,7 +411,7 @@ export default function ArticlesListPage() {
                   所有文章
                 </h3>
                 <div className="articles-grid">
-                  {articles.map((item) => (
+                  {articles.filter(item => !item.is_featured).map((item) => (
                     <article
                       key={item.id}
                       className="article-card"

@@ -37,7 +37,6 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
     else if (pathname?.startsWith("/admin/article-categories")) setActiveMenu("articles");
-    else if (pathname?.startsWith("/admin/loan-product")) setActiveMenu("loan-product");
     else if (pathname?.startsWith("/admin/products")) setActiveMenu("products");
     else if (pathname?.startsWith("/admin/product-categories")) setActiveMenu("products");
     else if (pathname?.startsWith("/admin/orders")) setActiveMenu("orders");
@@ -328,45 +327,9 @@ export default function Sidebar() {
           驗證通知
         </Link>
 
-        {/* 產品管理 */}
-        <div>
-          <button
-            onClick={() => {
-              toggleMenu("loan-product");
-              setCurrentActive("loan-product");
-            }}
-            className={cn(
-              "sidebar-item i-plan", 
-              currentActive === "loan-product" && "active",
-              activeMenu === "loan-product" && "expanded"
-            )}
-          >
-            <span className="icon" />
-            產品管理
-            <span className="i-arrow"></span>
-          </button>
-          <div className={cn("sidebar-submenu", activeMenu === "loan-product" && "open")}>
-            <Link
-              href="/admin/loan-product"
-              onClick={() => handleNavClick("/admin/loan-product")}
-              className={cn("sidebar-subitem", pathname === "/admin/loan-product" && currentActive === null && "active")}
-            >
-              產品列表
-            </Link>
-            {["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(role) && (
-              <Link
-                href="/admin/loan-product/new"
-                onClick={() => handleNavClick("/admin/loan-product/new")}
-                className={cn("sidebar-subitem", pathname === "/admin/loan-product/new" && currentActive === null && "active")}
-              >
-                新增產品
-              </Link>
-            )}
-          </div>
-        </div>
 
         {/* 商品管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4", "AGENT_SUPPORT"].includes(role) && (
           <div>
             <button
               onClick={() => {
