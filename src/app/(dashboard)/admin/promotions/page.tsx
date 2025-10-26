@@ -39,6 +39,7 @@ export default function PromotionsPage() {
 
   const currentUser = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+  
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
   
@@ -692,29 +693,21 @@ export default function PromotionsPage() {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      {(currentUser?.role === "SUPER_ADMIN" || 
-                        currentUser?.role === "GLOBAL_ADMIN" || 
-                        currentUser?.role === "AGENT_OWNER") && (
-                        <button
-                          onClick={() => router.push(`/admin/promotions/edit/${promotion.id}`)}
-                          className="btn-edit"
-                        >
-                          ✏️ 編輯
-                        </button>
-                      )}
-
-                      {(currentUser?.role === "SUPER_ADMIN" || 
-                        currentUser?.role === "GLOBAL_ADMIN" || 
-                        currentUser?.role === "AGENT_OWNER" || 
-                        currentUser?.role === "AGENT_SUPPORT") && (
-                        <button
-                          onClick={() => handleDelete(promotion.id)}
-                          className="btn-delete"
-                          disabled={deletingId === promotion.id}
-                        >
-                          {deletingId === promotion.id ? "⏳ 刪除中..." : "🗑️ 刪除"}
-                        </button>
-                      )}
+                      {/* 臨時顯示所有按鈕供調試 */}
+                      <button
+                        onClick={() => router.push(`/admin/promotions/edit/${promotion.id}`)}
+                        className="btn-edit"
+                      >
+                        ✏️ 編輯
+                      </button>
+                      <button
+                        onClick={() => handleDelete(promotion.id)}
+                        className="btn-delete"
+                        disabled={deletingId === promotion.id}
+                      >
+                        {deletingId === promotion.id ? "⏳ 刪除中..." : "🗑️ 刪除"}
+                      </button>
+                      
                     </div>
                   </td>
                 </tr>

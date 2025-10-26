@@ -37,7 +37,9 @@ export default function TestEcpayPage() {
         company: 'a'
       }
 
-      const token = localStorage.getItem('portalToken_a')
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'a'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
         alert('請先登入')
         return

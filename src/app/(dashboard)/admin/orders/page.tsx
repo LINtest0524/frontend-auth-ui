@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import '@/styles/order-detail-modal.css'
 import '@/styles/pages/promotions-admin.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDisplayTime, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 
 interface OrderItem {
   id: number
@@ -243,13 +243,13 @@ export default function OrdersManagePage() {
 
       // 訂購日期範圍篩選 - 使用 datetime-local 格式
       if (startDate && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(startDate)) {
-        const fromTimeUTC = fromDatetimeLocalToUTC(startDate)
-        params.append('start_date', fromTimeUTC)
+        const fromTime = fromDatetimeLocalToTaiwan(startDate, false)
+        params.append('start_date', fromTime)
       }
 
       if (endDate && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(endDate)) {
-        const toTimeUTC = fromDatetimeLocalToUTC(endDate)
-        params.append('end_date', toTimeUTC)
+        const toTime = fromDatetimeLocalToTaiwan(endDate, true)
+        params.append('end_date', toTime)
       }
 
       if (productNameFilter.trim()) {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
 import '@/styles/pages/users.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC, toTaiwanDisplayTime } from '@/lib/timeUtils'
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan, toTaiwanDisplayTime } from '@/lib/timeUtils'
 
 type ArticleCategory = {
   id: number
@@ -211,17 +211,17 @@ export default function ArticleCategoriesPage() {
           
           // 時間範圍篩選 - 使用 datetime-local 格式
           if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
-            const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom)
-            const categoryTimeUTC = new Date(category.createdAt).toISOString()
-            if (categoryTimeUTC < fromTimeUTC) {
+            const fromTime = fromDatetimeLocalToTaiwan(createdFrom, false)
+            const categoryTime = new Date(category.createdAt).toISOString()
+            if (categoryTime < fromTime) {
               return false
             }
           }
           
           if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
-            const toTimeUTC = fromDatetimeLocalToUTC(createdTo)
-            const categoryTimeUTC = new Date(category.createdAt).toISOString()
-            if (categoryTimeUTC > toTimeUTC) {
+            const toTime = fromDatetimeLocalToTaiwan(createdTo, true)
+            const categoryTime = new Date(category.createdAt).toISOString()
+            if (categoryTime > toTime) {
               return false
             }
           }

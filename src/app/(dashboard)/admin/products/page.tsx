@@ -6,7 +6,7 @@ import { useUserStore } from "@/hooks/use-user-store";
 import dayjs from "dayjs";
 import "@/styles/pages/users.css";
 import { DateTimePicker } from '@/components/ui/datetime-picker';
-import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils';
+import { toTaiwanDisplayTime, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils';
 
 interface ProductVariant {
   id: number;
@@ -193,13 +193,13 @@ export default function ProductListPage() {
       } else {
         // 使用 datetime-local 格式處理時間
         if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
-          const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom);
-          params.append("createdFrom", fromTimeUTC);
+          const fromTime = fromDatetimeLocalToTaiwan(createdFrom, false);
+          params.append('createdFrom', fromTime);
         }
         
         if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
-          const toTimeUTC = fromDatetimeLocalToUTC(createdTo);
-          params.append("createdTo", toTimeUTC);
+          const toTime = fromDatetimeLocalToTaiwan(createdTo, true);
+          params.append('createdTo', toTime);
         }
       }
 

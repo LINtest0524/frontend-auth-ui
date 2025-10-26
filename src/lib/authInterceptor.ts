@@ -133,10 +133,9 @@ async function validateTokenAndHandle(config: AuthInterceptorConfig) {
       return;
     }
     
-    const response = await fetch('/api/portal/validate-token', {
-      method: 'POST',
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/profile?company=${config.companyCode}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
     });
@@ -152,6 +151,16 @@ async function validateTokenAndHandle(config: AuthInterceptorConfig) {
     // 網路錯誤或其他問題，也重定向到登入頁面
     handleTokenInvalidation(config);
   }
+}
+
+/**
+ * Setup auth interceptor for dynamic company code
+ */
+export function setupCompanyDynamicAuthInterceptor(companyCode: string) {
+  createAuthInterceptor({
+    companyCode: companyCode,
+    duplicateLoginPath: `/${companyCode}/duplicate-login`
+  });
 }
 
 /**

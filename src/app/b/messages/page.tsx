@@ -14,7 +14,9 @@ export default function MessagesPage() {
   useEffect(() => {
     // 檢查用戶是否已登入
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_b')
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'b'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token && !user) {
         router.push('/b/login')
         return

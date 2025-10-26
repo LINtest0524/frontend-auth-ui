@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import SunEditor from '@/components/SunEditor'
 import '@/styles/pages/news-form.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 
 type Article = {
   id: number
@@ -218,7 +218,7 @@ export default function EditArticlePage() {
         body: JSON.stringify({
           ...formData,
           categoryId: parseInt(formData.categoryId.toString()),
-          publish_date: formData.publish_date ? fromDatetimeLocalToUTC(formData.publish_date) : new Date().toISOString(),
+          publish_date: formData.publish_date ? fromDatetimeLocalToTaiwan(formData.publish_date, false) : new Date().toISOString(),
         }),
       })
 

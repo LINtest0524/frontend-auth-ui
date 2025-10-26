@@ -27,10 +27,9 @@ export async function checkDuplicateLogin(config: DuplicateLoginConfig): Promise
 
   // 驗證 token 是否仍然有效
   try {
-    const response = await fetch('/api/portal/validate-token', {
-      method: 'POST',
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/profile?company=${config.companyCode}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
     })
@@ -76,18 +75,15 @@ export async function checkCompanyBLogin(): Promise<boolean> {
 
 /**
  * 根據公司代碼自動選擇檢查方式
- * @param companyCode 公司代碼 ('a' 或 'b')
+ * @param companyCode 公司代碼 (支援任意動態代碼)
  */
 export async function checkLoginByCompany(companyCode: string): Promise<boolean> {
-  switch (companyCode) {
-    case 'a':
-      return await checkCompanyALogin()
-    case 'b':
-      return await checkCompanyBLogin()
-    default:
-      console.warn(`Unknown company code: ${companyCode}`)
-      return false
-  }
+  // 使用動態配置，支援任意公司代碼
+  return await checkDuplicateLogin({
+    tokenKey: `portalToken_${companyCode}`,
+    companyCode: companyCode,
+    redirectPath: `/${companyCode}/duplicate-login`
+  })
 }
 
 /**

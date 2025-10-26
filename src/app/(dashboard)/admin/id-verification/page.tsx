@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 import '@/styles/pages/users.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDisplayTime, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 
 interface VerificationRecord {
   id: number
@@ -105,6 +105,13 @@ export default function IdVerificationAdminPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      
+      if (!token) {
+        alert('未找到管理員登入憑證，請重新登入');
+        console.error('未找到 token，請確認已正確登入管理後台');
+        return;
+      }
+      
       const params = new URLSearchParams();
       params.append("page", page.toString());
       params.append("limit", limit.toString());
@@ -123,13 +130,13 @@ export default function IdVerificationAdminPage() {
       } else {
         // 用戶查詢時，使用 datetime-local 格式處理時間
         if (createdFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdFrom)) {
-          const fromTimeUTC = fromDatetimeLocalToUTC(createdFrom);
-          params.append("createdFrom", fromTimeUTC);
+          const fromTime = fromDatetimeLocalToTaiwan(createdFrom, false);
+          params.append('createdFrom', fromTime);
         }
         
         if (createdTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(createdTo)) {
-          const toTimeUTC = fromDatetimeLocalToUTC(createdTo);
-          params.append("createdTo", toTimeUTC);
+          const toTime = fromDatetimeLocalToTaiwan(createdTo, true);
+          params.append('createdTo', toTime);
         }
       }
 
@@ -141,7 +148,24 @@ export default function IdVerificationAdminPage() {
         },
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('API 調用失敗:', {
+          status: res.status,
+          statusText: res.statusText,
+          error: errorData,
+          url: apiUrl,
+          token: token ? '存在' : '不存在'
+        });
+        throw new Error(`API 調用失敗: ${res.status} ${res.statusText} - ${errorData.message || '未知錯誤'}`);
+      }
+
       const data = await res.json();
+      console.log('身分驗證資料載入成功:', {
+        totalCount: data.totalCount,
+        dataLength: Array.isArray(data.data) ? data.data.length : 0
+      });
+      
       setRecords(Array.isArray(data.data) ? data.data : []);
       setTotalPages(data.totalPages || 1);
       setTotalCount(data.totalCount || 0);
@@ -155,7 +179,8 @@ export default function IdVerificationAdminPage() {
       }
       setNotes(initialNotes);
     } catch (err) {
-      // 資料載入失敗，靜默處理
+      console.error('fetchRecords 錯誤:', err);
+      alert(`載入身分驗證資料失敗: ${err instanceof Error ? err.message : '未知錯誤'}`);
     } finally {
       setLoading(false);
     }

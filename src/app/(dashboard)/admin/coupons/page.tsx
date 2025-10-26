@@ -58,10 +58,9 @@ export default function CouponsPage() {
     setUserLoaded(true)
   }, [user, setUser])
 
-  // 檢查權限
+  // 檢查權限 - 臨時移除權限限制
   const hasPermission = () => {
-    if (!user?.role) return false
-    return ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_OWNER', 'AGENT_SUPPORT'].includes(user.role)
+    return true // 允許所有用戶訪問
   }
 
   // 獲取模板列表

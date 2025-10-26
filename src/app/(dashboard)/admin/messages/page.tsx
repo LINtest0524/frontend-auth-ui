@@ -5,7 +5,7 @@ import SunEditor from '@/components/SunEditor'
 import { useUserStore } from '@/hooks/use-user-store'
 import '@/styles/pages/messages-admin.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 
 interface Message {
   id: number
@@ -158,6 +158,7 @@ export default function AdminMessagesPage() {
   const fetchTags = async () => {
     try {
       const token = localStorage.getItem('token')
+      console.log('🏷️ [AdminMessages] Fetching tags with token:', token ? 'Present' : 'Missing')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/tags`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -202,6 +203,7 @@ export default function AdminMessagesPage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
+      console.log('📥 [AdminMessages] Fetching messages with token:', token ? 'Present' : 'Missing')
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString()
@@ -236,33 +238,13 @@ export default function AdminMessagesPage() {
       } else {
         // 手動搜尋或快速篩選 - 統一使用台灣時間，不轉換UTC
         if (createdFrom) {
-          // 處理可能的格式差異
-          let normalizedFrom = createdFrom
-          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdFrom)) {
-            // 如果有秒數，去除秒數
-            normalizedFrom = createdFrom.substring(0, 16)
-          }
-          
-          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedFrom)) {
-            // 統一使用台灣時間，添加秒數後直接發送
-            const taiwanTimeFrom = normalizedFrom + ':00'
-            params.append('createdFrom', taiwanTimeFrom)
-          }
+          const taiwanTimeFrom = fromDatetimeLocalToTaiwan(createdFrom, false)
+          params.append('createdFrom', taiwanTimeFrom)
         }
         
         if (createdTo) {
-          // 處理可能的格式差異
-          let normalizedTo = createdTo
-          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(createdTo)) {
-            // 如果有秒數，去除秒數
-            normalizedTo = createdTo.substring(0, 16)
-          }
-          
-          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalizedTo)) {
-            // 統一使用台灣時間，添加秒數後直接發送
-            const taiwanTimeTo = normalizedTo + ':59'  // 結束時間使用59秒
-            params.append('createdTo', taiwanTimeTo)
-          }
+          const taiwanTimeTo = fromDatetimeLocalToTaiwan(createdTo, true)
+          params.append('createdTo', taiwanTimeTo)
         }
       }
       
@@ -365,6 +347,7 @@ export default function AdminMessagesPage() {
     setSendingMessage(true)
     try {
       const token = localStorage.getItem('token')
+      console.log('📤 [AdminMessages] Sending message with token:', token ? 'Present' : 'Missing')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/send`, {
         method: 'POST',
         headers: {

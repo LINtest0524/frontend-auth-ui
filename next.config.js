@@ -7,6 +7,10 @@ const nextConfig = {
         destination: 'http://localhost:3001/portal/:path*', // Portal API proxy
       },
       {
+        source: '/api/admin/:path*',
+        destination: '/api/admin/:path*', // 保持本地 admin API 路由
+      },
+      {
         source: '/api/:path*',
         destination: 'http://localhost:3001/api/:path*', // 其他 API proxy
       },

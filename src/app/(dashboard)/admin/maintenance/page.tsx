@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC, toTaiwanDisplayTime } from '@/lib/timeUtils'
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan, toTaiwanDisplayTime } from '@/lib/timeUtils'
 import './maintenance.css'
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE
@@ -174,7 +174,7 @@ export default function MaintenancePage() {
                   <DateTimePicker
                     className="form-input"
                     value={toTaiwanDatetimeString(config.estimatedEndTime || '')}
-                    onChange={(value) => handleInputChange('estimatedEndTime', value ? fromDatetimeLocalToUTC(value) : '')}
+                    onChange={(value) => handleInputChange('estimatedEndTime', value ? fromDatetimeLocalToTaiwan(value, true) : '')}
                     placeholder="請選擇預計結束時間"
                   />
                 </div>

@@ -78,7 +78,7 @@ export default function MessageCenter() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      })
+      }).catch(() => ({ ok: false, status: 500 })) // 靜默處理網路錯誤
 
 
       if (response.ok) {
@@ -126,11 +126,11 @@ export default function MessageCenter() {
         setTotalPages(recalculatedTotalPages)
         setCurrentPage(Math.min(currentPageNum, recalculatedTotalPages))
       } else {
-        const errorText = await response.text()
-        console.error('❌ API 請求失敗:', { status: response.status, statusText: response.statusText, error: errorText })
+        // API 請求失敗，靜默處理
+        setMessages([])
       }
     } catch (error) {
-      console.error('獲取消息失敗:', error)
+      // 獲取消息失敗，靜默處理
     } finally {
       setLoading(false)
     }
@@ -154,19 +154,25 @@ export default function MessageCenter() {
             'Authorization': `Bearer ${token}`,
           },
         }
-      )
+      ).catch(() => ({ ok: false, status: 500, json: () => Promise.resolve({ count: 0 }) })) // 靜默處理網路錯誤
 
       if (response.ok) {
         const data = await response.json()
         setUnreadCount(data.count)
       } else if (response.status === 401) {
-        // Token 無效，清除並停止檢查
-        localStorage.removeItem(`portalToken_${company}`)
+        // 檢查是否為剛登入，如果是則不清除token
+        const tokenCreatedTime = localStorage.getItem(`tokenCreatedTime_${company}`)
+        if (tokenCreatedTime) {
+          const timeDiff = Date.now() - parseInt(tokenCreatedTime)
+          if (timeDiff < 2 * 60 * 1000) { // 2分鐘內
+            setUnreadCount(0)
+            return
+          }
+        }
         setUnreadCount(0)
-        console.log('MessageCenter: Token已失效，已清除')
       }
     } catch (error) {
-      // 網路錯誤等，不輸出錯誤日誌避免刷屏
+      // 網路錯誤，靜默處理
       setUnreadCount(0)
     }
   }

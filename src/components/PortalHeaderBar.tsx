@@ -30,14 +30,25 @@ export default function PortalHeaderBar() {
   const { getTotalItems, getTotalPrice, refreshCart } = useCartStore()
 
   const fetchLogo = async (companyCode: string) => {
+    // 獲取logo
+    
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/logo?company=${companyCode}`)
+      const logoUrl = `${process.env.NEXT_PUBLIC_API_BASE}/portal/logo?company=${companyCode}`
+      // 從API獲取logo
+      
+      const response = await fetch(logoUrl)
+      // API回應正常
+      
       if (response.ok) {
         const logoData = await response.json()
+        // Logo資料接收成功
         setLogo(logoData)
+      } else {
+        const errorText = await response.text()
+        console.log('❌ [PortalHeaderBar] Logo API failed:', errorText)
       }
     } catch (error) {
-      console.error('獲取 LOGO 失敗:', error)
+      console.error('💥 [PortalHeaderBar] Error fetching logo:', error)
     }
   }
 
@@ -98,8 +109,33 @@ export default function PortalHeaderBar() {
     const fetchCompanyId = async () => {
       if (company) {
         try {
-          // 根據公司代碼取得公司 ID
-          // 這裡假設 'a' 對應 ID 1, 'b' 對應 ID 2，你可以根據實際情況調整
+          // 動態獲取公司 ID
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/company/code/${company}/config`)
+          
+          if (response.ok) {
+            const companyData = await response.json()
+            
+            if (companyData.id) {
+              setCompanyId(companyData.id)
+              // 獲取公司 LOGO
+              fetchLogo(company)
+            }
+          } else {
+            // 如果動態獲取失敗，回退到硬編碼映射（向後兼容）
+            const companyMap: { [key: string]: number } = {
+              'a': 1,
+              'b': 2,
+            }
+            
+            const id = companyMap[company]
+            if (id) {
+              setCompanyId(id)
+              fetchLogo(company)
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching company ID:', error)
+          // 錯誤時也回退到硬編碼映射
           const companyMap: { [key: string]: number } = {
             'a': 1,
             'b': 2,
@@ -108,11 +144,8 @@ export default function PortalHeaderBar() {
           const id = companyMap[company]
           if (id) {
             setCompanyId(id)
-            // 獲取公司 LOGO
             fetchLogo(company)
           }
-        } catch (error) {
-          console.error('取得公司 ID 失敗:', error)
         }
       }
     }
@@ -197,24 +230,47 @@ export default function PortalHeaderBar() {
   return (
     <>
       {/* LOGO 區塊 */}
-      {logo && (
-        <div className="f-logo" style={{
-          position: 'fixed',
-          top: '25px',
-          left: '45px',
-          zIndex: 1000,
-        }}>
-          <img
-            src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
-            alt={logo.title}
-            style={{
-              maxWidth: '120px',
-              maxHeight: '60px',
-              objectFit: 'contain'
-            }}
-          />
-        </div>
-      )}
+      {(() => {
+        // Logo渲染檢查
+        
+        if (!logo) {
+          return (
+            <div style={{ 
+              position: 'fixed', 
+              top: '25px', 
+              left: '45px', 
+              zIndex: 1000, 
+              color: 'red', 
+              fontSize: '12px',
+              background: 'rgba(255,255,255,0.9)',
+              padding: '5px'
+            }}>
+              Debug: No Logo (logo = {String(logo)})
+            </div>
+          )
+        }
+        
+        return (
+          <div className="f-logo" style={{
+            position: 'fixed',
+            top: '25px',
+            left: '45px',
+            zIndex: 1000,
+          }}>
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_BASE}${logo.image_url}`}
+              alt={logo.title || 'Company Logo'}
+              style={{
+                maxWidth: '120px',
+                maxHeight: '60px',
+                objectFit: 'contain'
+              }}
+              onLoad={() => {}} // Logo載入成功
+              onError={(e) => console.error('❌ [PortalHeaderBar] Logo image failed to load:', e)}
+            />
+          </div>
+        )
+      })()}
 
       <div className="header-box fo5">
         <div className="header-left">

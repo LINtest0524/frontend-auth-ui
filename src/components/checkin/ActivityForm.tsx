@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { RewardPlanGrid } from "./RewardPlanGrid";
 import { ThresholdEditor } from "./ThresholdEditor";
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from "@/lib/timeUtils";
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan } from "@/lib/timeUtils";
 
 interface ActivityFormProps {
   fixedActivityType: string;
@@ -162,9 +162,9 @@ export function ActivityForm({ fixedActivityType, mode, initialData, activityId 
         title: formData.title,
         activityType: fixedActivityType,
         days: formData.days ? parseInt(formData.days) : undefined,
-        startDate: fromDatetimeLocalToUTC(formData.startDate),
-        endDate: fromDatetimeLocalToUTC(formData.endDate),
-        publishAt: formData.publishAt ? fromDatetimeLocalToUTC(formData.publishAt) : undefined,
+        startDate: fromDatetimeLocalToTaiwan(formData.startDate, false),
+        endDate: fromDatetimeLocalToTaiwan(formData.endDate, true),
+        publishAt: formData.publishAt ? fromDatetimeLocalToTaiwan(formData.publishAt, false) : undefined,
         isEnabled: formData.isEnabled,
         configJson: {},
       };

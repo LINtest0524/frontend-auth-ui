@@ -83,14 +83,9 @@ export default function PromotionCategoriesPage() {
     }
   };
 
-  const canModify = currentUser?.role === "SUPER_ADMIN" || 
-                   currentUser?.role === "GLOBAL_ADMIN" || 
-                   currentUser?.role === "AGENT_OWNER";
-
-  const canDelete = currentUser?.role === "SUPER_ADMIN" || 
-                   currentUser?.role === "GLOBAL_ADMIN" || 
-                   currentUser?.role === "AGENT_OWNER" || 
-                   currentUser?.role === "AGENT_SUPPORT";
+  // 臨時移除權限限制，顯示所有按鈕
+  const canModify = true;
+  const canDelete = true;
 
   return (
     <div className="admin-user-container">

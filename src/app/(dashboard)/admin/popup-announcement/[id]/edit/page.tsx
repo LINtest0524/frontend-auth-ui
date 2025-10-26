@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDatetimeString, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 import '@/styles/pages/popup-announcement-create.css'
 
 type PopupAnnouncement = {
@@ -215,10 +215,10 @@ export default function EditPopupAnnouncementPage() {
 
       // 轉換時間格式給後端
       if (submitData.start_date) {
-        submitData.start_date = fromDatetimeLocalToUTC(submitData.start_date)
+        submitData.start_date = fromDatetimeLocalToTaiwan(submitData.start_date, false)
       }
       if (submitData.end_date) {
-        submitData.end_date = fromDatetimeLocalToUTC(submitData.end_date)
+        submitData.end_date = fromDatetimeLocalToTaiwan(submitData.end_date, true)
       }
 
       // 更新彈窗公告

@@ -10,12 +10,11 @@ export async function verifyTokenAndRecord(companyCode: string): Promise<boolean
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/verify-token?company=${companyCode}`,
+      `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/profile?company=${companyCode}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
       }
     )
@@ -51,7 +50,7 @@ export async function verifyTokenOnce(companyCode: string): Promise<boolean> {
   if (userData) {
     try {
       const user = JSON.parse(userData)
-      // 如果用戶資料是最近 5 分鐘內創建的，跳過驗證（可能是剛註冊）
+      // 如果用戶資料是最近 10 分鐘內創建的，跳過驗證（可能是剛註冊或登入）
       const tokenCreatedTime = localStorage.getItem(`tokenCreatedTime_${companyCode}`)
       if (!tokenCreatedTime) {
         // 第一次檢測，記錄當前時間並跳過驗證
@@ -61,7 +60,7 @@ export async function verifyTokenOnce(companyCode: string): Promise<boolean> {
       }
       
       const createdTime = parseInt(tokenCreatedTime)
-      if ((now - createdTime) < 5 * 60 * 1000) { // 5分鐘內
+      if ((now - createdTime) < 10 * 60 * 1000) { // 延長到10分鐘內
         console.log(`Token 驗證跳過：${Math.floor((now - createdTime) / 1000)}秒前剛創建的 token`)
         return true
       }

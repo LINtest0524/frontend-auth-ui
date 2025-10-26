@@ -20,7 +20,11 @@ export default function IDVerificationPage() {
   const [note, setNote] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('portalToken_b') : null;
+  // 動態獲取當前公司代碼的token
+  const token = typeof window !== 'undefined' ? (() => {
+    const companyCode = window.location.pathname.split('/')[1] || 'b'
+    return localStorage.getItem(`portalToken_${companyCode}`)
+  })() : null;
 
   const fetchStatus = async () => {
     if (!token) return;

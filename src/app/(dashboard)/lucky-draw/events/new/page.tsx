@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { fromDatetimeLocalToUTC } from "@/lib/timeUtils";
+import { fromDatetimeLocalToTaiwan } from "@/lib/timeUtils";
 import '@/styles/pages/lucky-draw-event-create.css';
 
 export default function LuckyDrawEventCreatePage() {
@@ -53,8 +53,8 @@ export default function LuckyDrawEventCreatePage() {
         },
         body: JSON.stringify({
           ...formData,
-          startTime: fromDatetimeLocalToUTC(formData.startTime),
-          endTime: fromDatetimeLocalToUTC(formData.endTime),
+          startTime: fromDatetimeLocalToTaiwan(formData.startTime, false),
+          endTime: fromDatetimeLocalToTaiwan(formData.endTime, true),
           companyId,
         }),
       });

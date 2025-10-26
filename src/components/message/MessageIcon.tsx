@@ -24,6 +24,17 @@ export default function MessageIcon() {
         return
       }
 
+      // 檢查是否為剛登入（30秒內），如果是則跳過檢查避免干擾
+      const tokenCreatedTime = localStorage.getItem(`tokenCreatedTime_${company}`)
+      if (tokenCreatedTime) {
+        const timeDiff = Date.now() - parseInt(tokenCreatedTime)
+        if (timeDiff < 30000) { // 30秒內
+          // 跳過檢查
+          setUnreadCount(0)
+          return
+        }
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/portal/${company}/messages/unread-count`,
         {
@@ -31,20 +42,31 @@ export default function MessageIcon() {
             'Authorization': `Bearer ${token}`,
           },
         }
-      )
+      ).catch(() => ({ ok: false, status: 500 })) // 靜默處理網路錯誤
 
       if (response.ok) {
         const data = await response.json()
         setUnreadCount(data.count)
       } else if (response.status === 401 || response.status === 500) {
-        // Token 無效或會話失效，檢查錯誤訊息
+        // Token 無效或會話失效，但要更謹慎地處理
+        // API錯誤，靜默處理
+        
+        // 檢查是否為剛登入，如果是則不清除token
+        if (tokenCreatedTime) {
+          const timeDiff = Date.now() - parseInt(tokenCreatedTime)
+          if (timeDiff < 60000) { // 1分鐘內
+            // 最近登入，不清除認證資料
+            setUnreadCount(0)
+            return
+          }
+        }
+        
         try {
           const errorData = await response.json()
           if (errorData.message?.includes('Session invalid') || 
               errorData.message?.includes('被踢下線') ||
-              errorData.message?.includes('會話已失效') ||
-              response.status === 401) {
-            // 清除 token 並重定向到重複登入頁面
+              errorData.message?.includes('會話已失效')) {
+            // 只有明確的會話失效錯誤才清除token
             localStorage.removeItem(`portalToken_${company}`)
             localStorage.removeItem(`portalUser_${company}`)
             localStorage.removeItem(`enabledModules_${company}`)
@@ -54,16 +76,7 @@ export default function MessageIcon() {
             return
           }
         } catch (parseError) {
-          // 如果是 401 或無法解析的 500 錯誤，也當作會話失效處理
-          if (response.status === 401) {
-            localStorage.removeItem(`portalToken_${company}`)
-            localStorage.removeItem(`portalUser_${company}`)
-            localStorage.removeItem(`enabledModules_${company}`)
-            localStorage.removeItem(`sessionId_${company}`)
-            localStorage.removeItem(`tokenCreatedTime_${company}`)
-            window.location.href = `/${company}/duplicate-login`
-            return
-          }
+          // 解析錯誤，靜默處理
         }
         setUnreadCount(0)
       }
@@ -86,7 +99,10 @@ export default function MessageIcon() {
 
   useEffect(() => {
     if (user && company && mounted) {
-      fetchUnreadCount()
+      // 延遲一點再開始檢查，給登入過程更多時間
+      setTimeout(() => {
+        fetchUnreadCount()
+      }, 2000) // 延遲2秒
       
       // 智能檢查頻率：根據頁面活躍度調整
       let checkInterval = 60000 // 預設60秒

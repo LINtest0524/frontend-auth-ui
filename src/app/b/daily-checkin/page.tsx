@@ -32,12 +32,39 @@ export default function DailyCheckinPageB() {
   const [rewardData, setRewardData] = useState<any>(null);
   const { user } = useUserStore();
 
-  const companyId = 2; // B 公司使用 ID 2
+  // 動態獲取公司ID
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  
+  // 從URL獲取公司代碼並轉換為ID
+  useEffect(() => {
+    const companyCode = window.location.pathname.split('/')[1];
+    // 先嘗試從API獲取公司ID，如果失敗則使用映射表
+    const fetchCompanyId = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/company/code/${companyCode}/config`);
+        if (response.ok) {
+          const data = await response.json();
+          setCompanyId(data.id);
+        } else {
+          // 回退到硬編碼映射（向後兼容）
+          const companyMap: { [key: string]: number } = { 'a': 1, 'b': 2, 'test': 1 };
+          setCompanyId(companyMap[companyCode] || 1);
+        }
+      } catch (error) {
+        // 錯誤時回退到硬編碼映射
+        const companyMap: { [key: string]: number } = { 'a': 1, 'b': 2, 'test': 1 };
+        setCompanyId(companyMap[companyCode] || 1);
+      }
+    };
+    fetchCompanyId();
+  }, []);
 
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_b')
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'b'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token && !user) {
         window.location.href = '/b/duplicate-login'
         return
@@ -46,14 +73,18 @@ export default function DailyCheckinPageB() {
   }, [user])
 
   useEffect(() => {
-    if (user) {
+    if (user && companyId) {
       loadStatus();
     }
-  }, [user]);
+  }, [user, companyId]);
 
   const loadStatus = async () => {
+    if (!companyId) return; // 等待 companyId 載入
+    
     try {
-      const token = localStorage.getItem('portalToken_b');
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'b'
+      const token = localStorage.getItem(`portalToken_${companyCode}`);
       if (!token) {
         console.error('No token found');
         return;
@@ -73,11 +104,13 @@ export default function DailyCheckinPageB() {
   };
 
   const handleCheckin = async () => {
-    if (!status?.can_checkin || isChecking) return;
+    if (!status?.can_checkin || isChecking || !companyId) return;
 
     setIsChecking(true);
     try {
-      const token = localStorage.getItem('portalToken_b');
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'b'
+      const token = localStorage.getItem(`portalToken_${companyCode}`);
       const response = await fetch('/api/daily-checkin/checkin', {
         method: 'POST',
         headers: {

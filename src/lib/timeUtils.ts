@@ -86,10 +86,33 @@ export const toTaiwanDatetimeString = (date: string | Date): string => {
 
 /**
  * 將本地 datetime-local 格式轉換為 UTC ISO 字串（用於提交到後端）
+ * @deprecated 請使用 fromDatetimeLocalToTaiwan 統一使用台灣時間
  */
 export const fromDatetimeLocalToUTC = (datetimeLocal: string): string => {
   if (!datetimeLocal) return ''
   return dayjs.tz(datetimeLocal, TAIWAN_TIMEZONE).toISOString()
+}
+
+/**
+ * 將本地 datetime-local 格式轉換為台灣時間字串（統一使用台灣時間，不轉UTC）
+ * 用於篩選功能的時間處理
+ */
+export const fromDatetimeLocalToTaiwan = (datetimeLocal: string, isEndTime: boolean = false): string => {
+  if (!datetimeLocal) return ''
+  
+  // 如果只有日期沒有時間部分，根據是否為結束時間添加預設時間
+  if (datetimeLocal.length === 10) { // YYYY-MM-DD 格式
+    const defaultTime = isEndTime ? '23:59:59' : '00:00:00'
+    return `${datetimeLocal}T${defaultTime}`
+  }
+  
+  // 如果有時間但沒有秒數，添加秒數
+  if (datetimeLocal.includes('T') && !datetimeLocal.includes(':59') && !datetimeLocal.includes(':00:')) {
+    const suffix = isEndTime ? ':59' : ':00'
+    return `${datetimeLocal}${suffix}`
+  }
+  
+  return datetimeLocal
 }
 
 /**

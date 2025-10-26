@@ -16,7 +16,9 @@ export default function CartPage() {
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('portalToken_b')
+      // 動態獲取當前公司代碼的token
+      const companyCode = window.location.pathname.split('/')[1] || 'b'
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
         window.location.href = '/b/duplicate-login'
         return

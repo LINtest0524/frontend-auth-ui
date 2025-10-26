@@ -6,7 +6,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import dayjs from 'dayjs'
 import '@/styles/pages/users.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
-import { toTaiwanDisplayTime, fromDatetimeLocalToUTC } from '@/lib/timeUtils'
+import { toTaiwanDisplayTime, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
 
 type Article = {
   id: number
@@ -140,13 +140,13 @@ export default function ArticlesPage() {
       
       // 發布時間範圍篩選
       if (publishFrom && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(publishFrom)) {
-        const fromTimeUTC = fromDatetimeLocalToUTC(publishFrom)
-        params.append('publishFrom', fromTimeUTC)
+        const fromTime = fromDatetimeLocalToTaiwan(publishFrom, false)
+        params.append('publishFrom', fromTime)
       }
       
       if (publishTo && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(publishTo)) {
-        const toTimeUTC = fromDatetimeLocalToUTC(publishTo)
-        params.append('publishTo', toTimeUTC)
+        const toTime = fromDatetimeLocalToTaiwan(publishTo, true)
+        params.append('publishTo', toTime)
       }
 
       const token = localStorage.getItem('token')

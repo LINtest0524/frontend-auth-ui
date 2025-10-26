@@ -22,6 +22,8 @@ interface TabsStore {
 // 路由對應的頁面標題
 const routeTitleMap: Record<string, string> = {
   "/dashboard": "儀錶板",
+  "/admin/companies": "公司管理",
+  "/admin/companies/create": "新增公司",
   "/admin/admin-user": "管理員管理",
   "/users": "會員管理",
   "/admin/messages": "站內信管理",
@@ -71,6 +73,7 @@ const routeTitleMap: Record<string, string> = {
   "/reports/winloss": "輸贏報表",
   // 編輯頁面
   "/admin/admin-user/new": "新增管理員",
+  "/admin/companies/edit": "編輯公司",
   "/admin/banner/new": "新增BANNER",
   "/admin/banner/edit": "編輯BANNER",
   "/admin/marquee/new": "新增跑馬燈",

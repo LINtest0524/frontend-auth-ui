@@ -31,7 +31,7 @@ type NewsResponse = {
 // 獲取新聞資料的伺服器端函數
 async function getNewsData(newsId: string): Promise<NewsResponse | null> {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api'
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'
     const response = await fetch(
       `${apiBase}/portal/news/${newsId}?company=a`,
       { 

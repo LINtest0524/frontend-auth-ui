@@ -32,7 +32,8 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    if (pathname?.startsWith("/admin/marquee-tags")) setActiveMenu("tags");
+    if (pathname?.startsWith("/admin/companies")) setActiveMenu("companies");
+    else if (pathname?.startsWith("/admin/marquee-tags")) setActiveMenu("tags");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
     else if (pathname?.startsWith("/admin/articles")) setActiveMenu("articles");
@@ -46,6 +47,8 @@ export default function Sidebar() {
     else if (pathname?.startsWith("/admin/menu")) setActiveMenu("website");
     else if (pathname?.startsWith("/admin/messages")) setActiveMenu("messages");
     else if (pathname?.startsWith("/admin/coupons")) setActiveMenu("coupons");
+    else if (pathname?.startsWith("/admin/promotions")) setActiveMenu("promotions");
+    else if (pathname?.startsWith("/admin/promotion-categories")) setActiveMenu("promotions");
     else if (pathname?.startsWith("/lucky-draw")) {
       setActiveMenu("mini-activities");
       setActiveSubMenu("lucky-draw");
@@ -98,6 +101,38 @@ export default function Sidebar() {
           <span className="icon" />
           儀錶板
         </Link>
+
+        {/* 公司管理 - 僅超級管理員可見 */}
+        {role === "SUPER_ADMIN" && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("companies");
+                setCurrentActive("companies");
+              }}
+              className={cn(
+                "sidebar-item i-modules",
+                currentActive === "companies" && "active",
+                activeMenu === "companies" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              公司管理
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "companies" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/companies"
+                  onClick={() => handleNavClick("/admin/companies")}
+                  className={cn("sidebar-subitem", pathname === "/admin/companies" && currentActive === null && "active")}
+                >
+                  公司列表
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Link
           href="/admin/admin-user"
@@ -173,8 +208,8 @@ export default function Sidebar() {
           </Link>
         )}
 
-        {/* 網站設定 - 只有超級管理員、全域管理員、代理商老闆可以看到 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+        {/* 網站設定 - 只有超級管理員、全域管理員、代理商老闆、一級代理商可以看到 */}
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1"].includes(role) && (
           <div>
             <button
               onClick={() => {
@@ -267,7 +302,7 @@ export default function Sidebar() {
         </Link>
 
         {/* 最新消息管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1"].includes(role) && (
           <Link
             href="/admin/news"
             onClick={() => handleNavClick("/admin/news")}
@@ -382,7 +417,7 @@ export default function Sidebar() {
         )}
 
         {/* 優惠活動管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1"].includes(role) && (
           <div>
             <button
               onClick={() => {
@@ -428,7 +463,7 @@ export default function Sidebar() {
         )}
 
         {/* 優惠碼管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_SUPPORT"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_SUPPORT", "AGENT_LEVEL_1"].includes(role) && (
           <div>
             <button
               onClick={() => {
@@ -637,7 +672,7 @@ export default function Sidebar() {
         </div>
 
         {/* 維護管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1"].includes(role) && (
           <Link
             href="/admin/maintenance"
             onClick={() => handleNavClick("/admin/maintenance")}

@@ -34,7 +34,8 @@ export default function PopupAnnouncementPage() {
   const fetchAnnouncements = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/popup-announcements?company=a`, {
+      // 移除固定的 company=a 參數，讓後端根據用戶權限自動過濾
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/popup-announcements`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

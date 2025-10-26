@@ -8,12 +8,14 @@ export default function DuplicateLoginPage() {
 
   const handleBackToLogin = () => {
     // 清除當前的 token 和相關數據
-    localStorage.removeItem('portalToken_b')
-    localStorage.removeItem('portalUser_b')
-    localStorage.removeItem('enabledModules_b')
-    localStorage.removeItem('sessionId_b')
+    // 動態清除當前公司代碼的token
+    const companyCode = window.location.pathname.split('/')[1] || 'b'
+    localStorage.removeItem(`portalToken_${companyCode}`)
+    localStorage.removeItem(`portalUser_${companyCode}`)
+    localStorage.removeItem(`enabledModules_${companyCode}`)
+    localStorage.removeItem(`sessionId_${companyCode}`)
     // 跳轉到登入頁面
-    router.push('/b/login')
+    router.push(`/${companyCode}/login`)
   }
 
   return (
