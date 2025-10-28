@@ -31,25 +31,73 @@ export async function POST(request: NextRequest) {
     
     console.log('RtnCode:', rtnCode, 'OrderId:', orderId)
 
+    // 從訂單資料中提取公司代碼（最可靠的方法）
+    let companyCode = 'a' // 預設值
+    
+    if (orderId) {
+      try {
+        // 呼叫後端 API 取得訂單的公司代碼
+        const backendUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'
+        const orderResponse = await fetch(`${backendUrl}/portal/orders/${orderId}/company`)
+        
+        if (orderResponse.ok) {
+          const orderData = await orderResponse.json()
+          if (orderData.company) {
+            companyCode = orderData.company
+            console.log('從訂單資料取得公司代碼:', companyCode)
+          }
+        }
+      } catch (error) {
+        console.error('無法取得訂單資料:', error)
+      }
+    }
+    
+    // 備用方案：從 referer 中提取
+    if (companyCode === 'a') {
+      const referer = request.headers.get('referer') || ''
+      if (referer) {
+        const refererUrl = new URL(referer)
+        const pathSegments = refererUrl.pathname.split('/').filter(segment => segment)
+        if (pathSegments.length > 0 && pathSegments[0] !== 'api' && pathSegments[0].length <= 10) {
+          companyCode = pathSegments[0]
+        }
+      }
+    }
+    
+    console.log('最終確定的公司代碼:', companyCode)
+
     if (rtnCode === '1') {
       // 付款成功
       if (orderId) {
         console.log('付款成功，重定向到訂單頁面')
-        const redirectUrl = `/a/orders?success=${encodeURIComponent('付款成功')}&orderId=${encodeURIComponent(orderId)}`
+        const redirectUrl = `/${companyCode}/orders?success=${encodeURIComponent('付款成功')}&orderId=${encodeURIComponent(orderId)}`
         console.log('重定向 URL:', redirectUrl)
         return NextResponse.redirect(new URL(redirectUrl, request.url), 302)
       } else {
         console.error('付款成功但 orderId 為空')
-        return NextResponse.redirect(new URL('/a/orders?error=訂單ID遺失', request.url), 302)
+        return NextResponse.redirect(new URL(`/${companyCode}/orders?error=訂單ID遺失`, request.url), 302)
       }
     } else {
       // 付款失敗
       const rtnMsg = params.RtnMsg || '付款失敗'
       console.log('付款失敗:', rtnMsg)
-      return NextResponse.redirect(new URL(`/a/orders?error=付款失敗&reason=${encodeURIComponent(rtnMsg)}`, request.url), 302)
+      return NextResponse.redirect(new URL(`/${companyCode}/orders?error=付款失敗&reason=${encodeURIComponent(rtnMsg)}`, request.url), 302)
     }
   } catch (error) {
     console.error('處理綠界付款結果頁面失敗:', error)
-    return NextResponse.redirect(new URL('/a/orders?error=系統錯誤', request.url))
+    // 錯誤情況下也嘗試提取公司代碼
+    const url = new URL(request.url)
+    const referer = request.headers.get('referer') || ''
+    let companyCode = 'a' // 預設值
+    
+    if (referer) {
+      const refererUrl = new URL(referer)
+      const pathSegments = refererUrl.pathname.split('/').filter(segment => segment)
+      if (pathSegments.length > 0 && pathSegments[0] !== 'api' && pathSegments[0].length <= 10) {
+        companyCode = pathSegments[0]
+      }
+    }
+    
+    return NextResponse.redirect(new URL(`/${companyCode}/orders?error=系統錯誤`, request.url))
   }
 }

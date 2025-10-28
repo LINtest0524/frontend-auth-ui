@@ -89,7 +89,7 @@ export default function MenuRenderer({ companyId, className = '' }: MenuRenderer
   if (loading) {
     return (
       <div className={`menu-loading ${className}`}>
-        <div className="loading-spinner">載入中...</div>
+        <div className="loading-spinner"></div>
       </div>
     )
   }

@@ -124,7 +124,7 @@ export default function PromotionsPage() {
   }
 
   const handlePromotionClick = (promotionId: number) => {
-    router.push(`/a/promotions/${promotionId}`)
+    router.push(`/${companySlug}/promotions/${promotionId}`)
   }
 
   if (loading) {

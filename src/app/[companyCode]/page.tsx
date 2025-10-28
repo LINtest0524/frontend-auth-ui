@@ -34,8 +34,10 @@ export default function DynamicCompanyHomePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem(`portalToken_${companyCode}`)
-    const userData = localStorage.getItem(`portalUser_${companyCode}`)
+    // 修復時序競爭條件：添加延遲重試機制
+    const loadPageData = () => {
+      const token = localStorage.getItem(`portalToken_${companyCode}`)
+      const userData = localStorage.getItem(`portalUser_${companyCode}`)
     
     // 已移除敏感認證信息的日誌輸出
 
@@ -107,8 +109,19 @@ export default function DynamicCompanyHomePage() {
       .then(data => setLatestNews(data.data || []))
       .catch(() => setLatestNews([]))
 
-    if (companyCode) {
-      fetchCompanyInfo()
+      if (companyCode) {
+        fetchCompanyInfo()
+      }
+    }
+
+    // 立即執行一次
+    loadPageData()
+
+    // 如果沒有 token 但 URL 顯示已登入狀態，延遲重試
+    const token = localStorage.getItem(`portalToken_${companyCode}`)
+    if (!token && window.location.search.includes('justRegistered')) {
+      console.log('🔄 檢測到註冊後跳轉，延遲重試載入...')
+      setTimeout(loadPageData, 500) // 500ms 後重試
     }
   }, [companyCode])
 
@@ -134,7 +147,7 @@ export default function DynamicCompanyHomePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">載入中...</p>
+          <div></div>
         </div>
       </div>
     )

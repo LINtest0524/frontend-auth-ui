@@ -3,7 +3,11 @@
 import { useFavoritesStore } from '@/hooks/use-favorites-store'
 import { useRouter } from 'next/navigation'
 
-export default function MemberFavorites() {
+interface MemberFavoritesProps {
+  companyCode: string
+}
+
+export default function MemberFavorites({ companyCode }: MemberFavoritesProps) {
   const { favorites, removeFromFavorites, clearFavorites } = useFavoritesStore()
   const router = useRouter()
 
@@ -21,7 +25,7 @@ export default function MemberFavorites() {
   }
 
   const handleGoToProduct = (productId: number) => {
-    router.push(`/a/products/${productId}`)
+    router.push(`/${companyCode}/products/${productId}`)
   }
 
   if (favorites.length === 0) {
@@ -39,7 +43,7 @@ export default function MemberFavorites() {
             <div style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>還沒有收藏任何商品</div>
             <div style={{ fontSize: '14px', marginBottom: '20px' }}>快去逛逛商品，加入您喜歡的商品吧！</div>
             <button
-              onClick={() => router.push('/a/products')}
+              onClick={() => router.push(`/${companyCode}/products`)}
               className="member-form-button"
               style={{ maxWidth: '200px' }}
             >

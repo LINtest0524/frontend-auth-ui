@@ -245,7 +245,6 @@ export default function PortalHeaderBar() {
               background: 'rgba(255,255,255,0.9)',
               padding: '5px'
             }}>
-              Debug: No Logo (logo = {String(logo)})
             </div>
           )
         }

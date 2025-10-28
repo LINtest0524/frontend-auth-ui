@@ -71,6 +71,20 @@ export default function OrdersManagePage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
 
   const currentUser = useUserStore((state) => state.user)
+  const setUser = useUserStore((state) => state.setUser)
+
+  // 初始化用戶資料
+  useEffect(() => {
+    const stored = localStorage.getItem('user')
+    if (stored && !currentUser) {
+      try {
+        const user = JSON.parse(stored)
+        setUser(user)
+      } catch (e) {
+        console.error('解析用戶資料失敗', e)
+      }
+    }
+  }, [])
 
   // 排序處理函數
   const sortOrders = (data: Order[]) => {
@@ -202,13 +216,13 @@ export default function OrdersManagePage() {
     setOrders((prev) => sortOrders(prev));
   }, [sortKey, sortDirection]);
 
-  // 頁面載入時不自動搜尋，等待使用者手動搜尋
-  // useEffect(() => {
-  //   if (!hasSearched) {
-  //     setHasSearched(true)
-  //     loadOrders()
-  //   }
-  // }, [])
+  // 頁面載入時自動搜尋一次
+  useEffect(() => {
+    if (currentUser && !hasSearched) {
+      setHasSearched(true)
+      loadOrders()
+    }
+  }, [currentUser])
 
   const loadOrders = async () => {
     try {
@@ -224,10 +238,17 @@ export default function OrdersManagePage() {
 
       // 建構查詢參數
       const params = new URLSearchParams({
-        company: 'a', // 或根據需要動態設定
         page: currentPage.toString(),
         limit: limit.toString()
       })
+
+      // 只有超級管理員或全域管理員才需要指定公司參數
+      if (currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'GLOBAL_ADMIN') {
+        // 超級管理員可以查看所有公司的訂單，這裡可以根據需要添加公司選擇功能
+        // 暫時預設查看公司 'a' 的訂單
+        params.append('company', 'a')
+      }
+      // 代理商會由後端根據 JWT token 自動限制只能查看自己公司的訂單
 
       if (statusFilter && statusFilter !== 'all') {
         params.append('status', statusFilter)
@@ -256,7 +277,7 @@ export default function OrdersManagePage() {
         params.append('product_name', productNameFilter.trim())
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/admin/orders?${params}`, {
+      const response = await fetch(`http://localhost:3001/admin/orders?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -264,6 +285,14 @@ export default function OrdersManagePage() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // 未授權，清除 token 並重定向到登入頁面
+          console.error('認證失效，重定向到登入頁面')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+          return
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 

@@ -118,7 +118,7 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
     setHydrated(true)
   }, [pathname, setUser, router, params.companyCode])
 
-  if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
+  if (!hydrated) return null
 
   // 檢查是否為登入或註冊頁面，這些頁面不需要顯示 Header
   const currentCompanyCode = params.companyCode as string

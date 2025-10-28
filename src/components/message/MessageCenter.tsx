@@ -579,11 +579,23 @@ export default function MessageCenter() {
     )
   }
 
-  // 初始化效果 - 只在用戶和公司變化時執行
+  // 初始化效果 - 只在用戶和公司變化時執行，添加延遲以避免時序競爭
   useEffect(() => {
     if (user && company) {
-      fetchMessages()
-      fetchUnreadCount()
+      // 立即嘗試載入
+      const loadData = () => {
+        fetchMessages()
+        fetchUnreadCount()
+      }
+      
+      loadData()
+      
+      // 檢查是否為剛註冊/登入的情況，添加延遲重試
+      const token = localStorage.getItem(`portalToken_${company}`)
+      if (!token || window.location.search.includes('justRegistered')) {
+        console.log('🔄 檢測到可能的認證時序問題，延遲重試載入訊息...')
+        setTimeout(loadData, 800) // 800ms 後重試
+      }
     }
   }, [user, company])
 

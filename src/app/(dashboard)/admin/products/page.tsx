@@ -502,7 +502,8 @@ export default function ProductListPage() {
         <div className="users-header-actions">
           {(currentUser?.role === "SUPER_ADMIN" || 
             currentUser?.role === "GLOBAL_ADMIN" || 
-            currentUser?.role === "AGENT_OWNER") && (
+            currentUser?.role === "AGENT_OWNER" ||
+            currentUser?.role === "AGENT_LEVEL_1") && (
             <button
               onClick={() => router.push("/admin/products/new")}
               className="btn-search"
@@ -790,7 +791,8 @@ export default function ProductListPage() {
                       
                       {(currentUser?.role === "SUPER_ADMIN" || 
                         currentUser?.role === "GLOBAL_ADMIN" || 
-                        currentUser?.role === "AGENT_OWNER") && (
+                        currentUser?.role === "AGENT_OWNER" ||
+                        currentUser?.role === "AGENT_LEVEL_1") && (
                         <button
                           onClick={() => router.push(`/admin/products/edit/${product.id}`)}
                           className="btn-edit"

@@ -316,7 +316,7 @@ export default function DailyCheckinPage() {
             <div className="login-prompt">
               <h2>請先登入</h2>
               <p>登入後即可參與每日簽到活動</p>
-              <a href="/a/login" className="login-btn">前往登入</a>
+              <a href={`/${companyCode}/login`} className="login-btn">前往登入</a>
             </div>
           </div>
         </div>

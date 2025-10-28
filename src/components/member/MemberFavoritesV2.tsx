@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useEnhancedFavoritesStore } from '@/hooks/use-favorites-store-v2'
 
-export default function MemberFavoritesV2() {
+interface MemberFavoritesV2Props {
+  companyCode: string
+}
+
+export default function MemberFavoritesV2({ companyCode }: MemberFavoritesV2Props) {
   const {
     favorites,
     isLoading,
@@ -62,7 +66,7 @@ export default function MemberFavoritesV2() {
   }
 
   const handleGoToProduct = (productId: number) => {
-    router.push(`/a/products/${productId}`)
+    router.push(`/${companyCode}/products/${productId}`)
   }
 
   const pendingCount = getPendingSyncCount()

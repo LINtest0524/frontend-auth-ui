@@ -34,18 +34,38 @@ export default function PopupAnnouncementPage() {
   const fetchAnnouncements = async () => {
     try {
       const token = localStorage.getItem('token')
-      // 移除固定的 company=a 參數，讓後端根據用戶權限自動過濾
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/popup-announcements`, {
+      
+      // 檢查用戶信息
+      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        setAnnouncements(data)
+      
+      if (userResponse.ok) {
+        const response = await userResponse.json()
+        const userInfo = response.user
+        
+        // 使用用戶的實際公司代碼
+        const userCompanyCode = userInfo.company?.code
+        const apiUrl = userCompanyCode 
+          ? `${process.env.NEXT_PUBLIC_API_BASE}/popup-announcements?company=${userCompanyCode}`
+          : `${process.env.NEXT_PUBLIC_API_BASE}/popup-announcements`
+        
+        const apiResponse = await fetch(apiUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (apiResponse.ok) {
+          const data = await apiResponse.json()
+          setAnnouncements(data)
+        } else {
+          console.error('獲取彈窗公告失敗')
+        }
       } else {
-        console.error('獲取彈窗公告失敗')
+        console.error('無法獲取用戶資料')
       }
     } catch (error) {
       console.error('獲取彈窗公告錯誤:', error)

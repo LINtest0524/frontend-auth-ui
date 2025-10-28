@@ -89,7 +89,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
     setHydrated(true)
   }, [pathname, setUser, router])
 
-  if (!hydrated) return <div className="p-4 text-gray-500">載入模組中...</div>
+  if (!hydrated) return null
 
   return (
     <>

@@ -1,183 +1,278 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams, useParams } from 'next/navigation'
+import ProductCard from '@/components/ProductCard'
 import '@/styles/pages/products.css'
 
-type Product = {
+interface Product {
   id: number
   name: string
-  description: string
+  sku: string
   price: number
-  image_url?: string
-  category: string
-  is_active: boolean
+  original_price?: number
+  short_description?: string
+  thumbnail?: string
+  is_featured: boolean
+  category?: {
+    id: number
+    name: string
+  }
+}
+
+interface Category {
+  id: number
+  name: string
 }
 
 export default function ProductsPage() {
-  const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const params = useParams()
   const companyCode = params.companyCode as string
   
   const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // 載入產品
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE
-        let url = `${apiBase}/portal/products?company=${companyCode}`
-        
-        if (selectedCategory !== 'all') {
-          url += `&category=${selectedCategory}`
-        }
-
-        const response = await fetch(url)
-        if (response.ok) {
-          const data = await response.json()
-          const productsData = Array.isArray(data) ? data : (data.products || [])
-          setProducts(productsData)
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (companyCode) {
-      fetchProducts()
-    }
-  }, [companyCode, selectedCategory])
+  // 從 URL 參數獲取篩選條件
+  const categoryId = searchParams.get('category')
+  const searchTerm = searchParams.get('search')
+  const page = parseInt(searchParams.get('page') || '1')
 
   // 載入分類
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE
-        const response = await fetch(`${apiBase}/portal/products/categories?company=${companyCode}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/product/categories?company=${companyCode}`)
         if (response.ok) {
           const data = await response.json()
           setCategories(data)
         }
       } catch (error) {
-        console.error('Error fetching categories:', error)
+        // 載入分類失敗，靜默處理
       }
     }
-
-    if (companyCode) {
-      fetchCategories()
-    }
+    
+    fetchCategories()
   }, [companyCode])
 
-  const handleProductClick = (productId: number) => {
-    router.push(`/${companyCode}/products/${productId}`)
+  // 載入產品
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams({
+          company: companyCode,
+          page: page.toString(),
+          limit: '12'
+        })
+        
+        if (categoryId) params.append('category_id', categoryId)
+        if (searchTerm) params.append('search', searchTerm)
+        
+        const url = `${process.env.NEXT_PUBLIC_API_BASE}/portal/product?${params}`
+        const response = await fetch(url)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data.data || [])
+          setTotalPages(data.totalPages || 1)
+          setCurrentPage(data.currentPage || 1)
+        }
+      } catch (error) {
+        // 載入產品失敗，靜默處理
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchProducts()
+  }, [companyCode, categoryId, searchTerm, page])
+
+  // 更新 URL 參數
+  const updateURL = (newParams: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
+    })
+    
+    // 重置頁碼
+    if ('category' in newParams || 'search' in newParams) {
+      params.delete('page')
+    }
+    
+    const newURL = `/${companyCode}/products${params.toString() ? '?' + params.toString() : ''}`
+    router.push(newURL)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">載入中...</p>
-        </div>
-      </div>
-    )
+  // 處理分類篩選
+  const handleCategoryFilter = (catId: string | null) => {
+    updateURL({ category: catId })
+  }
+
+  // 處理搜尋
+  const handleSearch = (term: string) => {
+    updateURL({ search: term || null })
+  }
+
+  // 處理分頁
+  const handlePageChange = (newPage: number) => {
+    updateURL({ page: newPage.toString() })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <div className="products-page">
+        <div className="products-container">
         {/* 頁面標題 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">產品服務</h1>
-          <p className="text-xl text-gray-600">探索我們的產品與服務</p>
+        <div className="products-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+            <div>
+              <h1 className="products-title">產品中心</h1>
+              <p className="products-subtitle">探索我們的優質產品，發現生活的美好</p>
+            </div>
+            
+          </div>
         </div>
 
-        {/* 分類篩選 */}
-        {categories.length > 0 && (
-          <div className="mb-8">
-            <div className="flex flex-wrap justify-center gap-4">
-              <button
-                className={`px-6 py-2 rounded-full transition-colors ${
-                  selectedCategory === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-                onClick={() => setSelectedCategory('all')}
+        {/* 搜尋和篩選 */}
+        <div className="filters-section">
+          <div className="filters-grid">
+            {/* 搜尋框 */}
+            <div className="search-group">
+              <label className="search-label">搜尋產品</label>
+              <input
+                type="text"
+                placeholder="輸入產品名稱或關鍵字..."
+                defaultValue={searchTerm || ''}
+                className="search-input"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch((e.target as HTMLInputElement).value)
+                  }
+                }}
+              />
+            </div>
+            
+            {/* 分類篩選 */}
+            <div className="search-group">
+              <label className="search-label">產品分類</label>
+              <select
+                value={categoryId || ''}
+                onChange={(e) => handleCategoryFilter(e.target.value || null)}
+                className="category-select"
               >
-                全部
+                <option value="">所有分類</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 操作按鈕 */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  const searchInput = document.querySelector('.search-input') as HTMLInputElement
+                  handleSearch(searchInput?.value || '')
+                }}
+                className="search-button"
+              >
+                🔍 搜尋
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  className={`px-6 py-2 rounded-full transition-colors ${
-                    selectedCategory === category
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </button>
-              ))}
+              <button
+                onClick={() => {
+                  const searchInput = document.querySelector('.search-input') as HTMLInputElement
+                  if (searchInput) searchInput.value = ''
+                  updateURL({ search: null, category: null })
+                }}
+                className="clear-button"
+              >
+                ✨ 清除
+              </button>
             </div>
           </div>
-        )}
+        </div>
 
         {/* 產品列表 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200"
-              onClick={() => handleProductClick(product.id)}
-            >
-              {product.image_url && (
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_API_BASE}${product.image_url}`}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                </div>
-              )}
-              <div className="p-4">
-                <div className="mb-2">
-                  <span className="text-sm text-blue-600 font-medium">{product.category}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">
-                    ${product.price.toLocaleString()}
-                  </span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    product.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.is_active ? '可訂購' : '暫停'}
-                  </span>
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+          </div>
+        ) : products.length > 0 ? (
+          <>
+            <div className="products-grid">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  companySlug={companyCode}
+                />
+              ))}
+            </div>
+
+            {/* 分頁 */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <div className="pagination-container">
+                  {/* 上一頁 */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="pagination-button"
+                  >
+                    ← 上一頁
+                  </button>
+                  
+                  {/* 頁碼 */}
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum = currentPage - 2 + i
+                    if (pageNum < 1) pageNum = i + 1
+                    if (pageNum > totalPages) pageNum = totalPages - 4 + i
+                    if (pageNum < 1 || pageNum > totalPages) return null
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  })}
+                  
+                  {/* 下一頁 */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="pagination-button"
+                  >
+                    下一頁 →
+                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {products.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">目前沒有可用的產品</p>
+            )}
+          </>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">🔍</div>
+            <h3 className="empty-title">找不到相關產品</h3>
+            <p className="empty-description">試試調整搜尋條件或瀏覽其他分類</p>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

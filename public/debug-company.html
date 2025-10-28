@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>檢查公司識別問題</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        .error { background: #f8d7da; }
+        .success { background: #d4edda; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 檢查公司識別問題</h1>
+    
+    <div class="section">
+        <h2>問題檢查清單</h2>
+        <button onclick="checkAll()">一鍵檢查所有問題</button>
+        <div id="checkResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>localStorage 分析</h2>
+        <button onclick="analyzeStorage()">分析 localStorage</button>
+        <div id="storageAnalysis"></div>
+    </div>
+    
+    <div class="section">
+        <h2>API 測試</h2>
+        <button onclick="testMessagesAPI()">測試訊息 API</button>
+        <div id="apiResults"></div>
+    </div>
+    
+    <script>
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const className = type === 'success' ? 'result success' : type === 'error' ? 'result error' : 'result';
+            container.innerHTML += '<div class="' + className + '">' + message + '</div>';
+        }
+        
+        function checkAll() {
+            const container = document.getElementById('checkResults');
+            container.innerHTML = '';
+            
+            log('checkResults', '<strong>🔍 完整問題檢查:</strong>');
+            
+            // 1. 檢查當前 URL
+            const currentURL = window.location.href;
+            log('checkResults', '當前 URL: ' + currentURL);
+            
+            // 2. 提取公司代碼
+            const pathname = window.location.pathname;
+            const companyMatch = pathname.match(/^\/([^\/]+)/);
+            
+            if (companyMatch && companyMatch[1] !== 'debug-company.html') {
+                const detectedCompany = companyMatch[1];
+                log('checkResults', '✅ 檢測到公司代碼: ' + detectedCompany, 'success');
+                
+                // 3. 檢查認證資料
+                const tokenKey = 'portalToken_' + detectedCompany;
+                const userKey = 'portalUser_' + detectedCompany;
+                
+                const hasToken = !!localStorage.getItem(tokenKey);
+                const hasUser = !!localStorage.getItem(userKey);
+                
+                log('checkResults', tokenKey + ': ' + (hasToken ? '✅ 存在' : '❌ 不存在'), hasToken ? 'success' : 'error');
+                log('checkResults', userKey + ': ' + (hasUser ? '✅ 存在' : '❌ 不存在'), hasUser ? 'success' : 'error');
+                
+                if (hasToken) {
+                    const token = localStorage.getItem(tokenKey);
+                    log('checkResults', 'Token 長度: ' + token.length);
+                    log('checkResults', 'Token 預覽: ' + token.substring(0, 20) + '...');
+                }
+                
+                // 4. 檢查其他公司的資料
+                const otherCompanies = ['a', 'b'].filter(c => c !== detectedCompany);
+                log('checkResults', '<br><strong>其他公司資料檢查:</strong>');
+                otherCompanies.forEach(company => {
+                    const otherToken = localStorage.getItem('portalToken_' + company);
+                    const otherUser = localStorage.getItem('portalUser_' + company);
+                    if (otherToken || otherUser) {
+                        log('checkResults', company + ' 公司有資料 (Token: ' + (otherToken ? '✅' : '❌') + ', User: ' + (otherUser ? '✅' : '❌') + ')');
+                    }
+                });
+                
+            } else {
+                log('checkResults', '❌ 無法檢測公司代碼，或您在錯誤的頁面', 'error');
+                log('checkResults', '請在實際的公司頁面使用此工具，例如 /test/messages');
+            }
+        }
+        
+        function analyzeStorage() {
+            const container = document.getElementById('storageAnalysis');
+            container.innerHTML = '';
+            
+            log('storageAnalysis', '<strong>📦 LocalStorage 完整分析:</strong>');
+            
+            const keys = Object.keys(localStorage);
+            const portalKeys = keys.filter(key => 
+                key.startsWith('portal') || 
+                key.startsWith('enabled') || 
+                key.startsWith('session') ||
+                key.startsWith('token')
+            );
+            
+            if (portalKeys.length === 0) {
+                log('storageAnalysis', '沒有找到任何門戶相關資料', 'error');
+                return;
+            }
+            
+            portalKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                const preview = value && value.length > 50 ? value.substring(0, 50) + '...' : value;
+                log('storageAnalysis', key + ': ' + (value ? preview : '空值'));
+            });
+        }
+        
+        async function testMessagesAPI() {
+            const container = document.getElementById('apiResults');
+            container.innerHTML = '';
+            
+            log('apiResults', '<strong>🌐 API 測試:</strong>');
+            
+            // 檢測公司代碼
+            const pathname = window.location.pathname;
+            const companyMatch = pathname.match(/^\/([^\/]+)/);
+            
+            if (!companyMatch || companyMatch[1] === 'debug-company.html') {
+                log('apiResults', '❌ 無法檢測公司代碼', 'error');
+                return;
+            }
+            
+            const company = companyMatch[1];
+            const token = localStorage.getItem('portalToken_' + company);
+            
+            if (!token) {
+                log('apiResults', '❌ 沒有找到 Token: portalToken_' + company, 'error');
+                return;
+            }
+            
+            try {
+                log('apiResults', '正在測試 API: /api/portal/' + company + '/messages');
+                
+                const response = await fetch('/api/portal/' + company + '/messages?page=1&limit=5', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('apiResults', 'API 回應狀態: ' + response.status + ' ' + response.statusText, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('apiResults', '✅ 成功！訊息數量: ' + (data.messages ? data.messages.length : '未知'), 'success');
+                    log('apiResults', '回應資料: ' + JSON.stringify(data, null, 2));
+                } else {
+                    const errorText = await response.text();
+                    log('apiResults', '❌ 錯誤詳情: ' + errorText, 'error');
+                }
+            } catch (error) {
+                log('apiResults', '❌ 請求失敗: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

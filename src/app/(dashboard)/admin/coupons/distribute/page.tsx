@@ -105,7 +105,7 @@ export default function CouponDistributePage() {
   // 檢查權限
   const hasPermission = () => {
     if (!user?.role) return false
-    return ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_OWNER', 'AGENT_SUPPORT'].includes(user.role)
+    return ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_OWNER', 'AGENT_SUPPORT', 'AGENT_LEVEL_1'].includes(user.role)
   }
 
   // 獲取模板列表
