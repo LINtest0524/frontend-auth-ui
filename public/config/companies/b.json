@@ -1,0 +1,177 @@
+{
+  "companyInfo": {
+    "code": "b",
+    "name": "B 娛樂城",
+    "domain": "b.casino.com",
+    "timezone": "Asia/Taipei",
+    "currency": "TWD",
+    "language": "zh-TW"
+  },
+  "branding": {
+    "theme": "modern",
+    "primaryColor": "#2563eb",
+    "secondaryColor": "#1e40af",
+    "accentColor": "#06b6d4",
+    "logo": {
+      "main": "/logo/b-main.png",
+      "favicon": "/favicon-b.ico"
+    },
+    "fonts": {
+      "primary": "Inter, sans-serif",
+      "secondary": "Source Sans Pro, sans-serif"
+    }
+  },
+  "layout": {
+    "type": "compact",
+    "header": {
+      "style": "static",
+      "showLogo": true,
+      "showNavigation": true,
+      "showUserInfo": true
+    },
+    "sidebar": {
+      "enabled": false,
+      "position": "right",
+      "collapsible": false
+    },
+    "footer": {
+      "enabled": true,
+      "content": "minimal"
+    }
+  },
+  "modules": {
+    "core": {
+      "authentication": true,
+      "userProfile": true,
+      "wallet": true,
+      "gameHistory": true,
+      "notifications": true
+    },
+    "optional": {
+      "soundEffects": {
+        "enabled": false,
+        "volume": 30,
+        "sounds": {
+          "click": "/sounds/b/click.mp3",
+          "hover": "/sounds/b/hover.mp3",
+          "win": "/sounds/b/win.mp3",
+          "lose": "/sounds/b/lose.mp3",
+          "notification": "/sounds/b/notification.mp3"
+        },
+        "backgroundMusic": {
+          "enabled": false,
+          "tracks": [],
+          "shuffle": false,
+          "loop": false
+        }
+      },
+      "leaderboard": {
+        "enabled": true,
+        "position": "sidebar",
+        "updateInterval": 120,
+        "categories": ["weekly", "monthly"],
+        "displayCount": 5,
+        "showAvatars": false,
+        "showPrizes": false,
+        "autoRefresh": false
+      },
+      "liveChat": {
+        "enabled": true,
+        "provider": "crisp",
+        "position": "bottom-left",
+        "autoOpen": false,
+        "workingHours": {
+          "enabled": false,
+          "timezone": "Asia/Taipei",
+          "schedule": {}
+        }
+      },
+      "promotions": {
+        "enabled": true,
+        "bannerPosition": "top",
+        "autoShow": true,
+        "showFrequency": "daily",
+        "categories": ["welcome", "deposit", "cashback"]
+      }
+    }
+  },
+  "pages": {
+    "homepage": {
+      "layout": "compact",
+      "sections": [
+        {
+          "id": "promotion-banner",
+          "type": "component",
+          "component": "PromotionBanner",
+          "position": { "order": 1 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        },
+        {
+          "id": "game-categories",
+          "type": "component",
+          "component": "GameGrid",
+          "props": { "category": "all", "limit": 20, "layout": "grid" },
+          "position": { "order": 2 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        },
+        {
+          "id": "news-section",
+          "type": "component",
+          "component": "NewsSection",
+          "position": { "order": 3 },
+          "responsive": { "desktop": true, "tablet": false, "mobile": false }
+        }
+      ],
+      "meta": {
+        "title": "B 娛樂城 - 簡潔快速的遊戲體驗",
+        "description": "B 娛樂城提供簡潔快速的線上博弈體驗，專注於遊戲本身的樂趣",
+        "keywords": ["B娛樂城", "快速遊戲", "簡潔介面", "線上博弈"]
+      },
+      "permissions": ["games_access"],
+      "responsive": { "desktop": true, "tablet": true, "mobile": true }
+    }
+  },
+  "games": {
+    "categories": [
+      {
+        "id": "slots",
+        "name": "老虎機",
+        "icon": "/icons/b/slots.svg",
+        "order": 1,
+        "enabled": true,
+        "gameIds": ["b_slot001", "b_slot002"]
+      },
+      {
+        "id": "table",
+        "name": "桌遊",
+        "icon": "/icons/b/table.svg",
+        "order": 2,
+        "enabled": true,
+        "gameIds": ["b_baccarat", "b_blackjack"]
+      },
+      {
+        "id": "lottery",
+        "name": "彩票",
+        "icon": "/icons/b/lottery.svg",
+        "order": 3,
+        "enabled": true,
+        "gameIds": ["b_lottery001", "b_lottery002"]
+      }
+    ],
+    "featured": ["b_slot001", "b_baccarat"],
+    "newGames": ["b_lottery002"],
+    "popularGames": ["b_slot001", "b_slot002", "b_baccarat"],
+    "jackpotGames": ["b_slot001"]
+  },
+  "seo": {
+    "title": "B 娛樂城 - 簡潔快速的線上博弈平台",
+    "description": "B 娛樂城專注於提供簡潔、快速、穩定的線上博弈體驗，讓您專心享受遊戲樂趣",
+    "keywords": ["B娛樂城", "快速博弈", "簡潔介面", "穩定平台", "線上遊戲"],
+    "ogImage": "/og-image-b.jpg"
+  },
+  "system": {
+    "useNewArchitecture": true,
+    "enabledFeatures": ["basic_games", "promotions", "live_chat"],
+    "maintenanceMode": false
+  }
+}

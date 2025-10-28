@@ -1,0 +1,124 @@
+{
+  "companyInfo": {
+    "code": "default",
+    "name": "預設娛樂城",
+    "domain": "localhost",
+    "timezone": "Asia/Taipei",
+    "currency": "TWD",
+    "language": "zh-TW"
+  },
+  "branding": {
+    "theme": "modern",
+    "primaryColor": "#1a202c",
+    "secondaryColor": "#2d3748",
+    "accentColor": "#f6e05e",
+    "logo": {
+      "main": "/logo/default-main.png",
+      "favicon": "/favicon.ico"
+    },
+    "fonts": {
+      "primary": "Inter, sans-serif",
+      "secondary": "Roboto, sans-serif"
+    }
+  },
+  "layout": {
+    "type": "standard",
+    "header": {
+      "style": "fixed",
+      "showLogo": true,
+      "showNavigation": true,
+      "showUserInfo": true
+    },
+    "sidebar": {
+      "enabled": true,
+      "position": "left",
+      "collapsible": true
+    },
+    "footer": {
+      "enabled": true,
+      "content": "standard"
+    }
+  },
+  "modules": {
+    "core": {
+      "authentication": true,
+      "userProfile": true,
+      "wallet": true,
+      "gameHistory": true,
+      "notifications": true
+    },
+    "optional": {
+      "soundEffects": {
+        "enabled": false,
+        "volume": 50,
+        "sounds": {
+          "click": "/sounds/click.mp3",
+          "hover": "/sounds/hover.mp3",
+          "win": "/sounds/win.mp3",
+          "lose": "/sounds/lose.mp3",
+          "notification": "/sounds/notification.mp3"
+        },
+        "backgroundMusic": {
+          "enabled": false,
+          "tracks": [],
+          "shuffle": false,
+          "loop": true
+        }
+      },
+      "leaderboard": {
+        "enabled": false,
+        "position": "sidebar",
+        "updateInterval": 30,
+        "categories": ["daily", "weekly"],
+        "displayCount": 10,
+        "showAvatars": true,
+        "showPrizes": false,
+        "autoRefresh": true
+      }
+    }
+  },
+  "games": {
+    "categories": [
+      {
+        "id": "slots",
+        "name": "老虎機",
+        "icon": "/icons/slots.svg",
+        "order": 1,
+        "enabled": true,
+        "gameIds": []
+      },
+      {
+        "id": "table",
+        "name": "桌遊",
+        "icon": "/icons/table.svg",
+        "order": 2,
+        "enabled": true,
+        "gameIds": []
+      }
+    ],
+    "featured": [],
+    "newGames": [],
+    "popularGames": [],
+    "jackpotGames": []
+  },
+  "api": {
+    "baseUrl": "/api",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "rateLimits": {
+      "/api/games": 100,
+      "/api/user": 50
+    }
+  },
+  "seo": {
+    "title": "預設娛樂城 - 最佳線上娛樂體驗",
+    "description": "提供最安全、最刺激的線上博弈遊戲體驗",
+    "keywords": ["娛樂城", "線上博弈", "老虎機", "百家樂", "德州撲克"],
+    "ogImage": "/og-image-default.jpg"
+  },
+  "system": {
+    "useNewArchitecture": false,
+    "enabledFeatures": ["basic_games", "user_profile"],
+    "maintenanceMode": false
+  }
+}

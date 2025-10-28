@@ -1,0 +1,193 @@
+{
+  "companyInfo": {
+    "code": "a",
+    "name": "A 娛樂城",
+    "domain": "a.casino.com",
+    "timezone": "Asia/Taipei",
+    "currency": "TWD",
+    "language": "zh-TW"
+  },
+  "branding": {
+    "theme": "classic",
+    "primaryColor": "#1a1a2e",
+    "secondaryColor": "#16213e",
+    "accentColor": "#e94560",
+    "logo": {
+      "main": "/logo/a-main.png",
+      "favicon": "/favicon-a.ico"
+    },
+    "fonts": {
+      "primary": "Noto Sans TC, sans-serif",
+      "secondary": "Roboto, sans-serif"
+    }
+  },
+  "layout": {
+    "type": "luxury",
+    "header": {
+      "style": "fixed",
+      "showLogo": true,
+      "showNavigation": true,
+      "showUserInfo": true
+    },
+    "sidebar": {
+      "enabled": true,
+      "position": "left",
+      "collapsible": true
+    },
+    "footer": {
+      "enabled": true,
+      "content": "extended"
+    }
+  },
+  "modules": {
+    "core": {
+      "authentication": true,
+      "userProfile": true,
+      "wallet": true,
+      "gameHistory": true,
+      "notifications": true
+    },
+    "optional": {
+      "soundEffects": {
+        "enabled": true,
+        "volume": 70,
+        "sounds": {
+          "click": "/sounds/a/click.mp3",
+          "hover": "/sounds/a/hover.mp3",
+          "win": "/sounds/a/win.mp3",
+          "lose": "/sounds/a/lose.mp3",
+          "notification": "/sounds/a/notification.mp3"
+        },
+        "backgroundMusic": {
+          "enabled": true,
+          "tracks": ["/music/a/bg1.mp3", "/music/a/bg2.mp3"],
+          "shuffle": true,
+          "loop": true
+        }
+      },
+      "leaderboard": {
+        "enabled": true,
+        "position": "homepage",
+        "updateInterval": 60,
+        "categories": ["daily", "weekly", "monthly"],
+        "displayCount": 15,
+        "showAvatars": true,
+        "showPrizes": true,
+        "autoRefresh": true
+      },
+      "liveChat": {
+        "enabled": true,
+        "provider": "internal",
+        "position": "bottom-right",
+        "autoOpen": false,
+        "workingHours": {
+          "enabled": true,
+          "timezone": "Asia/Taipei",
+          "schedule": {
+            "monday": { "start": "09:00", "end": "24:00" },
+            "tuesday": { "start": "09:00", "end": "24:00" },
+            "wednesday": { "start": "09:00", "end": "24:00" },
+            "thursday": { "start": "09:00", "end": "24:00" },
+            "friday": { "start": "09:00", "end": "24:00" },
+            "saturday": { "start": "09:00", "end": "24:00" },
+            "sunday": { "start": "09:00", "end": "24:00" }
+          }
+        }
+      },
+      "vipSystem": {
+        "enabled": true,
+        "levels": [
+          { "id": 1, "name": "青銅", "minPoints": 0, "color": "#cd7f32", "icon": "/icons/vip-bronze.svg" },
+          { "id": 2, "name": "白銀", "minPoints": 1000, "color": "#c0c0c0", "icon": "/icons/vip-silver.svg" },
+          { "id": 3, "name": "黃金", "minPoints": 5000, "color": "#ffd700", "icon": "/icons/vip-gold.svg" },
+          { "id": 4, "name": "鑽石", "minPoints": 20000, "color": "#b9f2ff", "icon": "/icons/vip-diamond.svg" }
+        ],
+        "pointsSystem": {
+          "conversionRate": 100,
+          "minimumBet": 10,
+          "bonusMultiplier": 1.5
+        },
+        "levelUpAnimation": true
+      }
+    }
+  },
+  "pages": {
+    "homepage": {
+      "layout": "luxury",
+      "sections": [
+        {
+          "id": "hero-banner",
+          "type": "component",
+          "component": "HeroBanner",
+          "position": { "order": 1 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        },
+        {
+          "id": "leaderboard",
+          "type": "module",
+          "component": "Leaderboard",
+          "position": { "order": 2 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": false }
+        },
+        {
+          "id": "featured-games",
+          "type": "component",
+          "component": "GameGrid",
+          "props": { "category": "featured", "limit": 12 },
+          "position": { "order": 3 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        }
+      ],
+      "meta": {
+        "title": "A 娛樂城 - 頂級線上博弈體驗",
+        "description": "A 娛樂城提供最豪華的線上博弈體驗，包含老虎機、百家樂、德州撲克等精彩遊戲",
+        "keywords": ["A娛樂城", "線上博弈", "VIP服務", "老虎機", "百家樂"]
+      },
+      "permissions": ["games_access"],
+      "responsive": { "desktop": true, "tablet": true, "mobile": true }
+    }
+  },
+  "games": {
+    "categories": [
+      {
+        "id": "slots",
+        "name": "老虎機",
+        "icon": "/icons/a/slots.svg",
+        "order": 1,
+        "enabled": true,
+        "gameIds": ["slot001", "slot002", "slot003"]
+      },
+      {
+        "id": "table",
+        "name": "桌遊",
+        "icon": "/icons/a/table.svg",
+        "order": 2,
+        "enabled": true,
+        "gameIds": ["baccarat", "blackjack", "poker"]
+      },
+      {
+        "id": "live",
+        "name": "真人遊戲",
+        "icon": "/icons/a/live.svg",
+        "order": 3,
+        "enabled": true,
+        "gameIds": ["live_baccarat", "live_roulette"]
+      }
+    ],
+    "featured": ["slot001", "baccarat", "live_baccarat"],
+    "newGames": ["slot003", "live_roulette"],
+    "popularGames": ["slot001", "slot002", "baccarat"],
+    "jackpotGames": ["slot001", "slot002"]
+  },
+  "seo": {
+    "title": "A 娛樂城 - 頂級 VIP 線上博弈體驗",
+    "description": "A 娛樂城專為 VIP 會員打造的頂級線上博弈平台，提供最安全的遊戲環境和最優質的客戶服務",
+    "keywords": ["A娛樂城", "VIP娛樂城", "線上博弈", "老虎機", "百家樂", "真人遊戲", "高端博弈"],
+    "ogImage": "/og-image-a.jpg"
+  },
+  "system": {
+    "useNewArchitecture": true,
+    "enabledFeatures": ["advanced_games", "vip_system", "live_chat", "leaderboard", "sound_effects"],
+    "maintenanceMode": false
+  }
+}
