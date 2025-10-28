@@ -9,13 +9,20 @@ import { logoutWithRecord } from '@/lib/logout'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import MenuRenderer from './menu/MenuRenderer'
 import MessageIcon from './message/MessageIcon'
-import '../../src/app/a/styles/index.css'
+import { CompanyConfig } from '@/types'
+// 條件載入樣式 - 避免硬編碼 A 公司樣式
+// import '../../src/app/a/styles/index.css'
 import '../../src/styles/components/menu.css'
 
 
-export default function PortalHeaderBar() {
+interface PortalHeaderBarProps {
+  companyCode?: string
+  config?: any
+}
+
+export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBarProps = {}) {
   const { user, setUser } = useUserStore()
-  const company = useCompanySlug() //   這行取得公司代碼
+  const company = companyCode || useCompanySlug() //   優先使用傳入的公司代碼
   const router = useRouter()
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)

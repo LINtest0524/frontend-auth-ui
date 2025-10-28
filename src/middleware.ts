@@ -10,6 +10,25 @@ export async function middleware(request: NextRequest) {
     return maintenanceResponse
   }
   
+  // 🚀 路由統一處理 - 暫時停用重寫，讓 A、B 直接使用原路由
+  // const { pathname } = request.nextUrl
+  
+  // 檢查是否為舊的靜態公司路由 (a/, b/)
+  // const legacyCompanyMatch = pathname.match(/^\/([ab])($|\/.*$)/)
+  
+  // if (legacyCompanyMatch) {
+  //   const companyCode = legacyCompanyMatch[1] // 'a' 或 'b'
+  //   const remainingPath = legacyCompanyMatch[2] || '' // 後續路徑
+    
+  //   // 重寫到動態路由，但保持 URL 不變 (用戶看到的還是 /a/games)
+  //   const newUrl = request.nextUrl.clone()
+  //   newUrl.pathname = `/_company/${companyCode}${remainingPath}`
+    
+  //   console.log(`[Middleware] 路由重寫: ${pathname} → ${newUrl.pathname}`)
+    
+  //   return NextResponse.rewrite(newUrl)
+  // }
+  
   // 可以在這裡添加其他中間件邏輯
   // 例如：驗證、日誌記錄等
   

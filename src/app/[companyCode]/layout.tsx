@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter, useParams } from 'next/navigation'
+import { useCompanyConfig } from '@/hooks/useCompanyConfig'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
 import FloatingCustomerService from '@/components/FloatingCustomerService'
@@ -16,6 +17,10 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
   const params = useParams()
   const [hydrated, setHydrated] = useState(false)
   const [sessionId, setSessionId] = useState<string>('')
+  
+  // 🚀 整合配置系統
+  const companyCode = params.companyCode as string
+  const { config, loading: configLoading, error: configError } = useCompanyConfig(companyCode)
 
   useEffect(() => {
     // 從動態路由獲取公司代碼
@@ -118,7 +123,24 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
     setHydrated(true)
   }, [pathname, setUser, router, params.companyCode])
 
-  if (!hydrated) return null
+  // 等待 hydration 和配置載入
+  if (!hydrated || configLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">
+            {!hydrated ? '初始化中...' : '載入配置中...'}
+          </p>
+          {configError && (
+            <p className="mt-1 text-red-500 text-sm">
+              配置載入失敗: {configError}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   // 檢查是否為登入或註冊頁面，這些頁面不需要顯示 Header
   const currentCompanyCode = params.companyCode as string
@@ -126,15 +148,64 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
   const isRegisterPage = pathname === `/${currentCompanyCode}/register`
   const shouldShowHeader = !isLoginPage && !isRegisterPage
 
+  console.log(`[Layout] 渲染配置化佈局:`, {
+    companyCode: currentCompanyCode,
+    configLoaded: !!config,
+    theme: config?.branding?.theme,
+    useNewArchitecture: config?.system?.useNewArchitecture
+  })
+
   return (
-    <div className="dynamic-company-layout">
-      {shouldShowHeader && <PortalHeaderBar companyCode={currentCompanyCode} key={currentCompanyCode} />}
+    <div 
+      className="dynamic-company-layout"
+      data-company={currentCompanyCode}
+      data-theme={config?.branding?.theme || 'default'}
+      data-new-architecture={config?.system?.useNewArchitecture || false}
+      style={{
+        // 🎨 根據配置動態設定 CSS 變數
+        '--primary-color': config?.branding?.primaryColor || '#1a202c',
+        '--secondary-color': config?.branding?.secondaryColor || '#2d3748',
+        '--accent-color': config?.branding?.accentColor || '#f6e05e',
+        '--layout-type': config?.layout?.type || 'standard'
+      } as React.CSSProperties}
+    >
+      {/* 🎯 配置系統狀態指示器 */}
+      {config && (
+        <div className="fixed top-0 right-0 z-50 bg-green-500 text-white px-3 py-1 text-xs">
+          ✅ {currentCompanyCode.toUpperCase()} | {config.branding.theme} | 
+          {config.system.useNewArchitecture ? '新架構' : '舊架構'}
+        </div>
+      )}
+      
+      {shouldShowHeader && (
+        <PortalHeaderBar 
+          companyCode={currentCompanyCode} 
+          config={config}
+          key={currentCompanyCode} 
+        />
+      )}
+      
       <main className="main-content">
         {children}
       </main>
-      <FloatingAds companyCode={currentCompanyCode} />
+      
+      {/* 🎯 根據配置條件渲染組件 */}
+      {config?.modules?.optional?.promotions?.enabled && (
+        <FloatingAds companyCode={currentCompanyCode} />
+      )}
+      
       <PopupAnnouncement companyCode={currentCompanyCode} />
-      <FloatingCustomerService companyCode={currentCompanyCode} />
+      
+      {config?.modules?.optional?.liveChat?.enabled && (
+        <FloatingCustomerService companyCode={currentCompanyCode} />
+      )}
+      
+      {/* 🎵 音效系統 */}
+      {config?.modules?.optional?.soundEffects?.enabled && (
+        <div id="sound-system" data-volume={config.modules.optional.soundEffects.volume}>
+          {/* 音效系統將在這裡初始化 */}
+        </div>
+      )}
     </div>
   )
 }
