@@ -1,0 +1,157 @@
+/* Banner 輪播配置化樣式 */
+
+.banner-carousel-container {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Swiper 容器 */
+.banner-swiper {
+  width: 100%;
+  height: auto;
+}
+
+/* Banner 幻燈片 */
+.banner-slide {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+.banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* 懸停效果 */
+.banner-carousel-container:hover .banner-image {
+  transform: scale(1.02);
+}
+
+/* 配置系統演示覆蓋層 */
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1rem;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.banner-carousel-container:hover .banner-overlay {
+  opacity: 1;
+}
+
+.banner-theme-indicator {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Swiper 分頁指示器自定義 */
+.banner-swiper .swiper-pagination {
+  bottom: 15px;
+}
+
+.banner-swiper .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: var(--swiper-pagination-bullet-inactive-color, rgba(255, 255, 255, 0.5));
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.banner-swiper .swiper-pagination-bullet-active {
+  background: var(--swiper-pagination-color, #667eea);
+  transform: scale(1.2);
+}
+
+/* 不同主題的特殊樣式 */
+.banner-carousel-container[data-theme="classic"] {
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.banner-carousel-container[data-theme="luxury"] {
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.banner-carousel-container[data-theme="modern"] {
+  border-radius: 12px;
+  box-shadow: 0 6px 30px rgba(59, 130, 246, 0.15);
+}
+
+/* 載入狀態 */
+.banner-carousel-container.loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .banner-carousel-container {
+    border-radius: 12px;
+  }
+  
+  .banner-theme-indicator {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .banner-swiper .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-carousel-container {
+    border-radius: 8px;
+  }
+  
+  .banner-overlay {
+    padding: 0.5rem;
+  }
+}
+
+/* 無障礙設計 */
+@media (prefers-reduced-motion: reduce) {
+  .banner-image,
+  .banner-overlay,
+  .banner-swiper .swiper-pagination-bullet {
+    transition: none;
+  }
+  
+  .banner-carousel-container:hover .banner-image {
+    transform: none;
+  }
+}

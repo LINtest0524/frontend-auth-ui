@@ -5,6 +5,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import { useEnabledModules } from '@/lib/useEnabledModules'
 import { verifyTokenOnce } from '@/lib/tokenVerification'
 import { useCompanyConfig, useFeatureEnabled, useThemeConfig } from '@/hooks/useCompanyConfig'
+import BannerCarousel from '@/components/BannerCarousel'
 
 
 type NewsItem = {
@@ -113,7 +114,14 @@ export default function AgentAHomePage() {
 
   const renderModule = useCallback((key: string, props: any = {}) => {
     const mod = modules.find((m) => m.key === key)
-    if (!mod) return null
+    if (!mod) {
+      // A 公司模組系統有問題，強制顯示 Banner
+      if (key === 'banner') {
+        console.log('[A公司] 強制顯示 Banner，因為模組系統異常');
+        return <BannerCarousel {...props} />;
+      }
+      return null;
+    }
     const Comp = mod.Component
     return <Comp {...props} />
   }, [modules])
@@ -229,7 +237,7 @@ export default function AgentAHomePage() {
           </div>
         )}
 
-        {renderModule('banner', { banners })}
+        {renderModule('banner', { banners, companyCode })}
         {renderModule('marquee', { marquees })}
 
         {/* 最新消息區塊 */}

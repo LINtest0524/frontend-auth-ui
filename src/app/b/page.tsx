@@ -202,7 +202,7 @@ export default function AgentAHomePage() {
         {enabledModules.includes('banner') && (
           <div>
             <h2 className="text-lg font-semibold mb-2">Banner 輪播</h2>
-            <BannerCarousel banners={banners} />
+            <BannerCarousel banners={banners} companyCode={companyCode} />
           </div>
         )}
         {enabledModules.includes('marquee') && (

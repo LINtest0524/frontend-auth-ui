@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { useCompanyConfig, useThemeConfig } from '@/hooks/useCompanyConfig';
 import '@/styles/components/product-card.css';
 
 interface ProductVariant {
@@ -36,6 +37,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, companySlug, onAddToCart }: ProductCardProps) {
   const router = useRouter();
+  
+  // 🚀 配置系統整合
+  const { config } = useCompanyConfig(companySlug);
+  const themeConfig = useThemeConfig(config);
 
   // 獲取顯示用的價格和圖片
   const getDisplayData = () => {
@@ -75,8 +80,28 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
     }
   };
 
+  // 🎨 動態主題樣式
+  const getCardStyle = () => {
+    if (!themeConfig) return {};
+    
+    return {
+      '--primary-color': themeConfig.colors.primary,
+      '--secondary-color': themeConfig.colors.secondary,
+      '--accent-color': themeConfig.colors.accent,
+      '--hover-border-color': themeConfig.colors.primary,
+      '--button-gradient': `linear-gradient(135deg, ${themeConfig.colors.primary} 0%, ${themeConfig.colors.secondary} 100%)`,
+      '--price-gradient': `linear-gradient(135deg, ${themeConfig.colors.accent} 0%, ${themeConfig.colors.primary} 100%)`,
+    } as React.CSSProperties;
+  };
+
   return (
-    <div className="product-card" onClick={handleCardClick}>
+    <div 
+      className="product-card" 
+      onClick={handleCardClick}
+      style={getCardStyle()}
+      data-theme={config?.branding?.theme || 'default'}
+      data-company={companySlug}
+    >
       {/* 商品圖片 */}
       <div className="product-image-container">
         {displayData.thumbnail ? (
