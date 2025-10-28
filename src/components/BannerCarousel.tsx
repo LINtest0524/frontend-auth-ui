@@ -7,8 +7,6 @@ import { useCompanyConfig } from '@/hooks/useCompanyConfig'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import '@/styles/components/banner-carousel.css'
-// 移除硬編碼的 A 公司樣式
-// import '../app/a/styles/index.css'
 
 
 

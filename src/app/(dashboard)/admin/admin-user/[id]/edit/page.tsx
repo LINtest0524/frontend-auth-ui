@@ -17,6 +17,7 @@ export default function AdminUserEditPage() {
     role: "",
     ip_whitelist: "",
     department_type: "",
+    agent_code: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +45,7 @@ export default function AdminUserEditPage() {
         role: data.role || "",
         ip_whitelist: data.ip_whitelist || "",
         department_type: data.department_type || "",
+        agent_code: data.agent_code || "",
       };
       
       setForm(userData);
@@ -56,7 +58,7 @@ export default function AdminUserEditPage() {
     }
   };
 
-  const canEditRole = ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser?.role || "");
+  const canEditRole = ["SUPER_ADMIN", "GLOBAL_ADMIN"].includes(currentUser?.role || "");
 
   // 檢查是否有變更
   const hasChanges = () => {
@@ -67,7 +69,8 @@ export default function AdminUserEditPage() {
       form.status !== (originalData.status || "ACTIVE") ||
       (canEditRole && form.role !== (originalData.role || "")) ||
       form.ip_whitelist !== (originalData.ip_whitelist || "") ||
-      form.department_type !== (originalData.department_type || "")
+      form.department_type !== (originalData.department_type || "") ||
+      form.agent_code !== (originalData.agent_code || "")
     );
   };
 
@@ -92,6 +95,15 @@ export default function AdminUserEditPage() {
       const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
       if (!ipPattern.test(form.ip_whitelist.trim())) {
         errors.ip_whitelist = '請輸入有效的IP地址格式 (例：192.168.1.100)';
+      }
+    }
+
+    // 代理商推廣代碼驗證
+    if (form.agent_code.trim()) {
+      if (form.agent_code.length < 4) {
+        errors.agent_code = '代理商推廣代碼至少需要4個字元';
+      } else if (!/^[A-Za-z0-9_]+$/.test(form.agent_code)) {
+        errors.agent_code = '代理商推廣代碼只能包含字母、數字和底線';
       }
     }
     
@@ -143,6 +155,9 @@ export default function AdminUserEditPage() {
       if (form.department_type !== (originalData?.department_type || "")) {
         changedFields.department_type = form.department_type.trim() || null;
       }
+      if (form.agent_code !== (originalData?.agent_code || "")) {
+        changedFields.agent_code = form.agent_code.trim() || null;
+      }
       
       // 如果沒有任何變更
       if (Object.keys(changedFields).length === 0) {
@@ -182,8 +197,14 @@ export default function AdminUserEditPage() {
         return "擁有系統最高權限，可管理所有功能和用戶";
       case "GLOBAL_ADMIN":
         return "可管理多個公司的代理商和客服人員";
-      case "AGENT_OWNER":
-        return "代理商負責人，可管理該公司的客服人員";
+      case "AGENT_LEVEL_1":
+        return "一級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_2":
+        return "二級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_3":
+        return "三級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_4":
+        return "四級代理商，可管理客服人員";
       case "AGENT_SUPPORT":
         return "客服人員，負責處理會員問題和支援服務";
       default:
@@ -357,6 +378,34 @@ export default function AdminUserEditPage() {
                   🏢 用於標示該管理員所屬的部門單位，方便後續管理和識別（選填）
                 </div>
               </div>
+
+              <div className="form-group">
+                <label htmlFor="agent_code" className="form-label">
+                  代理商推廣代碼
+                </label>
+                <input
+                  id="agent_code"
+                  name="agent_code"
+                  type="text"
+                  value={form.agent_code}
+                  onChange={handleChange}
+                  className={`form-input ${fieldErrors.agent_code ? 'error' : form.agent_code && /^[A-Za-z0-9_]+$/.test(form.agent_code) && form.agent_code.length >= 4 ? 'success' : ''}`}
+                  placeholder="例：AGENT_2_1761199476"
+                />
+                {fieldErrors.agent_code && (
+                  <div className="field-error">
+                    ❌ {fieldErrors.agent_code}
+                  </div>
+                )}
+                {!fieldErrors.agent_code && form.agent_code && /^[A-Za-z0-9_]+$/.test(form.agent_code) && form.agent_code.length >= 4 && (
+                  <div className="field-success">
+                    ✅ 代理商推廣代碼：{form.agent_code}
+                  </div>
+                )}
+                <div className="form-help">
+                  🎯 設定後，會員註冊時輸入此代碼將自動歸屬到該代理商底下。只能包含字母、數字和底線，至少4個字元（選填）
+                </div>
+              </div>
             </div>
           </div>
 
@@ -413,7 +462,10 @@ export default function AdminUserEditPage() {
                     <option value="">請選擇角色</option>
                     <option value="SUPER_ADMIN">🔱 超級管理員</option>
                     <option value="GLOBAL_ADMIN">🌐 全域管理員</option>
-                    <option value="AGENT_OWNER">👑 代理商老闆</option>
+                    <option value="AGENT_LEVEL_1">🥇 一級代理商</option>
+                    <option value="AGENT_LEVEL_2">🥈 二級代理商</option>
+                    <option value="AGENT_LEVEL_3">🥉 三級代理商</option>
+                    <option value="AGENT_LEVEL_4">4️⃣ 四級代理商</option>
                     <option value="AGENT_SUPPORT">🎧 客服</option>
                   </select>
                   {fieldErrors.role && (
@@ -439,7 +491,10 @@ export default function AdminUserEditPage() {
                     <div className="role-info-desc">
                       {form.role === "SUPER_ADMIN" ? "🔱 超級管理員" :
                        form.role === "GLOBAL_ADMIN" ? "🌐 全域管理員" :
-                       form.role === "AGENT_OWNER" ? "👑 代理商老闆" :
+                       form.role === "AGENT_LEVEL_1" ? "🥇 一級代理商" :
+                       form.role === "AGENT_LEVEL_2" ? "🥈 二級代理商" :
+                       form.role === "AGENT_LEVEL_3" ? "🥉 三級代理商" :
+                       form.role === "AGENT_LEVEL_4" ? "4️⃣ 四級代理商" :
                        form.role === "AGENT_SUPPORT" ? "🎧 客服" : form.role}
                     </div>
                   </div>

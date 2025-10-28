@@ -219,7 +219,12 @@ export default function WinLossReportPage() {
             gameQueryParams.append('gameId', provider);
             
             try {
+              const token = localStorage.getItem('token');
               const gameResponse = await fetch(`${API_BASE}/mock-games/history/rounds?${gameQueryParams.toString()}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
                 cache: 'no-store'
               });
               
@@ -235,7 +240,12 @@ export default function WinLossReportPage() {
         } else {
           // 查詢該玩家的所有遊戲
           try {
+            const token = localStorage.getItem('token');
             const response = await fetch(`${API_BASE}/mock-games/history/rounds?${baseParams.toString()}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
               cache: 'no-store'
             });
             
@@ -281,7 +291,12 @@ export default function WinLossReportPage() {
             gameQueryParams.append('gameId', provider);
             
             try {
+              const token = localStorage.getItem('token');
               const gameResponse = await fetch(`${API_BASE}/mock-games/history/rounds?${gameQueryParams.toString()}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
                 cache: 'no-store'
               });
               
@@ -297,7 +312,12 @@ export default function WinLossReportPage() {
         } else {
           // 查詢所有遊戲的資料
           try {
+            const token = localStorage.getItem('token');
             const response = await fetch(`${API_BASE}/mock-games/history/rounds?${baseParams.toString()}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
               cache: 'no-store'
             });
             

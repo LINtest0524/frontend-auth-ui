@@ -46,7 +46,7 @@ export default function PromotionDetailPage() {
 
   const fetchPromotion = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/${companySlug}/promotions/${id}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/promotions/${id}?company=${companySlug}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -67,7 +67,7 @@ export default function PromotionDetailPage() {
 
   const incrementViewCount = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/${companySlug}/promotions/${id}/view`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/portal/promotions/${id}/view?company=${companySlug}`, {
         method: 'POST'
       })
     } catch (error) {

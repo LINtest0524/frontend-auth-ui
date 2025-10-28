@@ -29,9 +29,9 @@
   transition: transform 0.3s ease;
 }
 
-/* 懸停效果 */
+/* 懸停效果 - 移除變大效果 */
 .banner-carousel-container:hover .banner-image {
-  transform: scale(1.02);
+  /* transform: scale(1.02); */
 }
 
 /* 配置系統演示覆蓋層 */
@@ -116,6 +116,18 @@
   }
 }
 
+/* A 公司特定樣式 */
+.banner-carousel-container[data-company="a"] .banner-swiper {
+  margin-top: 120px;
+  max-width: 1778px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.banner-carousel-container[data-company="a"] .banner-image {
+  border-radius: 20px;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
   .banner-carousel-container {
@@ -130,6 +142,13 @@
   .banner-swiper .swiper-pagination-bullet {
     width: 10px;
     height: 10px;
+  }
+
+  /* A 公司手機版樣式 */
+  .banner-carousel-container[data-company="a"] .banner-swiper {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 

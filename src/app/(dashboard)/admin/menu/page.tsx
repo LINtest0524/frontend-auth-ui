@@ -58,7 +58,10 @@ export default function MenuManagePage() {
     if (role === "AGENT_OWNER" && userCompanyId) {
       setSelectedCompany(userCompanyId)
     } else if (canSelectCompany) {
-      setSelectedCompany(1) // 超級管理員和全域管理員預設選擇公司A
+      setSelectedCompany(3) // 超級管理員和全域管理員預設選擇公司 3
+    } else {
+      // 如果不是上述角色，預設選擇公司 3
+      setSelectedCompany(3)
     }
   }, [role, userCompanyId, currentUser, canSelectCompany])
 
@@ -105,6 +108,19 @@ export default function MenuManagePage() {
       fetchMenus()
     }
   }, [selectedCompany])
+
+  // 安全措施：如果5秒後還沒有設定公司，強制設定並停止載入
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (selectedCompany === null) {
+        console.log('⚠️ 強制設定預設公司以防止無限載入')
+        setSelectedCompany(3)
+        setLoading(false)
+      }
+    }, 5000)
+
+    return () => clearTimeout(timeout)
+  }, [])
 
   // 建立選單樹狀結構
   const buildMenuTree = (flatMenus: MenuItem[]): MenuItem[] => {
@@ -307,6 +323,7 @@ export default function MenuManagePage() {
               >
                 <option value={1}>公司 A</option>
                 <option value={2}>公司 B</option>
+                <option value={3}>公司 C</option>
               </select>
             </div>
           )}

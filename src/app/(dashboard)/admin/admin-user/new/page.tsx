@@ -100,7 +100,6 @@ export default function AdminUserCreatePage() {
     if (!currentUser) return [];
     if (currentUser.role === "SUPER_ADMIN") {
       return [
-        { value: "AGENT_OWNER", label: "代理商老闆" },
         { value: "AGENT_LEVEL_1", label: "一級代理商" },
         { value: "AGENT_LEVEL_2", label: "二級代理商" },
         { value: "AGENT_LEVEL_3", label: "三級代理商" },
@@ -110,16 +109,6 @@ export default function AdminUserCreatePage() {
       ];
     }
     if (currentUser.role === "GLOBAL_ADMIN") {
-      return [
-        { value: "AGENT_OWNER", label: "代理商老闆" },
-        { value: "AGENT_LEVEL_1", label: "一級代理商" },
-        { value: "AGENT_LEVEL_2", label: "二級代理商" },
-        { value: "AGENT_LEVEL_3", label: "三級代理商" },
-        { value: "AGENT_LEVEL_4", label: "四級代理商" },
-        { value: "AGENT_SUPPORT", label: "客服" },
-      ];
-    }
-    if (currentUser.role === "AGENT_OWNER") {
       return [
         { value: "AGENT_LEVEL_1", label: "一級代理商" },
         { value: "AGENT_LEVEL_2", label: "二級代理商" },
@@ -217,8 +206,6 @@ export default function AdminUserCreatePage() {
         return "擁有系統最高權限，可管理所有功能和用戶";
       case "GLOBAL_ADMIN":
         return "可管理多個公司的代理商和客服人員";
-      case "AGENT_OWNER":
-        return "代理商負責人，可管理該公司的客服人員";
       case "AGENT_LEVEL_1":
         return "一級代理商，可管理下級代理商和客服人員";
       case "AGENT_LEVEL_2":

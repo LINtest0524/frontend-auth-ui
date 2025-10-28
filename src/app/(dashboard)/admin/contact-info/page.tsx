@@ -183,7 +183,15 @@ export default function ContactInfoPage() {
   }, []);
 
   // 權限檢查
-  const canModify = currentUser?.role && ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER"].includes(currentUser.role);
+  const canModify = currentUser?.role && [
+    "SUPER_ADMIN", 
+    "GLOBAL_ADMIN", 
+    "AGENT_LEVEL_1", 
+    "AGENT_LEVEL_2", 
+    "AGENT_LEVEL_3", 
+    "AGENT_LEVEL_4", 
+    "AGENT_SUPPORT"
+  ].includes(currentUser.role);
 
   if (userLoading) {
     return (
@@ -213,7 +221,7 @@ export default function ContactInfoPage() {
           border: "2px solid #fca5a5"
         }}>
           <h2 style={{ margin: "0 0 8px 0", fontSize: "20px", fontWeight: "700" }}>⚠️ 權限不足</h2>
-          <p style={{ margin: 0 }}>只有超級管理員、全域管理員和代理商老闆可以管理聯絡資訊</p>
+          <p style={{ margin: 0 }}>只有超級管理員、全域管理員、各級代理商和客服人員可以管理聯絡資訊</p>
         </div>
       </div>
     );

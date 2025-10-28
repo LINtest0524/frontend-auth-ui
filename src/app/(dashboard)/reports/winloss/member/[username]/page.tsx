@@ -109,7 +109,12 @@ export default function MemberDetailPage() {
           const queryParams = new URLSearchParams(baseParams);
           queryParams.append('gameId', provider);
           
+          const token = localStorage.getItem('token');
           const response = await fetch(`${API_BASE}/mock-games/history/rounds?${queryParams.toString()}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
             cache: 'no-store'
           });
           
@@ -121,7 +126,12 @@ export default function MemberDetailPage() {
         }
       } else {
         // 查詢該會員的所有記錄
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE}/mock-games/history/rounds?${baseParams.toString()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
           cache: 'no-store'
         });
         

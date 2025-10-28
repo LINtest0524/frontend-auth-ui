@@ -10,8 +10,6 @@ import { useCartStore } from '@/hooks/use-cart-store-new'
 import MenuRenderer from './menu/MenuRenderer'
 import MessageIcon from './message/MessageIcon'
 import { CompanyConfig } from '@/types'
-// 條件載入樣式 - 避免硬編碼 A 公司樣式
-// import '../../src/app/a/styles/index.css'
 import '../../src/styles/components/menu.css'
 
 
@@ -47,9 +45,27 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
       // API回應正常
       
       if (response.ok) {
-        const logoData = await response.json()
-        // Logo資料接收成功
-        setLogo(logoData)
+        const responseText = await response.text()
+        
+        // 檢查回應是否為空
+        if (!responseText || responseText.trim() === '') {
+          console.log('⚠️ [PortalHeaderBar] Logo API returned empty response')
+          return
+        }
+        
+        try {
+          const logoData = JSON.parse(responseText)
+          // 檢查是否為空物件或無效的logo資料
+          if (logoData && logoData.id && logoData.image_url) {
+            // Logo資料接收成功
+            setLogo(logoData)
+          } else {
+            console.log('⚠️ [PortalHeaderBar] No valid logo data found for company:', companyCode)
+            setLogo(null)
+          }
+        } catch (jsonError) {
+          console.error('💥 [PortalHeaderBar] Invalid JSON in logo response:', responseText)
+        }
       } else {
         const errorText = await response.text()
         console.log('❌ [PortalHeaderBar] Logo API failed:', errorText)
