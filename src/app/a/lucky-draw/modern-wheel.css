@@ -11,6 +11,7 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   position: relative;
   overflow-x: hidden;
+  padding-top: 100px;
 }
 
 /* 背景動畫效果 */

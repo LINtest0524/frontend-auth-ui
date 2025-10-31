@@ -1,10 +1,16 @@
-// frontend/src/app/(dashboard)/lucky-draw/page.tsx
+// frontend/src/app/(dashboard)/lucky-draw/prizes/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import '@/styles/pages/lucky-draw-prizes.css';
+
+// 權限檢查函數
+const hasPermission = (userRole: string): boolean => {
+  const allowedRoles = ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'AGENT_SUPPORT'];
+  return allowedRoles.includes(userRole);
+};
 
 interface Prize {
   id: number;
@@ -22,6 +28,7 @@ export default function LuckyDrawPrizesPage() {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -96,7 +103,29 @@ export default function LuckyDrawPrizesPage() {
   };
 
 
+  // 權限檢查
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if (!token || !user.role) {
+      router.push('/login');
+      return;
+    }
+    
+    if (!hasPermission(user.role)) {
+      alert('您沒有權限存取此頁面');
+      router.push('/not-authorized');
+      return;
+    }
+    
+    setAuthChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    // 只有權限檢查通過後才執行
+    if (!authChecked) return;
+    
     fetchEvents();
     
     // 檢查 URL 參數中是否有 eventId
@@ -105,13 +134,18 @@ export default function LuckyDrawPrizesPage() {
     if (eventIdFromUrl) {
       setSelectedEventId(parseInt(eventIdFromUrl));
     }
-  }, []);
+  }, [authChecked]);
 
   useEffect(() => {
-    if (selectedEventId !== null) {
+    if (selectedEventId !== null && authChecked) {
       fetchPrizes();
     }
-  }, [selectedEventId]);
+  }, [selectedEventId, authChecked]);
+
+  // 如果還在檢查權限，顯示載入中
+  if (!authChecked) {
+    return <div>檢查權限中...</div>;
+  }
 
   return (
     <div className="lucky-draw-prizes-container">

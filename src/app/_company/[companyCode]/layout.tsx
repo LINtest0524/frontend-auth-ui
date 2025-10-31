@@ -23,7 +23,6 @@ export default function UnifiedCompanyLayout({ children }: { children: React.Rea
   const { config, loading: configLoading, error: configError } = useCompanyConfig(companyCode)
 
   useEffect(() => {
-    console.log(`[UnifiedLayout] 初始化統一佈局: ${companyCode}`)
     
     if (!companyCode) {
       console.error('[UnifiedLayout] 缺少公司代碼，重導向首頁')
@@ -77,7 +76,6 @@ export default function UnifiedCompanyLayout({ children }: { children: React.Rea
           localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(parsed.enabledModules))
         }
         
-        console.log(`[UnifiedLayout] 用戶已登入: ${parsed.username}`)
       } catch (err) {
         // 記錄詳細錯誤資訊
         console.error('❌ [UnifiedLayout] 用戶資料解析失敗:', {
@@ -92,14 +90,12 @@ export default function UnifiedCompanyLayout({ children }: { children: React.Rea
         if (tokenCreatedTime) {
           const timeDiff = Date.now() - parseInt(tokenCreatedTime)
           if (timeDiff < 5000) { // 5秒內
-            console.log('⏰ [UnifiedLayout] 剛登入，跳過清理')
             setHydrated(true)
             return
           }
         }
         
         // 無法解析登入資料，清除並重導向
-        console.log('🧹 [UnifiedLayout] 清理無效登入資料')
         localStorage.removeItem(`portalToken_${companyCode}`)
         localStorage.removeItem(`portalUser_${companyCode}`)
         localStorage.removeItem(`enabledModules_${companyCode}`)
@@ -114,14 +110,12 @@ export default function UnifiedCompanyLayout({ children }: { children: React.Rea
         .then((res) => res.json())
         .then((enabled: string[]) => {
           localStorage.setItem(`enabledModules_${companyCode}`, JSON.stringify(enabled))
-          console.log(`[UnifiedLayout] 載入公開模組: ${enabled.join(', ')}`)
         })
         .catch((err) => {
           console.warn(`[UnifiedLayout] 載入模組失敗: ${companyCode}`, err)
         })
 
       if (!isPublicPage) {
-        console.log(`[UnifiedLayout] 需要登入，重導向到登入頁: ${actualPath}`)
         router.replace(`/${companyCode}/login`)
         return
       }
@@ -155,13 +149,6 @@ export default function UnifiedCompanyLayout({ children }: { children: React.Rea
   const isRegisterPage = actualPath === `/${companyCode}/register`
   const shouldShowHeader = !isLoginPage && !isRegisterPage
 
-  console.log(`[UnifiedLayout] 渲染佈局:`, {
-    companyCode,
-    actualPath,
-    shouldShowHeader,
-    configLoaded: !!config,
-    configTheme: config?.branding?.theme
-  })
 
   return (
     <div 

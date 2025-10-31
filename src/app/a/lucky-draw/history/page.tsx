@@ -39,6 +39,16 @@ interface User {
 export default function LuckyDrawHistoryPage() {
   const [records, setRecords] = useState<DrawRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 獲取公司代碼（從路徑中獲取）
+  const getCompanyCode = (): string => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const companyCode = pathname.split('/')[1]; // 取得路徑中的第一個部分
+      return companyCode || 'a'; // 預設為 'a'
+    }
+    return 'a'; // SSR 時的預設值
+  };
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
 
@@ -77,7 +87,7 @@ export default function LuckyDrawHistoryPage() {
 
       // 取得抽獎歷史
       const token = localStorage.getItem(`portalToken_${companyCode}`);
-      const res = await fetch(`http://localhost:3001/lucky-prize/history/${userId}?companyId=${companyId}`, {
+      const res = await fetch(`http://localhost:3001/api/portal/${getCompanyCode()}/lucky-draw/history/${userId}?companyId=${companyId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

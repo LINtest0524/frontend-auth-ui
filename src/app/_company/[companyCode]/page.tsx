@@ -11,7 +11,6 @@ interface Props {
 export default function UnifiedCompanyHomePage({ params }: Props) {
   const { companyCode } = params
   
-  console.log(`[UnifiedPage] 載入統一首頁: ${companyCode}`)
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -4,7 +4,8 @@
   min-height: 100vh;
   position: relative;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow-x: hidden;
+  overflow: hidden;
+  padding-top: 109px;
 }
 
 /* 精緻背景圖案 */
@@ -25,7 +26,7 @@
 /* 浮動返回按鈕 */
 .luxury-back-btn {
   position: fixed;
-  top: 2rem;
+  top: 109px;
   left: 2rem;
   z-index: 1000;
   animation: fadeInLeft 0.8s ease-out;

@@ -42,6 +42,18 @@ export default function Wheel() {
   const [showResult, setShowResult] = useState(false);
   const [winningClass, setWinningClass] = useState('');
 
+  // 獲取公司代碼（從路徑中獲取）
+  const getCompanyCode = (): string => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const companyCode = pathname.split('/')[1]; // 取得路徑中的第一個部分
+      return companyCode || 'a'; // 預設為 'a'
+    }
+    return 'a'; // SSR 時的預設值
+  };
+
+  const companyCode = getCompanyCode();
+
   // 重複登入檢查
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -74,7 +86,7 @@ export default function Wheel() {
     }
     
     
-    const res = await fetch(`http://localhost:3001/lucky-prize/active-event?companyId=${companyId}`, {
+    const res = await fetch(`http://localhost:3001/api/portal/${companyCode}/lucky-draw/active-event?companyId=${companyId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -132,7 +144,7 @@ export default function Wheel() {
         return;
       }
 
-      const res = await fetch('http://localhost:3001/lucky-prize/draw', {
+      const res = await fetch(`http://localhost:3001/api/portal/${companyCode}/lucky-draw/draw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -204,8 +216,8 @@ export default function Wheel() {
         }, 3000);
       }
     } catch (error) {
-      console.error('抽獎失敗:', error);
       setIsSpinning(false);
+      alert('抽獎失敗，請重試');
     }
   };
 
@@ -251,7 +263,7 @@ export default function Wheel() {
               <p className="subtitle">轉動命運之輪，贏取豐富獎品</p>
             </div>
             
-            <Link href="/a/lucky-draw/history" className="history-button">
+            <Link href={`/${companyCode}/lucky-draw/history`} className="history-button">
               <svg className="history-icon" viewBox="0 0 24 24" fill="none">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M3 3v5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

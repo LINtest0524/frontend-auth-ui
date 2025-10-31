@@ -204,14 +204,6 @@ export default function LuckyDrawEventsPage() {
           <div className="no-data">
             <img src="/no-information.webp" alt="無資料" />
             <p>目前沒有抽獎活動</p>
-            <button 
-              onClick={() => router.push("/lucky-draw/events/new")}
-              className="btn-primary"
-              style={{ marginTop: '16px' }}
-            >
-              <span>✨</span>
-              立即新增活動
-            </button>
           </div>
         )}
       </div>

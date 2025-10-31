@@ -60,53 +60,46 @@ export default function CartPage() {
       
       if (response.ok) {
         const result = await response.json()
-        if (result.success && result.data) {
+        if (result.success && result.data && result.data.length > 0) {
           setShippingMethods(result.data)
         } else {
-          // 獲取運送方式失敗，靜默處理
-          // 使用預設運送方式作為備用
-          setShippingMethods([
+          // 獲取運送方式失敗，使用預設運送方式作為備用
+          const defaultMethods = [
             {
-              id: 'store_pickup',
-              name: '7-11超商取貨',
-              fee: 60,
-              freeThreshold: 399,
-              description: '3-5個工作天到店'
-            },
-            {
-              id: 'home_delivery',
-              name: '宅配',
-              fee: 210,
-              freeThreshold: 999,
-              description: '1-3個工作天送達'
+              id: 'default_shipping',
+              name: '標準配送',
+              fee: 100,
+              freeThreshold: 1000,
+              description: '3-5個工作天送達'
             }
-          ])
+          ]
+          setShippingMethods(defaultMethods)
         }
       } else {
-        // 獲取運送方式失敗，靜默處理
-        // 使用預設運送方式作為備用
-        setShippingMethods([
+        // 獲取運送方式失敗，使用預設運送方式作為備用
+        const defaultMethods = [
           {
-            id: 'store_pickup',
-            name: '7-11超商取貨',
-            fee: 60,
-            freeThreshold: 399,
-            description: '3-5個工作天到店'
+            id: 'default_shipping',
+            name: '標準配送',
+            fee: 100,
+            freeThreshold: 1000,
+            description: '3-5個工作天送達'
           }
-        ])
+        ]
+        setShippingMethods(defaultMethods)
       }
     } catch (error) {
-      // 獲取運送方式失敗，靜默處理
-      // 使用預設運送方式作為備用
-      setShippingMethods([
+      // 獲取運送方式失敗，使用預設運送方式作為備用
+      const defaultMethods = [
         {
-          id: 'store_pickup',
-          name: '7-11超商取貨',
-          fee: 60,
-          freeThreshold: 399,
-          description: '3-5個工作天到店'
+          id: 'default_shipping',
+          name: '標準配送',
+          fee: 100,
+          freeThreshold: 1000,
+          description: '3-5個工作天送達'
         }
-      ])
+      ]
+      setShippingMethods(defaultMethods)
     } finally {
       setLoadingShipping(false)
     }
@@ -145,6 +138,10 @@ export default function CartPage() {
       setSelectedShipping(shippingMethods[0].id)
     }
   }, [shippingMethods, selectedShipping, setSelectedShipping])
+
+  // 調試運送方式狀態
+  useEffect(() => {
+  }, [loadingShipping, shippingMethods, selectedShipping, shippingFee])
 
   // 除錯：監控購物車狀態變化
   useEffect(() => {

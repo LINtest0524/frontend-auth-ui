@@ -273,7 +273,7 @@ export default function MemberPage() {
               {tab === 'wallet-history' && <MemberWalletHistory />}
               {tab === 'orders' && <MemberOrders />}
               {tab === 'coupons' && <MemberCoupons />}
-              {tab === 'favorites' && <MemberFavorites />}
+              {tab === 'favorites' && <MemberFavorites companyCode={getCompanyCode()} />}
             </main>
           </div>
 

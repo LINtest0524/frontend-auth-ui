@@ -184,8 +184,9 @@ export default function EditProductPage() {
             setShippingRules([{ method: '', base_fee: '', free_shipping_threshold: '' }])
           }
 
-          // 處理變體數據
+          // 處理變體數據 - 只有當真的有變體時才啟用變體模式
           if (product.variants && product.variants.length > 0) {
+            console.log('商品有變體數據，啟用變體模式:', product.variants.length)
             setUseVariants(true)
             setVariants(product.variants.map(variant => ({
               id: variant.id,
@@ -483,8 +484,9 @@ export default function EditProductPage() {
       return
     }
 
+    // 只有在啟用變體模式且沒有變體時才提示
     if (useVariants && variants.length === 0) {
-      alert('請設定商品變體')
+      alert('請設定商品變體，或取消勾選「使用商品變體」')
       return
     }
 

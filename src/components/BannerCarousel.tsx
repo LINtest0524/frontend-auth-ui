@@ -41,12 +41,26 @@ export default function BannerCarousel({ banners, companyCode }: Props) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // 正確處理時區轉換問題
   const now = new Date()
-  const activeBanners = banners.filter((b) =>
-    b.status === 'ACTIVE' &&
-    new Date(b.start_time) <= now &&
-    new Date(b.end_time) >= now
-  )
+  const nowTaiwanString = now.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }) // 格式: "YYYY-MM-DD HH:mm:ss"
+  
+  const activeBanners = banners.filter((b) => {
+    if (b.status !== 'ACTIVE') return false
+    
+    // 正確處理 UTC 時間轉換為台灣時間
+    const startTimeUtc = new Date(b.start_time)
+    const endTimeUtc = new Date(b.end_time)
+    
+    // 轉換為台灣時間字串
+    const startTimeTaiwan = startTimeUtc.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' })
+    const endTimeTaiwan = endTimeUtc.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' })
+    
+    // 簡化 debug 資訊
+    const isActive = startTimeTaiwan <= nowTaiwanString && endTimeTaiwan >= nowTaiwanString
+    
+    return isActive
+  })
 
   const getImageUrl = (url: string) => {
     if (!url) return ''

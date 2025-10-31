@@ -9,6 +9,12 @@ import VerificationNotificationSimple from '@/components/VerificationNotificatio
 import DynamicTabs from '@/components/DynamicTabs'
 import '@/styles/components/dynamic-tabs.css'
 
+// 權限檢查函數  
+const hasPermission = (userRole: string): boolean => {
+  const allowedRoles = ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'AGENT_SUPPORT'];
+  return allowedRoles.includes(userRole);
+};
+
 export default function DashboardLayout({
   children,
 }: {
@@ -16,6 +22,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const [username, setUsername] = useState<string | null>(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(() => {
     // 從 localStorage 讀取音效設定
     if (typeof window !== 'undefined') {
@@ -25,15 +32,34 @@ export default function DashboardLayout({
   })
 
   useEffect(() => {
+    const token = localStorage.getItem('token')
     const stored = localStorage.getItem('user')
-    if (!stored) return
+    
+    // 檢查是否有token和用戶資料
+    if (!token || !stored) {
+      router.push('/login')
+      return
+    }
+    
     try {
       const user = JSON.parse(stored)
+      
+      // 檢查權限
+      if (!user.role || !hasPermission(user.role)) {
+        alert('您沒有權限存取後台管理系統')
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        router.push('/login')
+        return
+      }
+      
       setUsername(user?.username || null)
+      setAuthChecked(true)
     } catch (e) {
       console.error('解析登入者失敗', e)
+      router.push('/login')
     }
-  }, [])
+  }, [router])
 
   const toggleAudio = () => {
     const newState = !audioEnabled
@@ -51,6 +77,11 @@ export default function DashboardLayout({
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     router.push('/login')
+  }
+
+  // 如果還在檢查權限，顯示載入中
+  if (!authChecked) {
+    return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>檢查權限中...</div>;
   }
 
   return (

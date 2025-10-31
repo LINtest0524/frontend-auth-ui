@@ -25,12 +25,10 @@ export class ConfigManager {
     try {
       // 1. 檢查快取是否有效
       if (this.isCacheValid(companyCode)) {
-        console.log(`[ConfigManager] 使用快取配置: ${companyCode}`);
         return this.configCache.get(companyCode)!;
       }
 
       // 2. 載入配置檔案
-      console.log(`[ConfigManager] 載入配置: ${companyCode}`);
       const config = await this.loadConfigFromFile(companyCode);
 
       // 3. 驗證配置
@@ -47,7 +45,6 @@ export class ConfigManager {
       this.configCache.set(companyCode, completeConfig);
       this.lastLoadTime.set(companyCode, Date.now());
 
-      console.log(`[ConfigManager] 配置載入成功: ${companyCode}`);
       return completeConfig;
 
     } catch (error) {
@@ -363,12 +360,10 @@ export class ConfigManager {
     
     // 檢查快取中是否有舊的配置
     if (this.configCache.has(companyCode)) {
-      console.log(`[ConfigManager] 使用快取的舊配置: ${companyCode}`);
       return this.configCache.get(companyCode)!;
     }
 
     // 使用預設配置
-    console.log(`[ConfigManager] 使用預設配置: ${companyCode}`);
     const defaultConfig = this.getDefaultConfig();
     defaultConfig.companyInfo.code = companyCode;
     defaultConfig.companyInfo.name = `${companyCode} 娛樂城`;
@@ -383,11 +378,9 @@ export class ConfigManager {
     if (companyCode) {
       this.configCache.delete(companyCode);
       this.lastLoadTime.delete(companyCode);
-      console.log(`[ConfigManager] 已清除 ${companyCode} 的快取`);
     } else {
       this.configCache.clear();
       this.lastLoadTime.clear();
-      console.log('[ConfigManager] 已清除所有快取');
     }
   }
 

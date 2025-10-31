@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
 import '@/styles/pages/banner-form.css'
 
 // 使用環境變數 API 端點
@@ -58,6 +59,52 @@ export default function EditBannerPage() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  // 快速設定活動時間
+  const quickSetTime = (type: string) => {
+    const now = new Date();
+    let startTime = '';
+    let endTime = '';
+
+    switch (type) {
+      case 'now':
+        // 從現在開始，持續一週
+        const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+        const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(weekLater.getFullYear(), weekLater.getMonth(), weekLater.getDate(), 23, 59);
+        startTime = `${nowStart.getFullYear()}-${String(nowStart.getMonth() + 1).padStart(2, '0')}-${String(nowStart.getDate()).padStart(2, '0')}T${String(nowStart.getHours()).padStart(2, '0')}:${String(nowStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}T${String(weekEnd.getHours()).padStart(2, '0')}:${String(weekEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'today':
+        // 今日整天
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
+        startTime = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'week':
+        // 本週整週
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+        const weekEndDate = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000);
+        const weekEndTime = new Date(weekEndDate.getFullYear(), weekEndDate.getMonth(), weekEndDate.getDate(), 23, 59);
+        startTime = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}T${String(weekStart.getHours()).padStart(2, '0')}:${String(weekStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${weekEndTime.getFullYear()}-${String(weekEndTime.getMonth() + 1).padStart(2, '0')}-${String(weekEndTime.getDate()).padStart(2, '0')}T${String(weekEndTime.getHours()).padStart(2, '0')}:${String(weekEndTime.getMinutes()).padStart(2, '0')}`;
+        break;
+      case 'month':
+        // 本月整月
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59);
+        startTime = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}-${String(monthStart.getDate()).padStart(2, '0')}T${String(monthStart.getHours()).padStart(2, '0')}:${String(monthStart.getMinutes()).padStart(2, '0')}`;
+        endTime = `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}T${String(monthEnd.getHours()).padStart(2, '0')}:${String(monthEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      start_time: startTime,
+      end_time: endTime
+    }));
+  }
+
   const handleSubmit = async () => {
     if (!form.title.trim()) {
       alert('請輸入標題')
@@ -98,8 +145,8 @@ export default function EditBannerPage() {
           sort: Number(form.sort),
           desktop_image_url: desktopUrl,
           mobile_image_url: mobileUrl,
-          start_time: new Date(form.start_time).toISOString(),
-          end_time: new Date(form.end_time).toISOString(),
+          start_time: form.start_time + ':00',
+          end_time: form.end_time + ':59',
         }),
       })
 
@@ -195,24 +242,93 @@ export default function EditBannerPage() {
             <div className="form-group">
               <label className="form-label">📅 顯示時間範圍</label>
               <div className="datetime-range">
-                <input
-                  type="datetime-local"
-                  name="start_time"
+                <DateTimePicker
                   value={form.start_time}
-                  onChange={handleChange}
+                  onChange={(value) => setForm(prev => ({...prev, start_time: value}))}
+                  placeholder="選擇開始時間"
                   className="form-input datetime-input"
                 />
-                <span className="datetime-separator">至</span>
-                <input
-                  type="datetime-local"
-                  name="end_time"
+                <span className="datetime-separator">到</span>
+                <DateTimePicker
                   value={form.end_time}
-                  onChange={handleChange}
+                  onChange={(value) => setForm(prev => ({...prev, end_time: value}))}
+                  placeholder="選擇結束時間"
                   className="form-input datetime-input"
                 />
               </div>
+              <div className="quick-time-buttons" style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginTop: '8px'
+              }}>
+                <button 
+                  type="button" 
+                  onClick={() => quickSetTime("now")} 
+                  className="btn-quick-time"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    borderRadius: '4px',
+                    color: '#0284c7',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 從現在開始一週
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => quickSetTime("today")} 
+                  className="btn-quick-time"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    borderRadius: '4px',
+                    color: '#0284c7',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 今日整天
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => quickSetTime("week")} 
+                  className="btn-quick-time"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    borderRadius: '4px',
+                    color: '#0284c7',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 本週
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => quickSetTime("month")} 
+                  className="btn-quick-time"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #0284c7',
+                    borderRadius: '4px',
+                    color: '#0284c7',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📅 本月
+                </button>
+              </div>
               <div className="form-hint">
-                設定 Banner 的顯示時間範圍，超出時間範圍將自動隱藏
+                設定 Banner 的顯示時間範圍，超出時間範圍將自動隱藏。開始時間預設為 00 秒，結束時間預設為 59 秒。
               </div>
             </div>
           </div>
