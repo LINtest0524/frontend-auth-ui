@@ -1,0 +1,57 @@
+/* 字典相關組件的通用樣式 */
+
+.loading-notice {
+  color: #6b7280;
+  font-size: 14px;
+  padding: 10px;
+  text-align: center;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.error-notice {
+  color: #ef4444;
+  font-size: 14px;
+  padding: 10px;
+  text-align: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.no-data-notice {
+  color: #6b7280;
+  font-size: 14px;
+  padding: 16px;
+  text-align: center;
+  background: #fffbeb;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.dictionary-status {
+  font-size: 12px;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.dictionary-status.loading {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dictionary-status.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.dictionary-status.success {
+  background: #dcfce7;
+  color: #16a34a;
+}

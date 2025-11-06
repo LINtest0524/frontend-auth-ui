@@ -1,14 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import "@/styles/pages/company-form.css";
 
 const LOGIN_METHODS = [
   { value: 'USERNAME_PASSWORD', label: '帳號密碼' },
@@ -134,185 +129,315 @@ export default function CreateCompanyPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* 標題 */}
-      <div className="flex items-center gap-4">
-        <Link href="/admin/companies">
-          <Button variant="outline">← 返回</Button>
-        </Link>
-        <h1 className="text-2xl font-bold">新增公司</h1>
+    <div className="company-form-container">
+      {/* 載入遮罩 */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">正在創建公司...</div>
+          </div>
+        </div>
+      )}
+
+      {/* 頁面標題區域 */}
+      <div className="company-form-header">
+        <h1>🏢 新增公司</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 基本資訊 */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">基本資訊</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">公司名稱 *</Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="請輸入公司名稱"
-                required
-              />
+      {/* 表單內容 */}
+      <div className="company-form-content">
+        <form onSubmit={handleSubmit}>
+          {/* 基本資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>📋</span>
+              基本資訊
             </div>
             
-            <div>
-              <Label htmlFor="code">公司代碼 *</Label>
-              <Input
-                id="code"
-                type="text"
-                value={formData.code}
-                onChange={(e) => handleInputChange('code', e.target.value)}
-                placeholder="例如: a, b, company1"
-                required
-              />
-              <div className="text-sm text-gray-500 mt-1">
-                用於 URL 路徑和系統識別，只能包含英文字母和數字
-              </div>
-            </div>
-            
-            <div className="md:col-span-2">
-              <Label htmlFor="description">公司描述</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="請輸入公司描述"
-                rows={3}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="domain">專屬網域</Label>
-              <Input
-                id="domain"
-                type="text"
-                value={formData.domain}
-                onChange={(e) => handleInputChange('domain', e.target.value)}
-                placeholder="例如: company.example.com"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="status">狀態</Label>
-              <select
-                id="status"
-                value={formData.status}
-                onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="active">啟用</option>
-                <option value="inactive">停用</option>
-              </select>
-            </div>
-          </div>
-        </Card>
-
-        {/* 登入設定 */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">登入設定</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <Label>登入方式 *</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                {LOGIN_METHODS.map((method) => (
-                  <div key={method.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`login-${method.value}`}
-                      checked={formData.loginMethods.includes(method.value)}
-                      onCheckedChange={(checked) => 
-                        handleLoginMethodChange(method.value, checked as boolean)
-                      }
-                    />
-                    <Label htmlFor={`login-${method.value}`}>{method.label}</Label>
+            <div className="form-grid">
+              <div className="form-grid-two">
+                <div className="form-group">
+                  <label htmlFor="name" className="form-label required">
+                    公司名稱
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className={`form-input ${formData.name ? 'success' : ''}`}
+                    placeholder="請輸入公司名稱"
+                    required
+                  />
+                  {formData.name && (
+                    <div className="field-success">
+                      ✅ 公司名稱已輸入
+                    </div>
+                  )}
+                  <div className="form-help">
+                    這將作為公司的顯示名稱
                   </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <Label>密碼模式</Label>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                {PASSWORD_MODES.map((mode) => (
-                  <div key={mode.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`password-${mode.value}`}
-                      checked={formData.passwordModes.includes(mode.value)}
-                      onCheckedChange={(checked) => 
-                        handlePasswordModeChange(mode.value, checked as boolean)
-                      }
-                    />
-                    <Label htmlFor={`password-${mode.value}`}>{mode.label}</Label>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="code" className="form-label required">
+                    公司代碼
+                  </label>
+                  <input
+                    id="code"
+                    name="code"
+                    type="text"
+                    value={formData.code}
+                    onChange={(e) => handleInputChange('code', e.target.value)}
+                    className={`form-input ${formData.code ? 'success' : ''}`}
+                    placeholder="例如: a, b, company1"
+                    required
+                  />
+                  {formData.code && (
+                    <div className="field-success">
+                      ✅ 公司代碼已輸入
+                    </div>
+                  )}
+                  <div className="form-help">
+                    🔗 用於 URL 路徑和系統識別，只能包含英文字母和數字
                   </div>
-                ))}
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="description" className="form-label">
+                  公司描述
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  className={`form-textarea ${formData.description ? 'success' : ''}`}
+                  placeholder="請輸入公司描述（選填）"
+                  rows={3}
+                />
+                <div className="form-help">
+                  📝 簡短描述公司業務或特色
+                </div>
+              </div>
+              
+              <div className="form-grid-two">
+                <div className="form-group">
+                  <label htmlFor="domain" className="form-label">
+                    專屬網域
+                  </label>
+                  <input
+                    id="domain"
+                    name="domain"
+                    type="text"
+                    value={formData.domain}
+                    onChange={(e) => handleInputChange('domain', e.target.value)}
+                    className={`form-input ${formData.domain ? 'success' : ''}`}
+                    placeholder="例如: company.example.com"
+                  />
+                  <div className="form-help">
+                    🌐 自定義網域名稱（選填）
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="status" className="form-label">
+                    狀態
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    className="form-select success"
+                  >
+                    <option value="active">🟢 啟用</option>
+                    <option value="inactive">🔴 停用</option>
+                  </select>
+                  <div className="status-info">
+                    {formData.status === 'active' ? '✅ 公司將立即可用' : '⚠️ 公司將暫停服務'}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </Card>
 
-        {/* 品牌設定 */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">品牌設定（可選）</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="theme">主題</Label>
-              <Input
-                id="theme"
-                type="text"
-                value={formData.settings.theme}
-                onChange={(e) => handleSettingsChange('theme', e.target.value)}
-                placeholder="例如: blue, red, custom"
-              />
+          {/* 登入設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🔐</span>
+              登入設定
             </div>
             
-            <div>
-              <Label htmlFor="primaryColor">主要顏色</Label>
-              <Input
-                id="primaryColor"
-                type="color"
-                value={formData.settings.branding.primaryColor}
-                onChange={(e) => handleBrandingChange('primaryColor', e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="secondaryColor">次要顏色</Label>
-              <Input
-                id="secondaryColor"
-                type="color"
-                value={formData.settings.branding.secondaryColor}
-                onChange={(e) => handleBrandingChange('secondaryColor', e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                type="url"
-                value={formData.settings.branding.logo}
-                onChange={(e) => handleBrandingChange('logo', e.target.value)}
-                placeholder="https://example.com/logo.png"
-              />
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label required">登入方式</label>
+                <div className="checkbox-group">
+                  {LOGIN_METHODS.map((method) => (
+                    <div 
+                      key={method.value} 
+                      className={`checkbox-item ${formData.loginMethods.includes(method.value) ? 'checked' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`login-${method.value}`}
+                        checked={formData.loginMethods.includes(method.value)}
+                        onChange={(e) => 
+                          handleLoginMethodChange(method.value, e.target.checked)
+                        }
+                      />
+                      <label htmlFor={`login-${method.value}`}>{method.label}</label>
+                    </div>
+                  ))}
+                </div>
+                <div className="form-help">
+                  🔑 至少選擇一種登入方式，用戶可使用選定的方式登入系統
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">密碼模式</label>
+                <div className="checkbox-group">
+                  {PASSWORD_MODES.map((mode) => (
+                    <div 
+                      key={mode.value} 
+                      className={`checkbox-item ${formData.passwordModes.includes(mode.value) ? 'checked' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`password-${mode.value}`}
+                        checked={formData.passwordModes.includes(mode.value)}
+                        onChange={(e) => 
+                          handlePasswordModeChange(mode.value, e.target.checked)
+                        }
+                      />
+                      <label htmlFor={`password-${mode.value}`}>{mode.label}</label>
+                    </div>
+                  ))}
+                </div>
+                <div className="form-help">
+                  🔒 選擇密碼驗證模式，影響用戶登入時的驗證方式
+                </div>
+              </div>
             </div>
           </div>
-        </Card>
 
-        {/* 提交按鈕 */}
-        <div className="flex gap-4">
-          <Button type="submit" disabled={loading}>
-            {loading ? '新增中...' : '新增公司'}
-          </Button>
-          <Link href="/admin/companies">
-            <Button type="button" variant="outline">取消</Button>
-          </Link>
-        </div>
-      </form>
+          {/* 品牌設定區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              <span>🎨</span>
+              品牌設定（可選）
+            </div>
+            
+            <div className="form-grid">
+              <div className="form-grid-two">
+                <div className="form-group">
+                  <label htmlFor="theme" className="form-label">
+                    主題
+                  </label>
+                  <input
+                    id="theme"
+                    name="theme"
+                    type="text"
+                    value={formData.settings.theme}
+                    onChange={(e) => handleSettingsChange('theme', e.target.value)}
+                    className={`form-input ${formData.settings.theme ? 'success' : ''}`}
+                    placeholder="例如: blue, red, custom"
+                  />
+                  <div className="form-help">
+                    🎭 設定主題風格，影響整體視覺呈現
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="logo" className="form-label">
+                    Logo URL
+                  </label>
+                  <input
+                    id="logo"
+                    name="logo"
+                    type="url"
+                    value={formData.settings.branding.logo}
+                    onChange={(e) => handleBrandingChange('logo', e.target.value)}
+                    className={`form-input ${formData.settings.branding.logo ? 'success' : ''}`}
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <div className="form-help">
+                    🖼️ 公司 Logo 圖片網址
+                  </div>
+                </div>
+              </div>
+              
+              <div className="form-grid-two">
+                <div className="form-group">
+                  <label htmlFor="primaryColor" className="form-label">
+                    主要顏色
+                  </label>
+                  <input
+                    id="primaryColor"
+                    name="primaryColor"
+                    type="color"
+                    value={formData.settings.branding.primaryColor}
+                    onChange={(e) => handleBrandingChange('primaryColor', e.target.value)}
+                    className="color-input"
+                  />
+                  <div className="form-help">
+                    🎨 主要品牌顏色，用於按鈕和重點元素
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="secondaryColor" className="form-label">
+                    次要顏色
+                  </label>
+                  <input
+                    id="secondaryColor"
+                    name="secondaryColor"
+                    type="color"
+                    value={formData.settings.branding.secondaryColor}
+                    onChange={(e) => handleBrandingChange('secondaryColor', e.target.value)}
+                    className="color-input"
+                  />
+                  <div className="form-help">
+                    🎨 次要品牌顏色，用於輔助元素和背景
+                  </div>
+                </div>
+              </div>
+              
+              {(formData.settings.branding.primaryColor || formData.settings.branding.secondaryColor) && (
+                <div className="branding-preview">
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>顏色預覽：</span>
+                  {formData.settings.branding.primaryColor && (
+                    <div className="color-preview" style={{ backgroundColor: formData.settings.branding.primaryColor }}></div>
+                  )}
+                  {formData.settings.branding.secondaryColor && (
+                    <div className="color-preview" style={{ backgroundColor: formData.settings.branding.secondaryColor }}></div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 操作按鈕 */}
+          <div className="form-actions">
+            <Link href="/admin/companies" className="btn-secondary">
+              <span>↩️</span>
+              返回
+            </Link>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+            >
+              <span>🏢</span>
+              {loading ? '新增中...' : '新增公司'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -477,6 +477,18 @@
   cursor: pointer;
 }
 
+/* 表單行 - 左右並排 */
+.form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.form-half {
+  flex: 1;
+  min-width: 0; /* 防止內容溢出 */
+}
+
 /* 操作按鈕 */
 .form-actions {
   display: flex;

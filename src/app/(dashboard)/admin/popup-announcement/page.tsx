@@ -267,14 +267,6 @@ export default function PopupAnnouncementPage() {
           <div className="no-data">
             <img src="/no-information.webp" alt="無資料" />
             <p>目前沒有彈窗公告</p>
-            <Link
-              href="/admin/popup-announcement/new"
-              className="btn-primary"
-              style={{ marginTop: '16px' }}
-            >
-              <span>✨</span>
-              立即新增彈窗公告
-            </Link>
           </div>
         )}
       </div>

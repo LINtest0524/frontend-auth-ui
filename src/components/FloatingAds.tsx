@@ -25,6 +25,24 @@ export default function FloatingAds({ companyCode }: FloatingAdsProps) {
   // 檢查是否為登入或註冊頁面
   const isLoginOrRegisterPage = pathname?.includes('/login') || pathname?.includes('/register')
 
+  // 🚀 動態路由網址處理函數
+  const processDynamicUrl = (originalUrl: string): string => {
+    // 如果是絕對網址（http/https），直接返回
+    if (originalUrl.startsWith('http://') || originalUrl.startsWith('https://')) {
+      return originalUrl
+    }
+    
+    // 如果是相對路徑且以 / 開頭，組合動態路由
+    if (originalUrl.startsWith('/') && !originalUrl.startsWith(`/${companyCode}`)) {
+      // 移除開頭的 /，然後組合成動態路由格式
+      const cleanPath = originalUrl.substring(1)
+      return `/${companyCode}/${cleanPath}`
+    }
+    
+    // 其他情況直接返回原網址
+    return originalUrl
+  }
+
   useEffect(() => {
     // 如果是登入或註冊頁面，不顯示浮動廣告
     if (isLoginOrRegisterPage) {
@@ -66,7 +84,7 @@ export default function FloatingAds({ companyCode }: FloatingAdsProps) {
         return (
           <a
             key={ad.id}
-            href={ad.link_url}
+            href={processDynamicUrl(ad.link_url)}
             target={ad.target_blank ? '_blank' : '_self'}
             className={`floating-ad floating-ad-${ad.position}`}
             title={ad.title}

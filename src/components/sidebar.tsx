@@ -33,6 +33,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (pathname?.startsWith("/admin/companies")) setActiveMenu("companies");
+    else if (pathname?.startsWith("/admin/agents")) setActiveMenu("agents");
     else if (pathname?.startsWith("/admin/marquee-tags")) setActiveMenu("tags");
     else if (pathname?.startsWith("/admin/marquee")) setActiveMenu("marquee");
     else if (pathname?.startsWith("/admin/news")) setActiveMenu("news");
@@ -128,6 +129,45 @@ export default function Sidebar() {
                   className={cn("sidebar-subitem", pathname === "/admin/companies" && currentActive === null && "active")}
                 >
                   公司列表
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 代理管理 - 超級管理員、全域管理員、代理商可見，客服只能查看 */}
+        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4" || role === "AGENT_SUPPORT" || true) && (
+          <div>
+            <button
+              onClick={() => {
+                toggleMenu("agents");
+                setCurrentActive("agents");
+              }}
+              className={cn(
+                "sidebar-item i-log", 
+                currentActive === "agents" && "active",
+                activeMenu === "agents" && "expanded"
+              )}
+            >
+              <span className="icon" />
+              代理管理
+              <span className="i-arrow"></span>
+            </button>
+            <div className={cn("sidebar-submenu", activeMenu === "agents" && "open")}>
+              <div className="sidebar-fd">
+                <Link
+                  href="/admin/agents"
+                  onClick={() => handleNavClick("/admin/agents")}
+                  className={cn("sidebar-subitem", pathname === "/admin/agents" && currentActive === null && "active")}
+                >
+                  代理商
+                </Link>
+                <Link
+                  href="/admin/agents/commission-condition"
+                  onClick={() => handleNavClick("/admin/agents/commission-condition")}
+                  className={cn("sidebar-subitem", pathname === "/admin/agents/commission-condition" && currentActive === null && "active")}
+                >
+                  占成條件
                 </Link>
               </div>
             </div>

@@ -213,12 +213,17 @@ export default function EditPopupAnnouncementPage() {
         submitData.mobile_image_url = await uploadImage(mobileImageFile, 'mobile')
       }
 
-      // 轉換時間格式給後端
-      if (submitData.start_date) {
+      // 轉換時間格式給後端，空值設為 null
+      if (submitData.start_date && submitData.start_date.trim() !== '') {
         submitData.start_date = fromDatetimeLocalToTaiwan(submitData.start_date, false)
+      } else {
+        submitData.start_date = null
       }
-      if (submitData.end_date) {
+      
+      if (submitData.end_date && submitData.end_date.trim() !== '') {
         submitData.end_date = fromDatetimeLocalToTaiwan(submitData.end_date, true)
+      } else {
+        submitData.end_date = null
       }
 
       // 更新彈窗公告
@@ -234,7 +239,12 @@ export default function EditPopupAnnouncementPage() {
       if (response.ok) {
         router.push('/admin/popup-announcement')
       } else {
-        alert('更新失敗')
+        // 🔍 詳細錯誤訊息顯示
+        const errorData = await response.text()
+        console.error('更新失敗 - 狀態碼:', response.status)
+        console.error('更新失敗 - 錯誤內容:', errorData)
+        console.error('更新失敗 - 發送的資料:', submitData)
+        alert(`更新失敗 (${response.status}): ${errorData.substring(0, 200)}`)
       }
     } catch (error) {
       console.error('更新錯誤:', error)

@@ -1,0 +1,173 @@
+{
+  "companyInfo": {
+    "code": "c",
+    "name": "C 娛樂城",
+    "domain": "c.casino.com",
+    "timezone": "Asia/Taipei",
+    "currency": "TWD",
+    "language": "zh-TW"
+  },
+  "branding": {
+    "theme": "premium",
+    "primaryColor": "#8b5cf6",
+    "secondaryColor": "#7c3aed",
+    "accentColor": "#fbbf24",
+    "logo": {
+      "main": "/logo/c-main.png",
+      "favicon": "/favicon-c.ico"
+    },
+    "fonts": {
+      "primary": "Poppins, sans-serif",
+      "secondary": "Open Sans, sans-serif"
+    }
+  },
+  "layout": {
+    "type": "premium",
+    "header": {
+      "style": "fixed",
+      "showLogo": true,
+      "showNavigation": true,
+      "showUserInfo": true
+    },
+    "sidebar": {
+      "enabled": true,
+      "position": "right",
+      "collapsible": true
+    },
+    "footer": {
+      "enabled": true,
+      "content": "extended"
+    }
+  },
+  "modules": {
+    "core": {
+      "authentication": true,
+      "userProfile": true,
+      "wallet": true,
+      "gameHistory": true,
+      "notifications": true
+    },
+    "optional": {
+      "soundEffects": {
+        "enabled": true,
+        "volume": 60,
+        "sounds": {
+          "click": "/sounds/c/click.mp3",
+          "hover": "/sounds/c/hover.mp3",
+          "win": "/sounds/c/win.mp3",
+          "lose": "/sounds/c/lose.mp3",
+          "notification": "/sounds/c/notification.mp3"
+        },
+        "backgroundMusic": {
+          "enabled": true,
+          "tracks": ["/music/c/bg1.mp3"],
+          "shuffle": false,
+          "loop": true
+        }
+      },
+      "leaderboard": {
+        "enabled": false,
+        "position": "homepage",
+        "updateInterval": 90,
+        "categories": ["monthly"],
+        "displayCount": 10,
+        "showAvatars": true,
+        "showPrizes": true,
+        "autoRefresh": true
+      },
+      "liveChat": {
+        "enabled": true,
+        "provider": "zendesk",
+        "position": "bottom-right",
+        "autoOpen": true,
+        "workingHours": {
+          "enabled": true,
+          "timezone": "Asia/Taipei",
+          "schedule": {
+            "monday": { "start": "10:00", "end": "22:00" },
+            "tuesday": { "start": "10:00", "end": "22:00" },
+            "wednesday": { "start": "10:00", "end": "22:00" },
+            "thursday": { "start": "10:00", "end": "22:00" },
+            "friday": { "start": "10:00", "end": "22:00" },
+            "saturday": { "start": "12:00", "end": "24:00" },
+            "sunday": { "start": "12:00", "end": "24:00" }
+          }
+        }
+      },
+      "vipSystem": {
+        "enabled": false
+      },
+      "promotions": {
+        "enabled": true,
+        "bannerPosition": "sidebar",
+        "autoShow": false,
+        "showFrequency": "weekly",
+        "categories": ["special", "weekend"]
+      }
+    }
+  },
+  "pages": {
+    "homepage": {
+      "layout": "premium",
+      "sections": [
+        {
+          "id": "hero-section",
+          "type": "component",
+          "component": "HeroSection",
+          "position": { "order": 1 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        },
+        {
+          "id": "premium-games",
+          "type": "component",
+          "component": "GameGrid",
+          "props": { "category": "premium", "limit": 8 },
+          "position": { "order": 2 },
+          "responsive": { "desktop": true, "tablet": true, "mobile": true }
+        }
+      ],
+      "meta": {
+        "title": "C 娛樂城 - 高端遊戲體驗",
+        "description": "C 娛樂城提供最高端的線上博弈體驗，精選遊戲與專業服務",
+        "keywords": ["C娛樂城", "高端遊戲", "精選博弈", "專業服務"]
+      },
+      "permissions": ["games_access"],
+      "responsive": { "desktop": true, "tablet": true, "mobile": true }
+    }
+  },
+  "games": {
+    "categories": [
+      {
+        "id": "premium",
+        "name": "精選遊戲",
+        "icon": "/icons/c/premium.svg",
+        "order": 1,
+        "enabled": true,
+        "gameIds": ["c_premium001", "c_premium002"]
+      },
+      {
+        "id": "slots",
+        "name": "老虎機",
+        "icon": "/icons/c/slots.svg",
+        "order": 2,
+        "enabled": true,
+        "gameIds": ["c_slot001"]
+      }
+    ],
+    "featured": ["c_premium001"],
+    "newGames": ["c_premium002"],
+    "popularGames": ["c_premium001", "c_slot001"],
+    "jackpotGames": []
+  },
+  "seo": {
+    "title": "C 娛樂城 - 高端線上博弈平台",
+    "description": "C 娛樂城專為追求高品質遊戲體驗的玩家而設，提供精選遊戲與頂級服務",
+    "keywords": ["C娛樂城", "高端博弈", "精選遊戲", "頂級服務", "線上娛樂"],
+    "ogImage": "/og-image-c.jpg"
+  },
+  "system": {
+    "useNewArchitecture": true,
+    "enabledFeatures": ["premium_games", "live_chat", "sound_effects", "promotions"],
+    "maintenanceMode": false
+  }
+}

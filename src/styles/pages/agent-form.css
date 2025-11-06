@@ -1,0 +1,421 @@
+/* 代理商管理樣式 - 基於 menu-admin.css 的一致性設計 */
+
+/* 容器和佈局 */
+.agent-admin-container {
+  width: 100%;
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* 頁面標題區域 */
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.agent-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0;
+}
+
+.agent-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 公司選擇器 */
+.company-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.company-selector label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.company-selector select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+}
+
+/* 按鈕樣式 */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* 內容區域 */
+.content-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 載入狀態 */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* 無資料狀態 */
+.no-data {
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.no-data img {
+  max-width: 200px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.no-data p {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* 現代化表格樣式 */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.modern-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modern-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.modern-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* 代理商層級樹狀顯示 */
+.agent-level-1 {
+  font-weight: 700 !important;
+  background-color: #ffffff !important;
+}
+
+.agent-level-2 {
+  background-color: #eff6ff !important;
+  border-left: 4px solid #3b82f6 !important;
+}
+
+.agent-level-3 {
+  background-color: #f0fdf4 !important;
+  border-left: 4px solid #10b981 !important;
+}
+
+.agent-level-4 {
+  background-color: #fefbf0 !important;
+  border-left: 4px solid #f59e0b !important;
+}
+
+.agent-indent-1 {
+  padding-left: 40px !important;
+  position: relative;
+}
+
+.agent-indent-2 {
+  padding-left: 80px !important;
+  position: relative;
+}
+
+.agent-indent-3 {
+  padding-left: 120px !important;
+  position: relative;
+}
+
+.agent-level-indicator {
+  display: inline-block !important;
+  width: 24px !important;
+  height: 3px !important;
+  background: #4b5563 !important;
+  margin-right: 12px !important;
+  position: relative;
+  vertical-align: middle;
+}
+
+.agent-level-indicator::before {
+  content: '' !important;
+  position: absolute;
+  left: 0;
+  top: -10px;
+  width: 3px !important;
+  height: 20px !important;
+  background: #4b5563 !important;
+}
+
+.agent-level-indicator::after {
+  content: '●' !important;
+  position: absolute;
+  right: -3px;
+  top: -8px;
+  color: #ef4444 !important;
+  font-size: 12px !important;
+  font-weight: bold;
+}
+
+/* 代理商名稱顯示 */
+.agent-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.agent-title .agent-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.agent-title .agent-account {
+  font-size: 11px;
+  color: #6b7280;
+  background: #e5e7eb;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.agent-title .parent-info {
+  font-size: 10px;
+  color: #9ca3af;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+/* 狀態徽章 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-inactive {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* 層級徽章 */
+.level-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 不同層級的徽章顏色 - 根據 agentLevel 值 */
+.level-1 {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+  color: #991b1b !important;
+}
+
+.level-2 {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  color: #1e40af !important;
+}
+
+.level-3 {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+  color: #166534 !important;
+}
+
+.level-4 {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  color: #92400e !important;
+}
+
+/* 聯絡資訊顯示 */
+.contact-info {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.contact-info div {
+  margin-bottom: 2px;
+}
+
+/* 操作按鈕 */
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.action-buttons button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-edit:hover {
+  background: #bfdbfe;
+  transform: translateY(-1px);
+}
+
+.btn-toggle.activate {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.btn-toggle.deactivate {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.btn-delete:hover {
+  background: #fee2e2;
+  transform: translateY(-1px);
+}
+
+/* 表格控制區域 */
+.table-controls {
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-info {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+  .agent-admin-container {
+    padding: 16px;
+  }
+  
+  .agent-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .agent-header-actions {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-table {
+    font-size: 12px;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 10px 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}

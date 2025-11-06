@@ -196,14 +196,27 @@ export default function FloatingAdCreatePage() {
                   </label>
                   <input
                     id="link_url"
-                    type="url"
+                    type="text"
                     name="link_url"
                     className="form-input"
                     value={form.link_url}
                     onChange={handleInputChange}
-                    placeholder="https://example.com"
+                    placeholder="/daily-checkin"
                     required
                   />
+                  <div className="form-hint">
+                    <div className="hint-section">
+                      <strong>🚀 動態路由支援：</strong>
+                      <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                        <li><code>/daily-checkin</code> → 系統自動轉為 <code>/{'{companyCode}'}/daily-checkin</code></li>
+                        <li><code>/products</code> → 系統自動轉為 <code>/{'{companyCode}'}/products</code></li>
+                        <li><code>https://external.com</code> → 外部網址保持不變</li>
+                      </ul>
+                      <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f0f9ff', borderRadius: '4px', fontSize: '12px', color: '#1e40af' }}>
+                        💡 建議使用相對路徑（如 <code>/daily-checkin</code>），系統會自動適配所有公司代碼
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,0 +1,247 @@
+/* 代理商建立表單樣式 - 基於後台管理一致性設計 */
+
+/* 表單容器 */
+.agent-form-container {
+  width: 100%;
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* 表單標題區域 */
+.agent-form-header {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.agent-form-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.agent-form-header p {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* 表單內容區域 */
+.agent-form-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 表單網格佈局 */
+.agent-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 24px;
+}
+
+/* 表單區塊 */
+.form-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.form-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* 表單欄位 */
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 0px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* 必填欄位標記 */
+.form-field label.required::after {
+  content: ' *';
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* 登入資訊區塊 - 全寬 */
+.login-info-section {
+  grid-column: 1 / -1;
+  background: #fef7cd;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.login-info-section .form-section-title {
+  color: #92400e;
+  border-bottom-color: #f59e0b;
+}
+
+.login-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* 操作按鈕區域 */
+.form-actions {
+  padding: 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-actions .btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-actions .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.form-actions .btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.form-actions .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-actions .btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.form-actions .btn-secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* 提示信息 */
+.form-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* 錯誤狀態 */
+.form-field.error input,
+.form-field.error select,
+.form-field.error textarea {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* 載入狀態 */
+.form-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+  .agent-form-container {
+    padding: 16px;
+  }
+  
+  .agent-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .login-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .agent-form-header h1 {
+    font-size: 24px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+  
+  .form-section {
+    padding: 16px;
+  }
+}
