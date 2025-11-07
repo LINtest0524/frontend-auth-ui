@@ -135,8 +135,8 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* 代理管理 - 超級管理員、全域管理員、代理商可見，客服只能查看 */}
-        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4" || role === "AGENT_SUPPORT" || true) && (
+        {/* 代理管理 - 超級管理員、全域管理員、代理商可見，客服不可見 */}
+        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4") && (
           <div>
             <button
               onClick={() => {
@@ -174,14 +174,17 @@ export default function Sidebar() {
           </div>
         )}
 
-        <Link
-          href="/admin/admin-user"
-          onClick={() => handleNavClick("/admin/admin-user")}
-          className={cn("sidebar-item i-admin", pathname === "/admin/admin-user" && currentActive === null && "active")}
-        >
-          <span className="icon" />
-          管理員管理
-        </Link>
+        {/* 管理員管理 - 超級管理員、全域管理員、代理商可見，客服不可見 */}
+        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4") && (
+          <Link
+            href="/admin/admin-user"
+            onClick={() => handleNavClick("/admin/admin-user")}
+            className={cn("sidebar-item i-admin", pathname === "/admin/admin-user" && currentActive === null && "active")}
+          >
+            <span className="icon" />
+            管理員管理
+          </Link>
+        )}
 
         <Link
           href="/users"

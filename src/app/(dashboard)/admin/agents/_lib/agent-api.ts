@@ -3,17 +3,23 @@ import { adminApiGet, adminApiPost, adminApiPut, adminApiDelete } from '@/lib/ad
 export type AgentOptionCompany = { id: number; name: string; code: string };
 export type AgentOptionParent = { id: number; displayName: string; agentLevel: number };
 
-export async function fetchAgentOptions() {
+export type AgentOptionsResponse = {
+  levels: number[];
+  statuses: ('active' | 'inactive' | 'pending')[];
+  companies: AgentOptionCompany[];
+};
+
+export async function fetchAgentOptions(): Promise<AgentOptionsResponse> {
   const [levels, statuses, companies] = await Promise.all([
-    adminApiGet('/agents/options/levels'),
-    adminApiGet('/agents/options/statuses'),
-    adminApiGet('/agents/options/companies'),
+    adminApiGet<number[]>('/agents/options/levels'),
+    adminApiGet<('active' | 'inactive' | 'pending')[]>('/agents/options/statuses'),
+    adminApiGet<AgentOptionCompany[]>('/agents/options/companies'),
   ]);
   return { levels, statuses, companies };
 }
 
-export async function fetchParentAgents(companyId: number) {
-  return adminApiGet(`/agents/options/parents?companyId=${companyId}`);
+export async function fetchParentAgents(companyId: number): Promise<AgentOptionParent[]> {
+  return adminApiGet<AgentOptionParent[]>(`/agents/options/parents?companyId=${companyId}`);
 }
 
 export type CreateAgentPayload = {

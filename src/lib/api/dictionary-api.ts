@@ -131,7 +131,7 @@ export const dictionaryApi = {
         }
 
         // 取得所有公司的代理商（超級管理員應該看到所有代理商）
-        const allAgents = [];
+        const allAgents: any[] = [];
         
         for (const company of companies) {
           try {

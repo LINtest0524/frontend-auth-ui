@@ -22,7 +22,7 @@ function getAdminToken(): string | null {
   return null;
 }
 
-export async function adminApiGet(path: string) {
+export async function adminApiGet<T = any>(path: string): Promise<T> {
   const token = getAdminToken();
   
   const res = await fetch(`${API_BASE}${path}`, {
@@ -42,7 +42,7 @@ export async function adminApiGet(path: string) {
   return res.json();
 }
 
-export async function adminApiPost(path: string, body?: any) {
+export async function adminApiPost<T = any>(path: string, body?: any): Promise<T> {
   const token = getAdminToken();
   
   const res = await fetch(`${API_BASE}${path}`, {
@@ -62,7 +62,7 @@ export async function adminApiPost(path: string, body?: any) {
   return res.json();
 }
 
-export async function adminApiPut(path: string, body?: any) {
+export async function adminApiPut<T = any>(path: string, body?: any): Promise<T> {
   const token = getAdminToken();
   
   const res = await fetch(`${API_BASE}${path}`, {
@@ -82,7 +82,7 @@ export async function adminApiPut(path: string, body?: any) {
   return res.json();
 }
 
-export async function adminApiDelete(path: string) {
+export async function adminApiDelete<T = any>(path: string): Promise<T> {
   const token = getAdminToken();
   
   const res = await fetch(`${API_BASE}${path}`, {

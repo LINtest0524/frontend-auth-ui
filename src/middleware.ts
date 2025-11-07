@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { maintenanceMiddleware } from './middleware/maintenance'
 
+// 路由權限配置
+const ROUTE_PERMISSIONS = {
+  '/admin/agents': ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4'],
+  '/admin/admin-user': ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4'],
+}
+
+function checkRoutePermission(pathname: string, userRole: string): boolean {
+  // 檢查是否為受保護的路由
+  for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+    if (pathname.startsWith(route)) {
+      return allowedRoles.includes(userRole)
+    }
+  }
+  
+  // 非受保護路由，允許訪問
+  return true
+}
+
 export async function middleware(request: NextRequest) {
   // 執行維護模式檢查
   const maintenanceResponse = await maintenanceMiddleware(request)
@@ -9,6 +27,17 @@ export async function middleware(request: NextRequest) {
   if (maintenanceResponse.status === 307 || maintenanceResponse.status === 308) {
     return maintenanceResponse
   }
+
+  // 暫時停用中間件權限檢查，改為前端組件層面處理
+  // TODO: 需要實現更完整的 token 驗證機制
+  
+  // 權限檢查
+  // const { pathname } = request.nextUrl
+  
+  // 只對特定受保護路由進行檢查（暫時停用）
+  // if (pathname.startsWith('/admin/')) {
+  //   console.log('Checking admin route:', pathname)
+  // }
   
   // 🚀 路由統一處理 - 暫時停用重寫，讓 A、B 直接使用原路由
   // const { pathname } = request.nextUrl

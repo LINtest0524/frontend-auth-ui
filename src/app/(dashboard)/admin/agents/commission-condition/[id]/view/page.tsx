@@ -119,7 +119,7 @@ export default function ViewCommissionConditionPage() {
                 <div className="readonly-input">
                   {data.agentId === 0 
                     ? '任意代理商' 
-                    : (data.agent?.agent_name || data.agent?.username || `ID: ${data.agentId}`)
+                    : ((data as any).agent?.agent_name || (data as any).agent?.username || `ID: ${data.agentId}`)
                   }
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default function ViewCommissionConditionPage() {
                         </div>
                         <div className="form-group">
                           <label className="form-label">最低淨營收</label>
-                          <div className="readonly-input">NT$ {parseFloat(group.minNetRevenue).toLocaleString()}</div>
+                          <div className="readonly-input">NT$ {parseFloat(group.minNetRevenue as string).toLocaleString()}</div>
                         </div>
                       </div>
 
@@ -268,11 +268,11 @@ export default function ViewCommissionConditionPage() {
                         <div className="form-grid">
                           <div className="form-group">
                             <label className="form-label">存款手續費</label>
-                            <div className="readonly-input">NT$ {parseFloat(group.fixedCost.feeDeposit).toLocaleString()}</div>
+                            <div className="readonly-input">NT$ {parseFloat(group.fixedCost.feeDeposit as string).toLocaleString()}</div>
                           </div>
                           <div className="form-group">
                             <label className="form-label">提款手續費</label>
-                            <div className="readonly-input">NT$ {parseFloat(group.fixedCost.feeWithdraw).toLocaleString()}</div>
+                            <div className="readonly-input">NT$ {parseFloat(group.fixedCost.feeWithdraw as string).toLocaleString()}</div>
                           </div>
                           <div className="form-group">
                             <label className="form-label">退水預算比例 (%)</label>

@@ -41,7 +41,7 @@ export default function AgentCreateForm() {
         const res = await fetchAgentOptions();
         setLevels(res.levels.map(v => ({ label: `Level ${v}`, value: v })));
         
-        const statusLabels = {
+        const statusLabels: Record<string, string> = {
           'active': '啟用',
           'inactive': '停用', 
           'pending': '待審核'
@@ -53,12 +53,12 @@ export default function AgentCreateForm() {
         
         setCompanies(res.companies.map(c => ({ label: `${c.name} (${c.code})`, value: c.id })));
         
-        // 載入佣金條件
+        // 載入占成條件
         if (res.companies.length > 0) {
           try {
             // 使用 commissionConditionsApi 直接調用
-            const { commissionConditionsApi } = await import('@/lib/api/commissionConditions');
-            const conditions = await commissionConditionsApi.list({ page: 1, limit: 100 });
+            const commissionConditionsModule = await import('@/lib/api/commissionConditions');
+            const conditions = await commissionConditionsModule.commissionConditionsApi.list({ page: 1, limit: 100 });
             
             setCommissionConditions([
               { label: '不指定占成條件', value: '' },

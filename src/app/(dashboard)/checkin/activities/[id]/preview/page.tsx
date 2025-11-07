@@ -6,6 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// 模擬結果類型定義
+interface SimulationResult {
+  today: string;
+  checkedIn: boolean;
+  message?: string;
+  currentStreak?: number;
+  dayIndex?: number;
+  rewardAvailable?: boolean;
+  reward?: {
+    rewardType: string;
+    amount: number;
+  } | null;
+  nextHint?: string;
+  totalChecked?: number;
+}
+
 // 時間格式化函數
 const formatDateTime = (dateString: string): string => {
   if (!dateString) return '';
@@ -34,17 +50,6 @@ interface Activity {
   thresholds?: any[];
 }
 
-interface SimulationResult {
-  today: string;
-  checkedIn: boolean;
-  currentStreak?: number;
-  totalChecked?: number;
-  dayIndex?: number;
-  rewardAvailable: boolean;
-  reward?: any;
-  nextHint?: string;
-  message?: string;
-}
 
 export default function PreviewActivityPage() {
   const params = useParams();
@@ -155,7 +160,7 @@ export default function PreviewActivityPage() {
       case 'DAILY_CALENDAR':
         return simulateDailyCalendarLocal(progress, todayDate, activity);
       default:
-        return { today: testDate, checkedIn: false, message: '不支援的活動類型' };
+        return { today: testDate, checkedIn: false, message: '不支援的活動類型', rewardAvailable: false };
     }
   };
 
@@ -219,6 +224,7 @@ export default function PreviewActivityPage() {
     const dayReward = activity.dayRewards?.find(reward => reward.dayIndex === dayIndex);
 
     return {
+      today: new Date().toISOString().split('T')[0],
       checkedIn: true,
       totalChecked: newTotal,
       dayIndex,

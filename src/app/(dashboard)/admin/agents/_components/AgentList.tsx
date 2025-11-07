@@ -15,6 +15,8 @@ interface Agent {
   status: string;
   phone?: string;
   email?: string;
+  telegram?: string;
+  line?: string;
   agent_code?: string;
   created_at: string;
   company: {
@@ -200,7 +202,7 @@ export default function AgentList() {
         <td>
           <div className="action-buttons">
             {/* 如果是當前用戶自己，則不顯示操作按鈕 */}
-            {currentUser?.userId !== agent.id ? (
+            {currentUser?.id !== agent.id ? (
               <>
                 <button
                   onClick={() => router.push(`/admin/agents/edit/${agent.id}`)}

@@ -1,5 +1,7 @@
 // 公司配置型別定義
 
+import { PageConfig } from './page.types';
+
 export interface CompanyConfig {
   // 基本資訊
   companyInfo: {

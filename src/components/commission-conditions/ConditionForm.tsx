@@ -17,11 +17,12 @@ import '@/styles/components/preview-calculator.css';
 interface ConditionFormProps {
   mode: 'create' | 'edit';
   initialData?: CommissionCondition;
-  onSubmit: (data: CreateCommissionConditionDto | UpdateCommissionConditionDto) => void;
+  onSubmit: (data: any) => Promise<void> | void;
   onCancel: () => void;
+  loading?: boolean;
 }
 
-export function ConditionForm({ mode, initialData, onSubmit, onCancel }: ConditionFormProps) {
+export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }: ConditionFormProps) {
   const { agents, loading: agentsLoading, error: agentsError } = useAgentsList({ 
     active: true, 
     autoLoad: true 
@@ -68,8 +69,8 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel }: Conditi
           agentRemitPercent: 0,
           order: 1,
           platformRefundRates: [],
-          fixedCost: null,
-        }],
+          fixedCost: undefined,
+        } as ConditionGroup],
       }));
     }
   }, [mode, initialData]);
@@ -92,10 +93,13 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel }: Conditi
 
     // 驗證群組
     formData.groups.forEach((group, index) => {
-      if (group.sharePercent < 0 || group.sharePercent > 100) {
+      const sharePercent = Number(group.sharePercent);
+      const agentRemitPercent = Number(group.agentRemitPercent);
+      
+      if (sharePercent < 0 || sharePercent > 100) {
         newErrors[`group_${index}_share`] = '分潤比例必須在 0-100 之間';
       }
-      if (group.agentRemitPercent < 0 || group.agentRemitPercent > 100) {
+      if (agentRemitPercent < 0 || agentRemitPercent > 100) {
         newErrors[`group_${index}_remit`] = '代理抽成必須在 0-100 之間';
       }
     });
@@ -137,8 +141,8 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel }: Conditi
       agentRemitPercent: 0,
       order: formData.groups.length + 1,
       platformRefundRates: [],
-      fixedCost: null,
-    };
+      fixedCost: undefined,
+    } as ConditionGroup;
     
     setFormData(prev => ({
       ...prev,

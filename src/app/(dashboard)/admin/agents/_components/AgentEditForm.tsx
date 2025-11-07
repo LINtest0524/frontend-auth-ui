@@ -116,10 +116,12 @@ export default function AgentEditForm({ agentId }: AgentEditFormProps) {
   }, [agentId]);
 
   useEffect(() => {
-    if (!form.companyId) { setParents([]); return; }
+    if (!form.companyId || form.companyId === 0) { setParents([]); return; }
+    
+    const companyId = form.companyId; // 確保 TypeScript 知道這是有效的 companyId
     (async () => {
       try {
-        const list = await fetchParentAgents(form.companyId);
+        const list = await fetchParentAgents(companyId);
         // 排除自己作為上級選項
         const filteredList = list.filter(p => p.id !== agentId);
         setParents(filteredList.map(p => ({ label: `L${p.agentLevel} - ${p.displayName} (#${p.id})`, value: p.id })));

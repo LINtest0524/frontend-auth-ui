@@ -9,7 +9,6 @@ import "@/styles/pages/admin-user.css";
 const roleMap: Record<string, string> = {
   SUPER_ADMIN: "超級管理員",
   GLOBAL_ADMIN: "全域管理員",
-  AGENT_OWNER: "代理商老闆",
   AGENT_LEVEL_1: "一級代理商",
   AGENT_LEVEL_2: "二級代理商",
   AGENT_LEVEL_3: "三級代理商",
@@ -24,13 +23,82 @@ const statusMap: Record<string, string> = {
   BANNED: "封鎖",
 };
 
+// 角色等級定義（數字越小權限越高）
+const roleLevel: Record<string, number> = {
+  SUPER_ADMIN: 0,
+  GLOBAL_ADMIN: 1,
+  AGENT_LEVEL_1: 2,
+  AGENT_LEVEL_2: 3,
+  AGENT_LEVEL_3: 4,
+  AGENT_LEVEL_4: 5,
+  AGENT_SUPPORT: 6,
+  USER: 7,
+};
+
+// 根據階層關係控制權限（後端已過濾角色）
+const filterByHierarchy = (users: User[], currentUserRole?: string, currentUser?: User): User[] => {
+  if (!currentUserRole || !currentUser) return [];
+  
+  // 超級管理員和全域管理員可以看到所有客服
+  if (currentUserRole === 'SUPER_ADMIN' || currentUserRole === 'GLOBAL_ADMIN') {
+    return users;
+  }
+  
+  // 獲取當前用戶的公司 ID
+  const currentCompanyId = currentUser.companyId || currentUser.company?.id;
+  const currentUserId = currentUser.id;
+  
+  return users.filter(user => {
+    // 1. 必須是同公司的客服
+    const userCompanyId = user.companyId || user.company?.id;
+    if (userCompanyId !== currentCompanyId) {
+      return false;
+    }
+    
+    // 2. 代理商只能看到自己創建的客服
+    if (currentUserRole?.includes('AGENT_LEVEL')) {
+      // 檢查客服是否由當前代理商創建
+      if (user.created_by?.username === currentUser.username) {
+        return true;
+      }
+      
+      // 如果沒有 created_by 資訊，檢查其他可能的關聯欄位
+      if (user.parent_agent_id === currentUserId) {
+        return true;
+      }
+      
+      // 都不符合就不顯示
+      return false;
+    }
+    
+    return true;
+  });
+};
+
+
+// 檢查是否可以編輯特定用戶
+const canEditUser = (targetUser: User, currentUserRole?: string): boolean => {
+  if (!currentUserRole) return false;
+  
+  const currentLevel = roleLevel[currentUserRole];
+  const targetLevel = roleLevel[targetUser.role || ''];
+  
+  if (currentLevel === undefined || targetLevel === undefined) return false;
+  
+  // 超級管理員可以編輯所有人
+  if (currentUserRole === 'SUPER_ADMIN') return true;
+  
+  // 其他角色只能編輯比自己等級低的用戶
+  return targetLevel > currentLevel;
+};
+
 export default function AdminUserListPage() {
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-  const [inputLimit, setInputLimit] = useState(20);
+  const [limit, setLimit] = useState(100);
+  const [inputLimit, setInputLimit] = useState(100);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [hasSearched, setHasSearched] = useState(false);
@@ -48,26 +116,44 @@ export default function AdminUserListPage() {
       params.append("limit", limit.toString());
       params.append("page", page.toString());
       params.append("excludeUserRole", "true");
+      
+      // 只查詢客服角色
+      params.append("role", "AGENT_SUPPORT");
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/user?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      // 處理 401 未授權錯誤
+      if (res.status === 401) {
+        console.log('🔐 Token 已過期，請重新登入');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        router.push('/login');
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
       const result = await res.json();
       
       // 確保 data 是陣列
       if (result && Array.isArray(result.data)) {
-        setAdminUsers(result.data);
+        // 後端已經過濾了角色，前端只需要處理階層權限
+        const filteredData = filterByHierarchy(result.data, currentUser?.role, currentUser || undefined);
+        
+        setAdminUsers(filteredData);
         setTotalPages(result.totalPages || 1);
         setTotalCount(result.totalCount || 0);
       } else {
-        // API 資料格式錯誤，靜默處理
         setAdminUsers([]);
         setTotalPages(1);
         setTotalCount(0);
       }
     } catch (err) {
-      // 資料載入失敗，靜默處理
       setAdminUsers([]);
       setTotalPages(1);
       setTotalCount(0);
@@ -75,6 +161,20 @@ export default function AdminUserListPage() {
       setLoading(false);
     }
   };
+
+
+  // 權限檢查
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const allowedRoles = ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4'];
+    
+    if (!allowedRoles.includes(currentUser.role || '')) {
+      // 權限不足，重導向到未授權頁面
+      router.push('/not-authorized');
+      return;
+    }
+  }, [currentUser, router]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -105,6 +205,17 @@ export default function AdminUserListPage() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      // 處理 401 未授權錯誤
+      if (res.status === 401) {
+        console.log('🔐 Token 已過期，請重新登入');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        router.push('/login');
+        return;
+      }
+      
       if (!res.ok) throw new Error("刪除失敗");
       fetchAdmins();
     } catch (err) {
@@ -114,10 +225,9 @@ export default function AdminUserListPage() {
 
   const canSeeActions =
     currentUser?.role !== undefined &&
-    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4"].includes(currentUser.role);
+    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4"].includes(currentUser.role);
 
   const canModify =
-    currentUser?.role === "AGENT_OWNER" ||
     currentUser?.role === "AGENT_LEVEL_1" ||
     currentUser?.role === "AGENT_LEVEL_2" ||
     currentUser?.role === "AGENT_LEVEL_3" ||
@@ -299,7 +409,6 @@ export default function AdminUserListPage() {
                     <span className={`role-badge ${
                       admin.role === "SUPER_ADMIN" ? "role-super-admin" :
                       admin.role === "GLOBAL_ADMIN" ? "role-global-admin" :
-                      admin.role === "AGENT_OWNER" ? "role-agent-owner" :
                       admin.role === "AGENT_LEVEL_1" ? "role-agent-owner" :
                       admin.role === "AGENT_LEVEL_2" ? "role-agent-owner" :
                       admin.role === "AGENT_LEVEL_3" ? "role-agent-owner" :
@@ -332,7 +441,7 @@ export default function AdminUserListPage() {
                   </td>
                   {canSeeActions && (
                     <td>
-                      {canModify ? (
+                      {canEditUser(admin, currentUser?.role) ? (
                         <div className="action-buttons">
                           <button 
                             onClick={() => router.push(`/admin/admin-user/${admin.id}/edit`)} 
@@ -355,7 +464,7 @@ export default function AdminUserListPage() {
                         </div>
                       ) : (
                         <div className="no-permission">
-                          僅限代理商與超級管理員
+                          權限不足
                         </div>
                       )}
                     </td>
