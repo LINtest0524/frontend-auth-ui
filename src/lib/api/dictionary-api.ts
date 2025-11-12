@@ -48,7 +48,7 @@ async function apiRequest<T>(
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
-  const url = `${baseUrl}/api${endpoint}`;
+  const url = `${baseUrl}${endpoint}`;
   
   const response = await fetch(url, {
     ...options,
@@ -79,17 +79,8 @@ export const dictionaryApi = {
   async getPlatforms(companySlug: string): Promise<PlatformDictionary[]> {
     // 處理 admin 路由的特殊情況
     if (companySlug === 'admin' || !companySlug) {
-      console.log('🔧 Admin路由檢測到，使用預設平台清單');
-      return [
-        { code: 'AFB88', name: 'AFB體育', category: 'sports', isActive: true },
-        { code: 'DBG', name: 'DBG電子', category: 'slot', isActive: true },
-        { code: 'MT', name: 'MT棋牌', category: 'card', isActive: true },
-        { code: 'SUPER', name: 'SUPER彩票', category: 'lottery', isActive: true },
-        { code: 'DB539', name: 'DB539彩票', category: 'lottery', isActive: true },
-        { code: 'R10', name: 'R10電子', category: 'slot', isActive: true },
-        { code: 'wgwin', name: 'WG真人', category: 'live', isActive: true },
-        { code: 'wgwin539', name: 'WG539', category: 'lottery', isActive: true },
-      ];
+      // 為 admin 路由建立專用的平台 API
+      return apiRequest<PlatformDictionary[]>('/api/admin/game-providers');
     }
     
     return apiRequest<PlatformDictionary[]>(`/portal/${companySlug}/dictionary/platforms`);
@@ -104,7 +95,6 @@ export const dictionaryApi = {
   }): Promise<AgentListItem[]> {
     // 處理 admin 路由的特殊情況，使用現有的代理API
     if (companySlug === 'admin' || !companySlug) {
-      console.log('🔧 Admin路由檢測到，使用現有代理API');
       try {
         const token = getApiToken();
         if (!token) {
@@ -153,7 +143,6 @@ export const dictionaryApi = {
                 }
               });
               
-              console.log(`📋 Company ${company.name}: ${companyAgents.length} agents`);
             }
           } catch (error) {
             console.warn(`⚠️ Failed to load agents for company ${company.name}:`, error);
@@ -166,7 +155,6 @@ export const dictionaryApi = {
           ...allAgents
         ];
         
-        console.log(`📊 Total agents from all companies: ${agentData.length}`);
         
         // 格式化為標準格式，包含公司資訊
         const formattedAgents = agentData.map((agent: any) => ({
@@ -181,8 +169,6 @@ export const dictionaryApi = {
           companyCode: agent.companyCode,
         }));
 
-        console.log(`✅ Admin代理清單載入成功: ${formattedAgents.length} 個代理`);
-        console.log(`📋 代理商詳情:`, formattedAgents.map(a => `${a.name} (Level ${a.level})`));
         return formattedAgents;
         
       } catch (error) {

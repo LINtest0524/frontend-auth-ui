@@ -158,7 +158,6 @@ export default function AdminMessagesPage() {
   const fetchTags = async () => {
     try {
       const token = localStorage.getItem('token')
-      console.log('🏷️ [AdminMessages] Fetching tags with token:', token ? 'Present' : 'Missing')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/messages/tags`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -203,7 +202,6 @@ export default function AdminMessagesPage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
-      console.log('📥 [AdminMessages] Fetching messages with token:', token ? 'Present' : 'Missing')
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString()

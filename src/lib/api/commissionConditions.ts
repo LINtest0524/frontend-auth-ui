@@ -21,7 +21,6 @@ function getAdminToken(): string | null {
   for (const key of possibleKeys) {
     const token = localStorage.getItem(key);
     if (token) {
-      console.log(`🔑 Found admin token with key: ${key}`);
       return token;
     }
   }
@@ -57,7 +56,6 @@ async function apiRequest<T>(
   
   const url = `${baseUrl}/companies/${companyCode}/commission-conditions${endpoint}`;
   
-  console.log(`🚀 Commission Conditions API ${options.method || 'GET'} ${url} with token:`, adminToken ? '✅ Found' : '❌ Missing');
   
   const response = await fetch(url, {
     ...options,

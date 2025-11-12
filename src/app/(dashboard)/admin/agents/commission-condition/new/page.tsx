@@ -18,7 +18,6 @@ export default function NewCommissionConditionPage() {
       router.push('/admin/agents/commission-condition');
     } catch (error) {
       // 錯誤已在 store 中處理
-      console.error('Failed to create commission condition:', error);
     }
   };
 

@@ -17,12 +17,10 @@ export function usePlatformDictionary() {
     try {
       setLoading(true);
       setError(null);
-      console.log(`🎮 正在載入平台字典...`);
       
       const data = await dictionaryApi.getPlatforms(companySlug);
       setPlatforms(data);
       
-      console.log(`✅ 平台字典載入完成: ${data.length} 個平台`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '載入平台字典失敗';
       setError(errorMessage);
@@ -30,8 +28,9 @@ export function usePlatformDictionary() {
       
       // 設定 fallback 預設平台
       setPlatforms([
+        { code: 'WM', name: 'WM真人', isActive: true },
+        { code: 'RG', name: 'RG電子', isActive: true },
         { code: 'AFB88', name: 'AFB體育', isActive: true },
-        { code: 'DBG', name: 'DBG電子', isActive: true },
         { code: 'MT', name: 'MT棋牌', isActive: true },
         { code: 'SUPER', name: 'SUPER彩票', isActive: true },
       ]);
@@ -79,7 +78,6 @@ export function useAgentsList(options?: {
     try {
       setLoading(true);
       setError(null);
-      console.log(`👥 正在載入代理清單...`);
       
       const searchParams = {
         active: searchOptions?.active ?? active,
@@ -89,7 +87,6 @@ export function useAgentsList(options?: {
       const data = await dictionaryApi.getAgents(companySlug, searchParams);
       setAgents(data);
       
-      console.log(`✅ 代理清單載入完成: ${data.length} 個代理`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '載入代理清單失敗';
       setError(errorMessage);

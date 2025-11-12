@@ -68,7 +68,6 @@ export default function CommissionConditionListPage() {
         // 解析 JWT token 取得用戶角色（簡化版本）
         const payload = JSON.parse(atob(token.split('.')[1]));
         setUserRole(payload.role || '');
-        console.log('🔍 用戶角色:', payload.role);
       }
     } catch (error) {
       console.error('❌ 無法取得用戶角色:', error);

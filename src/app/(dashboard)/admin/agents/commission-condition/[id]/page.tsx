@@ -22,7 +22,6 @@ export default function EditCommissionConditionPage() {
         const data = await getOne(id);
         setInitialData(data);
       } catch (error) {
-        console.error('Failed to load commission condition:', error);
         // TODO: 顯示錯誤 Toast
       } finally {
         setLoadingData(false);
@@ -41,7 +40,6 @@ export default function EditCommissionConditionPage() {
       router.push('/admin/agents/commission-condition');
     } catch (error) {
       // 錯誤已在 store 中處理
-      console.error('Failed to update commission condition:', error);
     }
   };
 
