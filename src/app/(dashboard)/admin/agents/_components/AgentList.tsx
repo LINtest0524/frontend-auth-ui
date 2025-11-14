@@ -163,11 +163,11 @@ export default function AgentList() {
     // 主項目行
     rows.push(
       <tr key={agent.id} className={`agent-level-${Math.min(level + 1, 4)}`}>
-        <td className={level > 0 ? `agent-indent-${Math.min(level, 3)}` : ''}>
+        <td className={level > 0 ? `agent-indent-${Math.min(level, 12)}` : ''}>
           <div className="agent-title">
             {level > 0 && <span className="agent-level-indicator"></span>}
             <span style={{color: level > 0 ? '#ef4444' : '#000'}}>
-              [樹狀層級:{level}]
+              [樹狀層級:{level + 1}]
             </span>
             <span className="agent-name">{agent.agent_name || agent.username}</span>
             <span className="agent-account">@{agent.username}</span>
@@ -233,7 +233,10 @@ export default function AgentList() {
     
     // 遞歸渲染子代理商
     if (agent.children && agent.children.length > 0) {
-      agent.children.forEach(child => {
+      // 按照代理商等級排序子代理商
+      const sortedChildren = [...agent.children].sort((a, b) => a.agent_level - b.agent_level || a.id - b.id);
+      
+      sortedChildren.forEach(child => {
         rows.push(...renderAgentItem(child, level + 1));
       });
     }

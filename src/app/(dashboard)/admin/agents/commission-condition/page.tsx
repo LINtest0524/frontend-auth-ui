@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCommissionConditionsStore } from '@/stores/useCommissionConditionsStore';
 import { CommissionMethod } from '@/types/commission-condition';
+import Pagination from '@/components/ui/Pagination';
 import '@/styles/pages/commission-conditions.css';
 
 export default function CommissionConditionListPage() {
@@ -25,6 +26,7 @@ export default function CommissionConditionListPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [inputLimit, setInputLimit] = useState(20);
 
   useEffect(() => {
     // 初始載入
@@ -50,7 +52,7 @@ export default function CommissionConditionListPage() {
   const clearFilter = () => {
     setFilters({
       page: 1,
-      limit: 50,
+      limit: 20,
       keyword: '',
       agentId: undefined,
       isActive: undefined,
@@ -134,6 +136,16 @@ export default function CommissionConditionListPage() {
   };
 
   const totalPages = Math.ceil(total / filters.limit);
+
+  const handlePageChange = (newPage: number) => {
+    setFilters({ page: newPage });
+    setTimeout(() => handleSearch(), 0);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setFilters({ limit: newPageSize, page: 1 });
+    setTimeout(() => handleSearch(), 0);
+  };
 
   return (
     <div className="commission-conditions-container">
@@ -237,21 +249,28 @@ export default function CommissionConditionListPage() {
           {/* 表格控制 */}
           <div className="table-controls">
             <div className="pagination-control">
-              <label>每頁顯示：</label>
-              <select
-                value={filters.limit}
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
                 onChange={(e) => {
-                  setFilters({ limit: parseInt(e.target.value), page: 1 });
-                  // 每頁顯示數量改變時立即查詢
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setFilters({ limit: validLimit, page: 1 });
                   setTimeout(() => handleSearch(), 0);
                 }}
-                className="pagination-input"
+                className="btn-search"
               >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
+                套用
+              </button>
             </div>
             
             <div className="result-info">
@@ -353,59 +372,16 @@ export default function CommissionConditionListPage() {
             </table>
           </div>
 
-          {/* 分頁控制 */}
-          {totalPages > 1 && (
-            <div className="pagination-section">
-              <div className="pagination-info">
-                第 {filters.page} 頁，共 {totalPages} 頁
-              </div>
-              <div className="pagination-buttons">
-                <button
-                  onClick={() => {
-                    setFilters({ page: 1 });
-                    setTimeout(() => handleSearch(), 0);
-                  }}
-                  disabled={filters.page <= 1}
-                  className="pagination-btn"
-                >
-                  首頁
-                </button>
-                <button
-                  onClick={() => {
-                    setFilters({ page: filters.page - 1 });
-                    setTimeout(() => handleSearch(), 0);
-                  }}
-                  disabled={filters.page <= 1}
-                  className="pagination-btn"
-                >
-                  上一頁
-                </button>
-                <span className="page-current">
-                  {filters.page} / {totalPages}
-                </span>
-                <button
-                  onClick={() => {
-                    setFilters({ page: filters.page + 1 });
-                    setTimeout(() => handleSearch(), 0);
-                  }}
-                  disabled={filters.page >= totalPages}
-                  className="pagination-btn"
-                >
-                  下一頁
-                </button>
-                <button
-                  onClick={() => {
-                    setFilters({ page: totalPages });
-                    setTimeout(() => handleSearch(), 0);
-                  }}
-                  disabled={filters.page >= totalPages}
-                  className="pagination-btn"
-                >
-                  末頁
-                </button>
-              </div>
-            </div>
-          )}
+          {/* 通用分頁元件 */}
+          <Pagination
+            currentPage={filters.page}
+            totalPages={totalPages}
+            totalCount={total}
+            pageSize={filters.limit}
+            onPageChange={handlePageChange}
+            showPageSizeSelector={false}
+            loading={loading}
+          />
         </div>
       )}
     </div>

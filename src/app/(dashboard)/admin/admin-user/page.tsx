@@ -97,8 +97,8 @@ export default function AdminUserListPage() {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(100);
-  const [inputLimit, setInputLimit] = useState(100);
+  const [limit, setLimit] = useState(20);
+  const [inputLimit, setInputLimit] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [hasSearched, setHasSearched] = useState(false);
@@ -365,6 +365,7 @@ export default function AdminUserListPage() {
                 onClick={() => {
                   const validLimit = Math.max(1, inputLimit);
                   setLimit(validLimit);
+                  setPage(1); // 重設到第一頁
                 }}
                 className="btn-search"
               >

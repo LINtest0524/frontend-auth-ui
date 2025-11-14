@@ -98,37 +98,23 @@ export default function AdminUserCreatePage() {
 
   const getAvailableRoles = () => {
     if (!currentUser) return [];
+    
+    // 管理員頁面允許創建管理員和客服角色
     if (currentUser.role === "SUPER_ADMIN") {
       return [
-        { value: "AGENT_LEVEL_1", label: "一級代理商" },
-        { value: "AGENT_LEVEL_2", label: "二級代理商" },
-        { value: "AGENT_LEVEL_3", label: "三級代理商" },
-        { value: "AGENT_LEVEL_4", label: "四級代理商" },
-        { value: "AGENT_SUPPORT", label: "客服" },
         { value: "GLOBAL_ADMIN", label: "全域管理員" },
+        { value: "AGENT_SUPPORT", label: "客服人員" },
       ];
     }
+    
     if (currentUser.role === "GLOBAL_ADMIN") {
       return [
-        { value: "AGENT_LEVEL_1", label: "一級代理商" },
-        { value: "AGENT_LEVEL_2", label: "二級代理商" },
-        { value: "AGENT_LEVEL_3", label: "三級代理商" },
-        { value: "AGENT_LEVEL_4", label: "四級代理商" },
-        { value: "AGENT_SUPPORT", label: "客服" },
+        { value: "GLOBAL_ADMIN", label: "全域管理員" },
+        { value: "AGENT_SUPPORT", label: "客服人員" },
       ];
     }
-    if (currentUser.role === "AGENT_LEVEL_1") {
-      return [{ value: "AGENT_SUPPORT", label: "客服" }];
-    }
-    if (currentUser.role === "AGENT_LEVEL_2") {
-      return [{ value: "AGENT_SUPPORT", label: "客服" }];
-    }
-    if (currentUser.role === "AGENT_LEVEL_3") {
-      return [{ value: "AGENT_SUPPORT", label: "客服" }];
-    }
-    if (currentUser.role === "AGENT_LEVEL_4") {
-      return [{ value: "AGENT_SUPPORT", label: "客服" }];
-    }
+    
+    // 其他角色在管理員頁面無權限創建用戶
     return [];
   };
 
@@ -203,21 +189,13 @@ export default function AdminUserCreatePage() {
   const getRoleDescription = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN":
-        return "擁有系統最高權限，可管理所有功能和用戶";
+        return "系統最高權限管理員，擁有所有功能的完全控制權，可管理所有系統設定";
       case "GLOBAL_ADMIN":
-        return "可管理多個公司的代理商和客服人員";
-      case "AGENT_LEVEL_1":
-        return "一級代理商，可管理下級代理商和客服人員";
-      case "AGENT_LEVEL_2":
-        return "二級代理商，可管理下級代理商和客服人員";
-      case "AGENT_LEVEL_3":
-        return "三級代理商，可管理下級代理商和客服人員";
-      case "AGENT_LEVEL_4":
-        return "四級代理商，可管理客服人員";
+        return "全域管理員，可管理整個系統的運營，負責日常管理工作";
       case "AGENT_SUPPORT":
-        return "客服人員，負責處理客戶服務相關事務";
+        return "客服人員，負責處理客戶服務、用戶支援和問題解決";
       default:
-        return "";
+        return "請選擇管理員角色";
     }
   };
 

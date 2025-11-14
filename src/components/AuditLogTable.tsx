@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import Pagination from "@/components/ui/Pagination";
 import "@/styles/pages/users.css";
 
 // 角色中文化映射
@@ -195,80 +196,8 @@ export default function AuditLogTable({
     }
   };
 
-  const renderPagination = () => {
-    if (totalPages <= 1 || totalCount === 0) return null;
-
-    const pages = [];
-    const maxVisible = 5;
-
-    if (totalPages <= 10) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-
-      const start = Math.max(2, page - 2);
-      const end = Math.min(totalPages - 1, page + 2);
-
-      if (start > 2) {
-        pages.push("...");
-      }
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      if (end < totalPages - 1) {
-        pages.push("...");
-      }
-
-      pages.push(totalPages);
-    }
-
-    return (
-      <div className="pagination">
-        <div className="pagination-info">
-          <span>目前第 {page} 頁，共 {totalPages} 頁（共 {totalCount} 筆資料）</span>
-        </div>
-
-        <div className="pagination-buttons">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="pagination-btn prev"
-          >
-            上一頁
-          </button>
-
-          {pages.map((p, idx) =>
-            p === "..." ? (
-              <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
-                ...
-              </span>
-            ) : (
-              <button
-                key={p}
-                onClick={() => setPage(p as number)}
-                className={`pagination-btn ${
-                  page === p ? "active" : ""
-                }`}
-              >
-                {p}
-              </button>
-            )
-          )}
-
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="pagination-btn next"
-          >
-            下一頁
-          </button>
-        </div>
-      </div>
-    );
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   return (
@@ -485,8 +414,16 @@ export default function AuditLogTable({
             </div>
           )}
 
-          {/* 分頁控制 */}
-          {renderPagination()}
+          {/* 通用分頁元件 */}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={limit}
+            onPageChange={handlePageChange}
+            showPageSizeSelector={false}
+            loading={loading}
+          />
         </div>
       )}
     </div>

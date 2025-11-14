@@ -182,6 +182,51 @@
   position: relative;
 }
 
+.agent-indent-4 {
+  padding-left: 160px !important;
+  position: relative;
+}
+
+.agent-indent-5 {
+  padding-left: 200px !important;
+  position: relative;
+}
+
+.agent-indent-6 {
+  padding-left: 240px !important;
+  position: relative;
+}
+
+.agent-indent-7 {
+  padding-left: 280px !important;
+  position: relative;
+}
+
+.agent-indent-8 {
+  padding-left: 320px !important;
+  position: relative;
+}
+
+.agent-indent-9 {
+  padding-left: 360px !important;
+  position: relative;
+}
+
+.agent-indent-10 {
+  padding-left: 400px !important;
+  position: relative;
+}
+
+.agent-indent-11 {
+  padding-left: 440px !important;
+  position: relative;
+}
+
+.agent-indent-12 {
+  padding-left: 480px !important;
+  position: relative;
+}
+
 .agent-level-indicator {
   display: inline-block !important;
   width: 24px !important;

@@ -22,6 +22,24 @@ function getAdminToken(): string | null {
   return null;
 }
 
+// 清除所有可能的 token
+function clearAllTokens(): void {
+  if (typeof window === 'undefined') return;
+  
+  const possibleKeys = [
+    'portalToken',
+    'portalToken_admin',
+    'adminToken',
+    'token'
+  ];
+  
+  possibleKeys.forEach(key => {
+    localStorage.removeItem(key);
+  });
+  
+  console.log('🧹 已清除所有 token，請重新登入');
+}
+
 export async function adminApiGet<T = any>(path: string): Promise<T> {
   const token = getAdminToken();
   
@@ -35,6 +53,11 @@ export async function adminApiGet<T = any>(path: string): Promise<T> {
   });
   
   if (!res.ok) {
+    // 401 錯誤自動清除無效 token
+    if (res.status === 401) {
+      clearAllTokens();
+    }
+    
     const errorText = await res.text().catch(() => '');
     throw new Error(`GET ${path} failed: ${res.status} ${errorText}`);
   }
@@ -55,6 +78,11 @@ export async function adminApiPost<T = any>(path: string, body?: any): Promise<T
   });
   
   if (!res.ok) {
+    // 401 錯誤自動清除無效 token
+    if (res.status === 401) {
+      clearAllTokens();
+    }
+    
     const text = await res.text().catch(() => '');
     throw new Error(`POST ${path} failed: ${res.status} ${text}`);
   }
@@ -75,6 +103,11 @@ export async function adminApiPut<T = any>(path: string, body?: any): Promise<T>
   });
   
   if (!res.ok) {
+    // 401 錯誤自動清除無效 token
+    if (res.status === 401) {
+      clearAllTokens();
+    }
+    
     const text = await res.text().catch(() => '');
     throw new Error(`PUT ${path} failed: ${res.status} ${text}`);
   }
@@ -94,6 +127,11 @@ export async function adminApiDelete<T = any>(path: string): Promise<T> {
   });
   
   if (!res.ok) {
+    // 401 錯誤自動清除無效 token
+    if (res.status === 401) {
+      clearAllTokens();
+    }
+    
     const text = await res.text().catch(() => '');
     throw new Error(`DELETE ${path} failed: ${res.status} ${text}`);
   }

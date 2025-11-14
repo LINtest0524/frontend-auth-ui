@@ -6,6 +6,7 @@ import { getUser } from '@/lib/useAuth';
 import { useCompanySlug } from '@/hooks/useCompanySlug';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
 import { toTaiwanDisplayTime, toTaiwanDisplayDate } from '@/lib/timeUtils';
+import Pagination from '@/components/ui/Pagination';
 import "@/styles/pages/users.css";
 import "@/styles/pages/winloss-report.css";
 
@@ -50,6 +51,12 @@ export default function WinLossReportPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  
+  const totalPages = Math.ceil(totalCount / limit);
+  
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
   const companySlug = useCompanySlug();
 
   // 篩選條件
@@ -685,28 +692,16 @@ export default function WinLossReportPage() {
             </tbody>
           </table>
 
-          {/* 分頁控制 */}
-          {totalCount > limit && (
-            <div className="pagination-controls">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="btn-pagination"
-              >
-                上一頁
-              </button>
-              <span className="pagination-current">
-                第 {page} 頁 / 共 {Math.ceil(totalCount / limit)} 頁
-              </span>
-              <button
-                onClick={() => setPage(p => Math.min(Math.ceil(totalCount / limit), p + 1))}
-                disabled={page >= Math.ceil(totalCount / limit)}
-                className="btn-pagination"
-              >
-                下一頁
-              </button>
-            </div>
-          )}
+          {/* 通用分頁元件 */}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={limit}
+            onPageChange={handlePageChange}
+            showPageSizeSelector={false}
+            loading={loading}
+          />
         </div>
       )}
     </div>

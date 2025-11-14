@@ -17,7 +17,7 @@ export interface User {
 
   is_blacklisted: boolean;
 
-  role?: 'USER' | 'AGENT_SUPPORT' | 'AGENT_OWNER' | 'AGENT_LEVEL_1' | 'AGENT_LEVEL_2' | 'AGENT_LEVEL_3' | 'AGENT_LEVEL_4' | 'GLOBAL_ADMIN' | 'SUPER_ADMIN';
+  role?: 'USER' | 'AGENT_SUPPORT' | 'AGENT_OWNER' | 'AGENT_LEVEL_1' | 'AGENT_LEVEL_2' | 'AGENT_LEVEL_3' | 'AGENT_LEVEL_4' | 'AGENT_LEVEL_5' | 'AGENT_LEVEL_6' | 'AGENT_LEVEL_7' | 'AGENT_LEVEL_8' | 'AGENT_LEVEL_9' | 'AGENT_LEVEL_10' | 'AGENT_LEVEL_11' | 'AGENT_LEVEL_12' | 'GLOBAL_ADMIN' | 'SUPER_ADMIN';
 
   companyId?: number;
   company?: {

@@ -13,6 +13,7 @@ export default function Sidebar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [currentActive, setCurrentActive] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   const currentUser = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
@@ -91,9 +92,25 @@ export default function Sidebar() {
     resetMenu();
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
-    <div className="sidebar-box">
+    <div className={cn("sidebar-box", isCollapsed && "collapsed")}>
       <nav>
+        {/* 收合按鈕 */}
+        <button
+          onClick={toggleCollapse}
+          className="sidebar-toggle-btn"
+
+        >
+          <span className={cn("toggle-icon", isCollapsed && "collapsed")}>
+            {isCollapsed ? "▶" : "◀"}
+          </span>
+
+        </button>
+        
         <Link
           href="/dashboard"
           onClick={() => handleNavClick("/dashboard")}
@@ -168,6 +185,13 @@ export default function Sidebar() {
                   className={cn("sidebar-subitem", pathname === "/admin/agents/commission-condition" && currentActive === null && "active")}
                 >
                   占成條件
+                </Link>
+                <Link
+                  href="/admin/agents/commission-calculation"
+                  onClick={() => handleNavClick("/admin/agents/commission-calculation")}
+                  className={cn("sidebar-subitem", pathname === "/admin/agents/commission-calculation" && currentActive === null && "active")}
+                >
+                  占成計算
                 </Link>
               </div>
             </div>

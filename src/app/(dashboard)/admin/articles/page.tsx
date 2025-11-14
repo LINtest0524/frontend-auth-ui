@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import '@/styles/pages/users.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { toTaiwanDisplayTime, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
+import Pagination from '@/components/ui/Pagination'
 
 type Article = {
   id: number
@@ -300,78 +301,9 @@ export default function ArticlesPage() {
     }
   }
 
-  const renderPagination = () => {
-    if (totalPages <= 1 || totalCount === 0) return null
-
-    const pages = []
-
-    if (totalPages <= 10) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      pages.push(1)
-
-      const start = Math.max(2, currentPage - 2)
-      const end = Math.min(totalPages - 1, currentPage + 2)
-
-      if (start > 2) {
-        pages.push('...')
-      }
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i)
-      }
-
-      if (end < totalPages - 1) {
-        pages.push('...')
-      }
-
-      pages.push(totalPages)
-    }
-
-    return (
-      <div className="pagination">
-        <div className="pagination-info">
-          第 {currentPage} 頁，共 {totalPages} 頁（總計 {totalCount} 筆資料）
-        </div>
-
-        <div className="pagination-buttons">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="pagination-btn"
-          >
-            ⬅️ 上一頁
-          </button>
-
-          {pages.map((p, idx) =>
-            p === '...' ? (
-              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
-                ...
-              </span>
-            ) : (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p as number)}
-                className={`pagination-btn ${currentPage === p ? "active" : ""}`}
-              >
-                {p}
-              </button>
-            )
-          )}
-
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="pagination-btn"
-          >
-            下一頁 ➡️
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
 
   return (
     <div className="users-container">
@@ -530,9 +462,7 @@ export default function ArticlesPage() {
                   }
                   setLimit(validLimit);
                   setCurrentPage(1);
-                  setTimeout(() => {
-                    fetchArticles()
-                  }, 100)
+                  // 不需要手動調用 fetchArticles，useEffect 會自動觸發
                 }}
                 className="btn-search"
               >
@@ -633,8 +563,16 @@ export default function ArticlesPage() {
             </div>
           )}
 
-          {/* 分頁控制 */}
-          {renderPagination()}
+          {/* 通用分頁元件 */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={limit}
+            onPageChange={handlePageChange}
+            showPageSizeSelector={false}
+            loading={loading}
+          />
         </div>
       )}
     </div>

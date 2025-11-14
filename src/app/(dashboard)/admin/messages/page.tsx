@@ -6,6 +6,7 @@ import { useUserStore } from '@/hooks/use-user-store'
 import '@/styles/pages/messages-admin.css'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { toTaiwanDatetimeString, fromDatetimeLocalToTaiwan } from '@/lib/timeUtils'
+import Pagination from '@/components/ui/Pagination'
 
 interface Message {
   id: number
@@ -668,79 +669,9 @@ export default function AdminMessagesPage() {
     }
   }
 
-  // 分頁邏輯
-  const renderPagination = () => {
-    if (totalPages <= 1 || totalCount === 0) return null
-
-    const pages: (number | string)[] = []
-
-    if (totalPages <= 10) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      pages.push(1)
-
-      const start = Math.max(2, page - 2)
-      const end = Math.min(totalPages - 1, page + 2)
-
-      if (start > 2) {
-        pages.push("...")
-      }
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i)
-      }
-
-      if (end < totalPages - 1) {
-        pages.push("...")
-      }
-
-      pages.push(totalPages)
-    }
-
-    return (
-      <div className="pagination">
-        <div className="pagination-info">
-          第 {page} 頁，共 {totalPages} 頁（總計 {totalCount} 筆資料）
-        </div>
-
-        <div className="pagination-buttons">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="pagination-btn"
-          >
-            ⬅️ 上一頁
-          </button>
-
-          {pages.map((p, idx) =>
-            p === "..." ? (
-              <span key={`ellipsis-${idx}`} className="pagination-btn" style={{cursor: "default"}}>
-                ...
-              </span>
-            ) : (
-              <button
-                key={p}
-                onClick={() => setPage(p as number)}
-                className={`pagination-btn ${page === p ? "active" : ""}`}
-              >
-                {p}
-              </button>
-            )
-          )}
-
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="pagination-btn"
-          >
-            下一頁 ➡️
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   // 頁面載入時自動搜尋3日內資料
   useEffect(() => {
@@ -1018,7 +949,16 @@ export default function AdminMessagesPage() {
                 </div>
               )}
 
-              {renderPagination()}
+              {/* 通用分頁元件 */}
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={limit}
+                onPageChange={handlePageChange}
+                showPageSizeSelector={false}
+                loading={loading}
+              />
             </div>
           )}
         </>

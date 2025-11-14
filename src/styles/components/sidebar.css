@@ -5,6 +5,82 @@
     min-width: 260px;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     position: relative;
+    transition: min-width 0.3s ease-in-out;
+}
+
+/* 收合狀態 */
+.sidebar-box.collapsed {
+    min-width: 55px;
+    max-width: 55px;
+}
+
+/* 收合時隱藏文字 */
+.sidebar-box.collapsed .sidebar-item span:not(.icon):not(.toggle-icon),
+.sidebar-box.collapsed .toggle-text,
+.sidebar-box.collapsed .sidebar-subitem,
+.sidebar-box.collapsed .sidebar-sub-subitem {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* 收合時隱藏子選單容器 */
+.sidebar-box.collapsed .sidebar-submenu,
+.sidebar-box.collapsed .sidebar-sub-submenu {
+    display: none;
+}
+
+/* 收合按鈕樣式 */
+.sidebar-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    padding: 12px 3px;
+    margin: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 8px 8px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    position: absolute;
+    right: -26px;
+    background-color: #2e3d54;
+    z-index: 55;
+    top: 0;
+    bottom: 0;
+    height: 44px;
+}
+
+.sidebar-toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.sidebar-toggle-btn .toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-toggle-btn .toggle-text {
+    margin-left: 8px;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+.sidebar-box.collapsed .sidebar-toggle-btn {
+    margin: auto;
+    padding: 12px 3px;
+}
+
+.sidebar-box.collapsed .sidebar-toggle-btn .toggle-icon {
+    margin: 0;
 }
 
 .sidebar-box::before {

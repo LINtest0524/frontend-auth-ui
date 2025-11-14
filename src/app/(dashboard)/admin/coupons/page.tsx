@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
+import Pagination from '@/components/ui/Pagination'
 import '@/styles/pages/coupons-admin.css'
 
 interface CouponTemplate {
@@ -26,6 +27,13 @@ export default function CouponsPage() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'list' | 'create' | 'distribute'>('list')
   const [userLoaded, setUserLoaded] = useState(false)
+  
+  // 分頁狀態
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(20)
+  const [inputLimit, setInputLimit] = useState(20)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
 
   // 新增模板表單狀態
   const [formData, setFormData] = useState({
@@ -43,6 +51,11 @@ export default function CouponsPage() {
 
   const [createLoading, setCreateLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState<number | null>(null)
+
+  // 分頁處理函數
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
 
   // 從 localStorage 恢復用戶狀態
   useEffect(() => {
@@ -63,14 +76,14 @@ export default function CouponsPage() {
     return true // 允許所有用戶訪問
   }
 
-  // 獲取模板列表
+  // 獲取模板列表 - 支援分頁
   const fetchTemplates = async () => {
     if (!userLoaded || !hasPermission()) return
     
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/templates`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/templates?page=${page}&limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -79,12 +92,34 @@ export default function CouponsPage() {
       
       if (response.ok) {
         const data = await response.json()
-        setTemplates(data)
+        
+        // 檢查後端是否返回分頁格式
+        if (data && typeof data === 'object' && 'items' in data) {
+          // 後端返回分頁格式 { items: [], total: number, page: number, totalPages: number }
+          setTemplates(data.items || [])
+          setTotalCount(data.total || 0)
+          setTotalPages(data.totalPages || 1)
+        } else {
+          // 後端返回簡單陣列，進行前端分頁
+          const allTemplates = Array.isArray(data) ? data : []
+          setTotalCount(allTemplates.length)
+          setTotalPages(Math.ceil(allTemplates.length / limit))
+          
+          const startIndex = (page - 1) * limit
+          const endIndex = startIndex + limit
+          setTemplates(allTemplates.slice(startIndex, endIndex))
+        }
       } else {
         console.error('獲取模板列表失敗:', response.status)
+        setTemplates([])
+        setTotalCount(0)
+        setTotalPages(1)
       }
     } catch (error) {
       console.error('獲取模板列表失敗:', error)
+      setTemplates([])
+      setTotalCount(0)
+      setTotalPages(1)
     } finally {
       setLoading(false)
     }
@@ -94,7 +129,7 @@ export default function CouponsPage() {
     if (userLoaded) {
       fetchTemplates()
     }
-  }, [userLoaded])
+  }, [userLoaded, page, limit])
 
   // 刪除模板
   const handleDeleteTemplate = async (templateId: number) => {
@@ -309,8 +344,32 @@ export default function CouponsPage() {
         <div className="content-section">
           {/* 表格控制區域 */}
           <div className="table-controls">
+            <div className="pagination-control">
+              <label htmlFor="page-limit">每頁顯示：</label>
+              <input
+                type="number"
+                id="page-limit"
+                value={inputLimit}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (!isNaN(val)) setInputLimit(val);
+                }}
+                min={1}
+                className="pagination-input"
+              />
+              <button
+                onClick={() => {
+                  const validLimit = Math.max(1, inputLimit);
+                  setLimit(validLimit);
+                  setPage(1);
+                }}
+                className="btn-search"
+              >
+                套用
+              </button>
+            </div>
             <div className="table-info">
-              共 {templates.length} 個優惠碼模板
+              共 {totalCount} 個優惠碼模板
             </div>
           </div>
           
@@ -459,6 +518,17 @@ export default function CouponsPage() {
               )}
             </div>
           )}
+
+          {/* 通用分頁元件 */}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={limit}
+            onPageChange={handlePageChange}
+            showPageSizeSelector={false}
+            loading={loading}
+          />
         </div>
       )}
 
