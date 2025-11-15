@@ -53,7 +53,7 @@ export default function EditCommissionConditionPage() {
         <div className="commission-condition-form-header">
           <h1>
             <span>⏳</span>
-            載入占成條件資料
+            載入分潤方案資料
           </h1>
         </div>
         <div className="commission-condition-form-content">
@@ -71,12 +71,12 @@ export default function EditCommissionConditionPage() {
         <div className="commission-condition-form-header">
           <h1>
             <span>❌</span>
-            找不到占成條件
+            找不到分潤方案
           </h1>
         </div>
         <div className="commission-condition-form-content">
           <div className="form-section">
-            <p>找不到占成條件資料</p>
+            <p>找不到分潤方案資料</p>
             <div className="form-actions">
               <button onClick={handleCancel} className="btn-primary">
                 返回列表
@@ -94,7 +94,7 @@ export default function EditCommissionConditionPage() {
       <div className="commission-condition-form-header">
         <h1>
           <span>✏️</span>
-          編輯占成條件
+          編輯分潤方案
         </h1>
       </div>
 

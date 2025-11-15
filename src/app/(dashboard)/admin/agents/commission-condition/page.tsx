@@ -52,10 +52,11 @@ export default function CommissionConditionListPage() {
   const clearFilter = () => {
     setFilters({
       page: 1,
-      limit: 20,
-      keyword: '',
-      agentId: undefined,
-      isActive: undefined,
+      limit: 50,
+      commissionPercentMin: 0,
+      commissionPercentMax: 100,
+      settlementCycle: undefined,
+      systemType: undefined,
     });
     setHasSearched(false);
     // 清除後自動執行查詢
@@ -92,7 +93,7 @@ export default function CommissionConditionListPage() {
       return;
     }
 
-    if (!confirm(`確定要刪除占成條件「${name}」嗎？\n\n此操作無法復原！`)) {
+    if (!confirm(`確定要刪除分潤方案「${name}」嗎？\n\n此操作無法復原！`)) {
       return;
     }
 
@@ -100,7 +101,7 @@ export default function CommissionConditionListPage() {
       setDeletingId(id);
       await removeOne(id);
       // TODO: 顯示成功 Toast
-      console.log('✅ 占成條件刪除成功');
+      console.log('✅ 分潤方案刪除成功');
     } catch (error) {
       console.error('❌ 刪除失敗:', error);
       // 錯誤已在 store 中處理
@@ -124,14 +125,47 @@ export default function CommissionConditionListPage() {
     return userRole === 'SUPER_ADMIN' || userRole === 'GLOBAL_ADMIN';
   };
 
-  const getMethodDisplay = (method: CommissionMethod) => {
-    switch (method) {
-      case CommissionMethod.SETTLEMENT_ACTIVE_MEMBERS:
-        return '活躍會員占成';
-      case CommissionMethod.SETTLEMENT_ECPAY_PERSON:
-        return '綠界個人占成';
+  // 新增輔助函數
+  const getSystemTypeDisplay = (systemType: string) => {
+    switch (systemType) {
+      case 'COMMISSION':
+        return '占成制';
+      case 'REBATE':
+        return '返水制';
       default:
-        return method;
+        return systemType || '占成制';
+    }
+  };
+
+  const getAgentLevelDisplay = (agentLevel: string) => {
+    if (agentLevel === 'ANY') return '任一層級';
+    const levelNum = agentLevel?.split('_')[1];
+    return levelNum ? `${levelNum}級代理` : '任一層級';
+  };
+
+  const getSettlementCycleDisplay = (cycle: string) => {
+    switch (cycle) {
+      case 'WEEKLY':
+        return '週結';
+      case 'MONTHLY':
+        return '月結';
+      default:
+        return cycle || '週結';
+    }
+  };
+
+  const handleManagement = (itemId: string, action: string, itemName?: string) => {
+    switch (action) {
+      case 'edit':
+        window.location.href = `/admin/agents/commission-condition/${itemId}`;
+        break;
+      case 'handler':
+        // 跳轉到特定分潤方案的經手人操作記錄頁面
+        window.location.href = `/admin/agents/commission-condition/audit-logs?targetId=${itemId}`;
+        break;
+      case 'delete':
+        handleDelete(itemId, itemName || '');
+        break;
     }
   };
 
@@ -151,7 +185,7 @@ export default function CommissionConditionListPage() {
     <div className="commission-conditions-container">
       {/* 頁面標題 */}
       <div className="commission-conditions-header">
-        <h1>💰 占成條件管理</h1>
+        <h1>💰 分潤管理</h1>
         <div className="commission-conditions-header-actions">
           {canCreate() && (
             <Link
@@ -159,7 +193,7 @@ export default function CommissionConditionListPage() {
               className="btn-add"
               title="僅超級管理員和全域管理員可新增"
             >
-              ➕ 新增占成條件
+              ➕ 新增分潤方案
             </Link>
           )}
         </div>
@@ -177,46 +211,62 @@ export default function CommissionConditionListPage() {
         
         {isFilterOpen && (
           <div className="filter-content">
-            <div className="filter-grid">
+            <div className="commission-condition-filter-grid">
+              {/* 1. 分潤比例(%) 數值區間 */}
               <div className="form-group">
-                <label className="form-label">占成名稱</label>
-                <input
-                  type="text"
-                  placeholder="搜尋占成名稱..."
-                  value={filters.keyword}
-                  onChange={(e) => setFilters({ keyword: e.target.value })}
-                  className="form-input"
-                />
+                <label className="form-label">分潤比例(%)</label>
+                <div className="range-inputs">
+                  <input
+                    type="number"
+                    placeholder="最小值"
+                    min="0"
+                    max="100"
+                    value={filters.commissionPercentMin || 0}
+                    onChange={(e) => setFilters({ 
+                      commissionPercentMin: e.target.value ? parseInt(e.target.value) : 0 
+                    })}
+                    className="form-input range-input"
+                  />
+                  <span className="range-separator">~</span>
+                  <input
+                    type="number"
+                    placeholder="最大值"
+                    min="0"
+                    max="100"
+                    value={filters.commissionPercentMax || 100}
+                    onChange={(e) => setFilters({ 
+                      commissionPercentMax: e.target.value ? parseInt(e.target.value) : 100 
+                    })}
+                    className="form-input range-input"
+                  />
+                </div>
               </div>
 
+              {/* 2. 代理分潤結算 */}
               <div className="form-group">
-                <label className="form-label">代理商</label>
+                <label className="form-label">代理分潤結算</label>
                 <select
-                  value={filters.agentId || ''}
-                  onChange={(e) => setFilters({ agentId: e.target.value ? parseInt(e.target.value) : undefined })}
+                  value={filters.settlementCycle || ''}
+                  onChange={(e) => setFilters({ settlementCycle: e.target.value || undefined })}
                   className="form-select"
                 >
-                  <option value="">全部代理商</option>
-                  {agents.map(agent => (
-                    <option key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </option>
-                  ))}
+                  <option value="">全部結算方式</option>
+                  <option value="WEEKLY">週結(每週日 23:59:59)</option>
+                  <option value="MONTHLY">月結(每月最後一天 23:59:59)</option>
                 </select>
               </div>
 
+              {/* 3. 分潤制度 */}
               <div className="form-group">
-                <label className="form-label">狀態</label>
+                <label className="form-label">分潤制度</label>
                 <select
-                  value={filters.isActive === undefined ? '' : filters.isActive.toString()}
-                  onChange={(e) => setFilters({ 
-                    isActive: e.target.value === '' ? undefined : e.target.value === 'true' 
-                  })}
+                  value={filters.systemType || ''}
+                  onChange={(e) => setFilters({ systemType: e.target.value || undefined })}
                   className="form-select"
                 >
-                  <option value="">全部狀態</option>
-                  <option value="true">✅ 啟用</option>
-                  <option value="false">❌ 停用</option>
+                  <option value="">全部制度</option>
+                  <option value="COMMISSION">占成制</option>
+                  <option value="REBATE">返水制</option>
                 </select>
               </div>
             </div>
@@ -274,7 +324,7 @@ export default function CommissionConditionListPage() {
             </div>
             
             <div className="result-info">
-              共找到 {total} 筆占成條件
+              共找到 {total} 筆分潤方案
             </div>
           </div>
 
@@ -283,87 +333,114 @@ export default function CommissionConditionListPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>代理商名稱</th>
-                  <th>占成名稱</th>
-                  <th>計算方式</th>
-                  <th>狀態</th>
-                  <th>條件組數</th>
-                  <th>更新時間</th>
-                  <th>操作</th>
+                  <th>分潤制度</th>
+                  <th>分潤名稱</th>
+                  <th>代理層級</th>
+                  <th>代理名稱</th>
+                  <th>代理占成比例(%)</th>
+                  <th>
+                    <div className="rebate-header">
+                      <div className="rebate-title">代理返水比例(%)</div>
+                      <div className="rebate-game-types">
+                        <div>真人</div>
+                        <div>電子</div>
+                        <div>體育</div>
+                        <div>彩票</div>
+                        <div>棋牌</div>
+                        <div>捕魚</div>
+                      </div>
+                    </div>
+                  </th>
+                  <th>代理分潤結算</th>
+                  <th>管理</th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="no-data">
+                    <td colSpan={8} className="no-data">
                       <div className="no-data-content">
                         <div className="no-data-icon">📝</div>
-                        <div>尚無占成條件資料</div>
-                        <div className="no-data-hint">請點擊「新增占成條件」開始設定</div>
+                        <div>尚無分潤方案資料</div>
+                        <div className="no-data-hint">請點擊「新增分潤方案」開始設定</div>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   items.map((item) => (
                     <tr key={item.id} className="table-row">
+                      {/* 1. 分潤制度 */}
+                      <td>
+                        <span className="system-type-badge">
+                          {getSystemTypeDisplay(item.systemType)}
+                        </span>
+                      </td>
+                      {/* 2. 分潤名稱 */}
+                      <td>
+                        <div className="condition-name">{item.name}</div>
+                      </td>
+                      {/* 3. 代理層級 */}
+                      <td>
+                        <span className="agent-level-badge">
+                          {getAgentLevelDisplay(item.agentLevel)}
+                        </span>
+                      </td>
+                      {/* 4. 代理名稱 */}
                       <td>
                         <div className="agent-cell">
                           <span className="agent-name">{item.agentName}</span>
                         </div>
                       </td>
+                      {/* 5. 代理占成比例(%) */}
                       <td>
-                        <div className="condition-name">{item.name}</div>
-                      </td>
-                      <td>
-                        <span className="method-badge">
-                          {getMethodDisplay(item.method)}
+                        <span className="commission-percent">
+                          {item.commissionPercent !== undefined ? `${item.commissionPercent}%` : '-'}
                         </span>
                       </td>
+                      {/* 6. 代理返水比例(%) */}
                       <td>
-                        <button
-                          onClick={() => handleToggleStatus(item.id, item.isActive)}
-                          className={`status-toggle ${item.isActive ? 'active' : 'inactive'}`}
-                          disabled={loading}
-                        >
-                          {item.isActive ? '✅ 啟用' : '❌ 停用'}
-                        </button>
-                      </td>
-                      <td>
-                        <span className="group-count">{item.groupCount} 組</span>
-                      </td>
-                      <td className="update-time">
-                        {new Date(item.updatedAt).toLocaleDateString('zh-TW')}
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          {canEdit() ? (
-                            <Link
-                              href={`/admin/agents/commission-condition/${item.id}`}
-                              className="btn-edit"
-                              title="編輯占成條件"
-                            >
-                              ✏️ 編輯
-                            </Link>
-                          ) : (
-                            <Link
-                              href={`/admin/agents/commission-condition/${item.id}/view`}
-                              className="btn-view"
-                              title="查看占成條件詳情"
-                            >
-                              👁️ 查看
-                            </Link>
-                          )}
-                          {canDelete() && (
-                            <button
-                              onClick={() => handleDelete(item.id, item.name)}
-                              className="btn-delete"
-                              disabled={deletingId === item.id || loading}
-                              title="僅超級管理員和全域管理員可刪除"
-                            >
-                              {deletingId === item.id ? '⏳ 刪除中...' : '🗑️ 刪除'}
-                            </button>
-                          )}
+                        <div className="rebate-grid">
+                          {[
+                            { key: 'live' },
+                            { key: 'slot' },
+                            { key: 'sport' },
+                            { key: 'lottery' },
+                            { key: 'card' },
+                            { key: 'fishing' }
+                          ].map(gameType => (
+                            <div key={gameType.key} className="rebate-cell">
+                              {item.gameRebateRates?.[gameType.key] !== undefined 
+                                ? `${item.gameRebateRates[gameType.key]}%` 
+                                : '-'}
+                            </div>
+                          ))}
                         </div>
+                      </td>
+                      {/* 7. 代理分潤結算 */}
+                      <td>
+                        <span className="settlement-cycle-badge">
+                          {getSettlementCycleDisplay(item.settlementCycle)}
+                        </span>
+                      </td>
+                      {/* 8. 管理 */}
+                      <td>
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleManagement(item.id, e.target.value, item.name);
+                              e.target.value = ''; // 重置選項
+                            }
+                          }}
+                          className="management-select"
+                          defaultValue=""
+                        >
+                          <option value="">選擇操作</option>
+                          <option value="edit">編輯</option>
+                          <option value="handler">經手人</option>
+                          {canDelete() && (
+                            <option value="delete">刪除</option>
+                          )}
+                        </select>
                       </td>
                     </tr>
                   ))

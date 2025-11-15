@@ -31,7 +31,7 @@ export default function NewCommissionConditionPage() {
       <div className="commission-condition-form-header">
         <h1>
           <span>➕</span>
-          新增占成條件
+          新增分潤方案
         </h1>
       </div>
 

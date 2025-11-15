@@ -3,16 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CommissionCondition, 
-  CommissionMethod, 
-  CreateCommissionConditionDto,
-  UpdateCommissionConditionDto,
-  ConditionGroup 
+  CommissionMethod
 } from '@/types/commission-condition';
-import { ConditionGroupCard } from './ConditionGroupCard';
 import { useAgentsList } from '@/hooks/use-dictionary';
-import { PreviewCalculator } from './PreviewCalculator';
 import { useCompanySlug } from '@/hooks/useCompanySlug';
-import '@/styles/components/preview-calculator.css';
+
+// 新增代理制度類型
+enum AgentSystemType {
+  COMMISSION = 'COMMISSION', // 占成制
+  REBATE = 'REBATE' // 返水制
+}
+
+// 新增代理級別類型
+enum AgentLevelType {
+  ANY = 'ANY', // 任一層級
+  LEVEL_1 = 'LEVEL_1', // 1級代理
+  LEVEL_2 = 'LEVEL_2', // 2級代理
+  LEVEL_3 = 'LEVEL_3', // 3級代理
+  LEVEL_4 = 'LEVEL_4', // 4級代理
+  LEVEL_5 = 'LEVEL_5', // 5級代理
+  LEVEL_6 = 'LEVEL_6', // 6級代理
+  LEVEL_7 = 'LEVEL_7', // 7級代理
+  LEVEL_8 = 'LEVEL_8', // 8級代理
+  LEVEL_9 = 'LEVEL_9', // 9級代理
+  LEVEL_10 = 'LEVEL_10', // 10級代理
+  LEVEL_11 = 'LEVEL_11', // 11級代理
+  LEVEL_12 = 'LEVEL_12' // 12級代理
+}
+
+// 新增結算週期類型
+enum SettlementCycle {
+  WEEKLY = 'WEEKLY', // 週結
+  MONTHLY = 'MONTHLY' // 月結
+}
+
+// 遊戲類型
+interface GameRebateRates {
+  live: number; // 真人
+  slot: number; // 電子
+  sport: number; // 體育
+  lottery: number; // 彩票
+  card: number; // 棋牌
+  fishing: number; // 捕魚
+}
 
 interface ConditionFormProps {
   mode: 'create' | 'edit';
@@ -29,13 +62,20 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
   });
   
   const [formData, setFormData] = useState({
-    name: '',
-    agentId: '' as any, // 初始為空值，選擇後會變為數字
-    method: CommissionMethod.SETTLEMENT_ACTIVE_MEMBERS,
-    isActive: true,
-    effectiveFrom: '',
-    effectiveTo: '',
-    groups: [] as ConditionGroup[],
+    systemType: AgentSystemType.COMMISSION, // 1. 代理制度
+    name: '', // 2. 分潤名稱
+    agentLevel: AgentLevelType.ANY, // 3. 代理級別選擇
+    agentId: '' as any, // 4. 代理名稱選擇
+    commissionPercent: '', // 5. 代理占成比例(%)
+    gameRebateRates: { // 6. 代理返水條件(%)
+      live: '',
+      slot: '',
+      sport: '',
+      lottery: '',
+      card: '',
+      fishing: ''
+    } as Record<string, string>,
+    settlementCycle: SettlementCycle.WEEKLY // 7. 代理分潤結算
   });
 
   const [errors, setErrors] = useState<Record<string, any>>({});
@@ -46,32 +86,23 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
   // 初始化表單資料
   useEffect(() => {
     if (mode === 'edit' && initialData) {
+      // 編輯模式暫時保持原有結構
       setFormData({
-        name: initialData.name,
-        agentId: initialData.agentId,
-        method: initialData.method,
-        isActive: initialData.isActive,
-        effectiveFrom: initialData.effectiveFrom || '',
-        effectiveTo: initialData.effectiveTo || '',
-        groups: initialData.groups || [],
+        systemType: (initialData.systemType as AgentSystemType) || AgentSystemType.COMMISSION,
+        name: initialData.name || '',
+        agentLevel: (initialData.agentLevel as AgentLevelType) || AgentLevelType.ANY,
+        agentId: initialData.agentId !== undefined ? initialData.agentId.toString() : '',
+        commissionPercent: initialData.commissionPercent ? initialData.commissionPercent.toString() : '',
+        gameRebateRates: {
+          live: initialData.gameRebateRates?.live ? initialData.gameRebateRates.live.toString() : '',
+          slot: initialData.gameRebateRates?.slot ? initialData.gameRebateRates.slot.toString() : '',
+          sport: initialData.gameRebateRates?.sport ? initialData.gameRebateRates.sport.toString() : '',
+          lottery: initialData.gameRebateRates?.lottery ? initialData.gameRebateRates.lottery.toString() : '',
+          card: initialData.gameRebateRates?.card ? initialData.gameRebateRates.card.toString() : '',
+          fishing: initialData.gameRebateRates?.fishing ? initialData.gameRebateRates.fishing.toString() : ''
+        },
+        settlementCycle: (initialData.settlementCycle as SettlementCycle) || SettlementCycle.WEEKLY
       });
-    } else if (mode === 'create') {
-      // 新增模式預設一個群組
-      setFormData(prev => ({
-        ...prev,
-        groups: [{
-          minRegistrations: 0,
-          minActiveMembers: 0,
-          minValidBets: 0,
-          minNetRevenue: 0,
-          requireNegativeProfit: false,
-          sharePercent: 0,
-          agentRemitPercent: 0,
-          order: 1,
-          platformRefundRates: [],
-          fixedCost: undefined,
-        } as ConditionGroup],
-      }));
     }
   }, [mode, initialData]);
 
@@ -79,47 +110,87 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
   const validateForm = () => {
     const newErrors: Record<string, any> = {};
 
+    // 1. 代理制度 (必填)
+    if (!formData.systemType) {
+      newErrors.systemType = '請選擇代理制度';
+    }
+
+    // 2. 分潤名稱 (必填)
     if (!formData.name.trim()) {
-      newErrors.name = '條件名稱為必填';
+      newErrors.name = '分潤名稱為必填';
     }
 
+    // 3. 代理級別選擇 (必填)
+    if (!formData.agentLevel) {
+      newErrors.agentLevel = '請選擇代理級別';
+    }
+
+    // 4. 代理名稱選擇 (必填)
     if (formData.agentId === '' || formData.agentId === null || formData.agentId === undefined) {
-      newErrors.agentId = '請選擇代理商';
+      newErrors.agentId = '請選擇代理名稱';
     }
 
-    if (formData.groups.length === 0) {
-      newErrors.groups = '至少需要一個條件群組';
-    }
-
-    // 驗證群組
-    formData.groups.forEach((group, index) => {
-      const sharePercent = Number(group.sharePercent);
-      const agentRemitPercent = Number(group.agentRemitPercent);
-      
-      if (sharePercent < 0 || sharePercent > 100) {
-        newErrors[`group_${index}_share`] = '分潤比例必須在 0-100 之間';
+    // 5. 代理占成比例 (必填且為數字)
+    if (!formData.commissionPercent.trim()) {
+      newErrors.commissionPercent = '代理占成比例為必填';
+    } else {
+      const percent = parseFloat(formData.commissionPercent);
+      if (isNaN(percent) || percent < 0 || percent > 100) {
+        newErrors.commissionPercent = '代理占成比例必須為0-100之間的數字';
       }
-      if (agentRemitPercent < 0 || agentRemitPercent > 100) {
-        newErrors[`group_${index}_remit`] = '代理抽成必須在 0-100 之間';
+    }
+
+    // 6. 遊戲返水條件驗證
+    const gameTypes = ['live', 'slot', 'sport', 'lottery', 'card', 'fishing'];
+    gameTypes.forEach(gameType => {
+      const value = formData.gameRebateRates[gameType];
+      if (value && value.trim()) {
+        const percent = parseFloat(value);
+        if (isNaN(percent) || percent < 0 || percent > 100) {
+          newErrors[`gameRebate_${gameType}`] = `${getGameTypeName(gameType)}返水比例必須為0-100之間的數字`;
+        }
       }
     });
 
-    // 基本日期驗證
-    if (formData.effectiveFrom && formData.effectiveTo) {
-      const fromDate = new Date(formData.effectiveFrom);
-      const toDate = new Date(formData.effectiveTo);
-      if (fromDate > toDate) {
-        newErrors.effectiveTo = '結束日期必須晚於開始日期';
-      }
+    // 7. 代理分潤結算 (必填)
+    if (!formData.settlementCycle) {
+      newErrors.settlementCycle = '請選擇結算週期';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // 日期變更處理 (移除重疊檢查)
-  const handleDateChange = (field: 'effectiveFrom' | 'effectiveTo', value: string) => {
-    updateFormData(field, value);
+  // 遊戲類型名稱轉換
+  const getGameTypeName = (gameType: string): string => {
+    const typeMap: Record<string, string> = {
+      live: '真人',
+      slot: '電子',
+      sport: '體育',
+      lottery: '彩票',
+      card: '棋牌',
+      fishing: '捕魚'
+    };
+    return typeMap[gameType] || gameType;
+  };
+
+  // 代理級別顯示名稱
+  const getAgentLevelDisplay = (level: AgentLevelType): string => {
+    if (level === AgentLevelType.ANY) return '任一層級';
+    const levelNum = level.split('_')[1];
+    return `${levelNum}級代理`;
+  };
+
+  // 結算週期顯示名稱
+  const getSettlementCycleDisplay = (cycle: SettlementCycle): string => {
+    switch (cycle) {
+      case SettlementCycle.WEEKLY:
+        return '週結(每週日 23:59:59)';
+      case SettlementCycle.MONTHLY:
+        return '月結(每月最後一天 23:59:59)';
+      default:
+        return cycle;
+    }
   };
 
   const updateFormData = (field: string, value: any) => {
@@ -128,60 +199,6 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
-  };
-
-  const addGroup = () => {
-    const newGroup: ConditionGroup = {
-      minRegistrations: 0,
-      minActiveMembers: 0,
-      minValidBets: 0,
-      minNetRevenue: 0,
-      requireNegativeProfit: false,
-      sharePercent: 0,
-      agentRemitPercent: 0,
-      order: formData.groups.length + 1,
-      platformRefundRates: [],
-      fixedCost: undefined,
-    } as ConditionGroup;
-    
-    setFormData(prev => ({
-      ...prev,
-      groups: [...prev.groups, newGroup],
-    }));
-  };
-
-  const updateGroup = (index: number, group: ConditionGroup) => {
-    const updatedGroups = formData.groups.map((g, i) => 
-      i === index ? { ...group, order: i + 1 } : g
-    );
-    setFormData(prev => ({ ...prev, groups: updatedGroups }));
-  };
-
-  const moveGroup = (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= formData.groups.length) return;
-
-    const updatedGroups = [...formData.groups];
-    [updatedGroups[index], updatedGroups[newIndex]] = [updatedGroups[newIndex], updatedGroups[index]];
-    
-    // 重新設定 order
-    updatedGroups.forEach((group, i) => {
-      group.order = i + 1;
-    });
-
-    setFormData(prev => ({ ...prev, groups: updatedGroups }));
-  };
-
-  const removeGroup = (index: number) => {
-    if (formData.groups.length <= 1) return;
-    
-    const updatedGroups = formData.groups.filter((_, i) => i !== index);
-    // 重新設定 order
-    updatedGroups.forEach((group, i) => {
-      group.order = i + 1;
-    });
-    
-    setFormData(prev => ({ ...prev, groups: updatedGroups }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,26 +213,27 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
     setIsSubmitting(true);
     
     try {
+      // 轉換遊戲返水比例到數字格式
+      const gameRebateRatesConverted: Record<string, number> = {};
+      Object.keys(formData.gameRebateRates).forEach(key => {
+        const value = formData.gameRebateRates[key];
+        if (value && value.trim()) {
+          gameRebateRatesConverted[key] = parseFloat(value);
+        }
+      });
+
       const submitData = {
+        systemType: formData.systemType,
         name: formData.name.trim(),
-        agentId: Number(formData.agentId), // 確保是數字
-        method: formData.method,
-        isActive: formData.isActive,
-        effectiveFrom: formData.effectiveFrom || undefined,
-        effectiveTo: formData.effectiveTo || undefined,
-        groups: formData.groups.map((group, index) => ({
-          minRegistrations: group.minRegistrations || 0,
-          minActiveMembers: group.minActiveMembers || 0,
-          minValidBets: group.minValidBets || 0,
-          minNetRevenue: group.minNetRevenue || 0,
-          requireNegativeProfit: group.requireNegativeProfit || false,
-          sharePercent: group.sharePercent,
-          agentRemitPercent: group.agentRemitPercent,
-          platformRefundRates: group.platformRefundRates?.filter(rate => 
-            rate.platformCode && rate.refundPercent !== undefined
-          ) || [],
-          fixedCost: group.fixedCost || undefined,
-        })),
+        agentLevel: formData.agentLevel,
+        agentId: Number(formData.agentId),
+        commissionPercent: parseFloat(formData.commissionPercent),
+        gameRebateRates: gameRebateRatesConverted,
+        settlementCycle: formData.settlementCycle,
+        // 暫時保留舊格式兼容性
+        method: CommissionMethod.SETTLEMENT_ACTIVE_MEMBERS,
+        isActive: true,
+        groups: []
       };
 
       await onSubmit(submitData);
@@ -228,48 +246,72 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
     }
   };
 
-  const getMethodDisplay = (method: CommissionMethod) => {
-    switch (method) {
-      case CommissionMethod.SETTLEMENT_ACTIVE_MEMBERS:
-        return '活躍會員占成';
-      case CommissionMethod.SETTLEMENT_ECPAY_PERSON:
-        return '綠界個人占成';
-      default:
-        return method;
-    }
-  };
 
   return (
     <form onSubmit={handleSubmit} className="condition-form">
-      {/* 基本資訊 */}
+      {/* 分潤條件設定 */}
       <div className="form-section">
-        <h3>基本資訊</h3>
+        <h3>分潤條件設定</h3>
         <div className="form-grid">
+          {/* 1. 代理制度 */}
           <div className="field-group">
-            <label className="required">占成名稱</label>
+            <label className="required">代理制度</label>
+            <select
+              value={formData.systemType}
+              onChange={(e) => updateFormData('systemType', e.target.value as AgentSystemType)}
+              className="select-input"
+            >
+              <option value={AgentSystemType.COMMISSION}>占成制</option>
+              <option value={AgentSystemType.REBATE}>返水制</option>
+            </select>
+            {errors.systemType && <span className="error">{errors.systemType}</span>}
+          </div>
+
+          {/* 2. 分潤名稱 */}
+          <div className="field-group">
+            <label className="required">分潤名稱</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => updateFormData('name', e.target.value)}
               className="text-input"
-              placeholder="請輸入占成名稱"
+              placeholder="請輸入分潤名稱"
               maxLength={100}
             />
             {errors.name && <span className="error">{errors.name}</span>}
           </div>
 
+          {/* 3. 代理級別選擇 */}
           <div className="field-group">
-            <label className="required">代理商</label>
+            <label className="required">代理級別選擇</label>
+            <select
+              value={formData.agentLevel}
+              onChange={(e) => updateFormData('agentLevel', e.target.value as AgentLevelType)}
+              className="select-input"
+            >
+              <option value={AgentLevelType.ANY}>任一層級</option>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map(level => (
+                <option key={level} value={`LEVEL_${level}` as AgentLevelType}>
+                  {level}級代理
+                </option>
+              ))}
+            </select>
+            {errors.agentLevel && <span className="error">{errors.agentLevel}</span>}
+          </div>
+
+          {/* 4. 代理名稱選擇 */}
+          <div className="field-group">
+            <label className="required">代理名稱選擇</label>
             <select
               value={formData.agentId}
-              onChange={(e) => updateFormData('agentId', parseInt(e.target.value))}
+              onChange={(e) => updateFormData('agentId', e.target.value)}
               className="select-input"
               disabled={agentsLoading}
             >
               <option value="">
                 {agentsLoading ? '⏳ 載入代理清單中...' : 
                  agentsError ? '❌ 載入失敗' : 
-                 '請選擇代理商'}
+                 '請選擇代理名稱'}
               </option>
               {!agentsLoading && !agentsError && (
                 <>
@@ -289,101 +331,82 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
             )}
           </div>
 
+          {/* 5. 代理占成比例(%) */}
           <div className="field-group">
-            <label className="required">計算方式</label>
-            <select
-              value={formData.method}
-              onChange={(e) => updateFormData('method', e.target.value as CommissionMethod)}
-              className="select-input"
-            >
-              {Object.values(CommissionMethod).map(method => (
-                <option key={method} value={method}>
-                  {getMethodDisplay(method)}
-                </option>
-              ))}
-            </select>
-            {errors.method && <span className="error">{errors.method}</span>}
+            <label className="required">代理占成比例(%)</label>
+            <input
+              type="text"
+              value={formData.commissionPercent}
+              onChange={(e) => {
+                const value = e.target.value;
+                // 只允許數字和小數點
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  updateFormData('commissionPercent', value);
+                }
+              }}
+              className="text-input"
+              placeholder="請輸入0-100之間的數字"
+              maxLength={6}
+            />
+            {errors.commissionPercent && <span className="error">{errors.commissionPercent}</span>}
           </div>
+        </div>
+      </div>
 
-          <div className="field-group checkbox-group">
-            <label className="checkbox-label">
+      {/* 6. 代理返水條件(%) */}
+      <div className="form-section">
+        <h3>代理返水條件(%)</h3>
+        <div className="game-rebate-grid">
+          {[
+            { key: 'live', name: '真人' },
+            { key: 'slot', name: '電子' },
+            { key: 'sport', name: '體育' },
+            { key: 'lottery', name: '彩票' },
+            { key: 'card', name: '棋牌' },
+            { key: 'fishing', name: '捕魚' }
+          ].map(gameType => (
+            <div key={gameType.key} className="field-group">
+              <label>{gameType.name}</label>
               <input
-                type="checkbox"
-                checked={formData.isActive}
-                onChange={(e) => updateFormData('isActive', e.target.checked)}
+                type="text"
+                value={formData.gameRebateRates[gameType.key]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // 只允許數字和小數點
+                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                    updateFormData('gameRebateRates', {
+                      ...formData.gameRebateRates,
+                      [gameType.key]: value
+                    });
+                  }
+                }}
+                className="text-input"
+                placeholder="0-100"
+                maxLength={6}
               />
-              啟用狀態
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* 有效期間 */}
-      <div className="form-section">
-        <h3>有效期間（可選）</h3>
-        <div className="form-grid">
-          <div className="field-group">
-            <label>開始日期</label>
-            <input
-              type="date"
-              value={formData.effectiveFrom}
-              onChange={(e) => handleDateChange('effectiveFrom', e.target.value)}
-              className="date-input"
-            />
-          </div>
-
-          <div className="field-group">
-            <label>結束日期</label>
-            <input
-              type="date"
-              value={formData.effectiveTo}
-              onChange={(e) => handleDateChange('effectiveTo', e.target.value)}
-              className="date-input"
-            />
-            {errors.effectiveTo && <span className="error">{errors.effectiveTo}</span>}
-          </div>
-
-        </div>
-      </div>
-
-      {/* 條件組 */}
-      <div className="form-section">
-        <div className="section-header">
-          <h3>條件組</h3>
-          <button
-            type="button"
-            onClick={addGroup}
-            className="btn btn-outline add-group-btn"
-          >
-            ➕ 新增一段
-          </button>
-        </div>
-
-        {errors.groups && <div className="error">{errors.groups}</div>}
-
-        <div className="groups-container">
-          {formData.groups.map((group, index) => (
-            <ConditionGroupCard
-              key={index}
-              group={group}
-              index={index}
-              totalGroups={formData.groups.length}
-              onChange={(updatedGroup) => updateGroup(index, updatedGroup)}
-              onMoveUp={() => moveGroup(index, 'up')}
-              onMoveDown={() => moveGroup(index, 'down')}
-              onRemove={() => removeGroup(index)}
-              errors={errors.groupErrors?.[index] || {}}
-            />
+              {errors[`gameRebate_${gameType.key}`] && (
+                <span className="error">{errors[`gameRebate_${gameType.key}`]}</span>
+              )}
+            </div>
           ))}
         </div>
+        
+        {/* 7. 代理分潤結算 */}
+        <div className="form-grid settlement-section">
+          <div className="field-group">
+            <label className="required">代理分潤結算</label>
+            <select
+              value={formData.settlementCycle}
+              onChange={(e) => updateFormData('settlementCycle', e.target.value as SettlementCycle)}
+              className="select-input"
+            >
+              <option value={SettlementCycle.WEEKLY}>週結(每週日 23:59:59)</option>
+              <option value={SettlementCycle.MONTHLY}>月結(每月最後一天 23:59:59)</option>
+            </select>
+            {errors.settlementCycle && <span className="error">{errors.settlementCycle}</span>}
+          </div>
+        </div>
       </div>
-
-      {/* 試算預覽區塊 */}
-      <PreviewCalculator 
-        conditionId={mode === 'edit' && initialData ? initialData.id : undefined}
-        conditionData={formData}
-        className="preview-section"
-      />
 
       {/* 按鈕區 */}
       <div className="form-actions">
@@ -404,261 +427,6 @@ export function ConditionForm({ mode, initialData, onSubmit, onCancel, loading }
         </button>
       </div>
 
-      <style jsx>{`
-        .condition-form {
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .form-section {
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 24px;
-          margin-bottom: 24px;
-        }
-
-        .form-section h3 {
-          margin: 0 0 20px 0;
-          font-size: 18px;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .section-header h3 {
-          margin: 0;
-        }
-
-        .add-group-btn {
-          background: #10b981;
-          color: white;
-          border: none;
-        }
-
-        .add-group-btn:hover {
-          background: #059669;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
-        }
-
-        .field-group {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .field-group label {
-          font-size: 14px;
-          font-weight: 500;
-          color: #374151;
-          margin-bottom: 6px;
-        }
-
-        .field-group label.required::after {
-          content: ' *';
-          color: #ef4444;
-        }
-
-        .text-input, .select-input, .date-input {
-          padding: 0px 12px;
-          height: 40px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          font-size: 14px;
-          transition: border-color 0.2s;
-        }
-
-        .text-input:focus, .select-input:focus, .date-input:focus {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 1px #3b82f6;
-        }
-
-        .checkbox-group {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .checkbox-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-          margin: 0;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-        }
-
-        .error {
-          color: #ef4444;
-          font-size: 12px;
-          margin-top: 4px;
-        }
-
-        .groups-container {
-          margin-top: 20px;
-        }
-
-        .form-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          padding: 24px;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          margin-top: 24px;
-        }
-
-        .btn {
-          padding: 10px 20px;
-          border: none;
-          border-radius: 6px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .btn-primary {
-          background: #3b82f6;
-          color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-          background: #2563eb;
-        }
-
-        .btn-secondary {
-          background: #f3f4f6;
-          color: #374151;
-          border: 1px solid #d1d5db;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-          background: #e5e7eb;
-        }
-
-        .btn-outline {
-          background: white;
-          border: 1px solid #d1d5db;
-          color: #374151;
-        }
-
-        .btn-outline:hover {
-          background: #f9fafb;
-        }
-
-        /* 重疊檢查樣式 */
-        .overlap-check-btn {
-          font-size: 13px;
-          padding: 8px 16px;
-          margin-top: 20px;
-        }
-
-        .overlap-error {
-          background: #fef2f2;
-          border: 1px solid #fecaca;
-          color: #dc2626;
-          padding: 12px;
-          border-radius: 6px;
-          margin-top: 16px;
-          font-size: 14px;
-        }
-
-        .overlap-result {
-          margin-top: 16px;
-          padding: 16px;
-          border-radius: 8px;
-          border: 1px solid;
-        }
-
-        .overlap-result.has-conflict {
-          background: #fef2f2;
-          border-color: #fecaca;
-        }
-
-        .overlap-result.no-conflict {
-          background: #f0fdf4;
-          border-color: #bbf7d0;
-        }
-
-        .conflict-details h4 {
-          margin: 0 0 12px 0;
-          color: #dc2626;
-          font-size: 16px;
-        }
-
-        .conflict-list {
-          margin: 12px 0;
-        }
-
-        .conflict-item {
-          background: white;
-          padding: 12px;
-          border: 1px solid #f3f4f6;
-          border-radius: 6px;
-          margin-bottom: 8px;
-        }
-
-        .conflict-item strong {
-          color: #374151;
-        }
-
-        .conflict-item small {
-          color: #6b7280;
-        }
-
-        .suggestions {
-          margin-top: 16px;
-          padding: 12px;
-          background: #fffbeb;
-          border: 1px solid #fed7aa;
-          border-radius: 6px;
-        }
-
-        .suggestions h5 {
-          margin: 0 0 8px 0;
-          color: #92400e;
-          font-size: 14px;
-        }
-
-        .suggestions ul {
-          margin: 0;
-          padding-left: 16px;
-        }
-
-        .suggestions li {
-          color: #b45309;
-          font-size: 13px;
-          margin-bottom: 4px;
-        }
-
-        .no-conflict-message {
-          color: #166534;
-          font-weight: 500;
-          text-align: center;
-        }
-      `}</style>
     </form>
   );
 }

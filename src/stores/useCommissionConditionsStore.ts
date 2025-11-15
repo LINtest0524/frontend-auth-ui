@@ -19,9 +19,10 @@ interface CommissionConditionsState {
   filters: {
     page: number;
     limit: number;
-    keyword: string;
-    agentId?: number;
-    isActive?: boolean;
+    commissionPercentMin?: number;
+    commissionPercentMax?: number;
+    settlementCycle?: string;
+    systemType?: string;
   };
 
   // Actions
@@ -45,7 +46,8 @@ export const useCommissionConditionsStore = create<CommissionConditionsState>((s
   filters: {
     page: 1,
     limit: 50,
-    keyword: '',
+    commissionPercentMin: 0,
+    commissionPercentMax: 100,
   },
 
   // 設定篩選條件
@@ -54,7 +56,8 @@ export const useCommissionConditionsStore = create<CommissionConditionsState>((s
     const updatedFilters = { ...currentFilters, ...newFilters };
     
     // 如果是換頁以外的篩選，重置到第一頁
-    if ('keyword' in newFilters || 'agentId' in newFilters || 'isActive' in newFilters) {
+    if ('commissionPercentMin' in newFilters || 'commissionPercentMax' in newFilters || 
+        'settlementCycle' in newFilters || 'systemType' in newFilters) {
       updatedFilters.page = 1;
     }
     

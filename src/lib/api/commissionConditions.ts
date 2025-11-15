@@ -84,10 +84,19 @@ export const commissionConditionsApi = {
     
     if (query.page) searchParams.set('page', query.page.toString());
     if (query.limit) searchParams.set('limit', query.limit.toString());
-    if (query.keyword) searchParams.set('keyword', query.keyword);
-    if (query.agentId) searchParams.set('agentId', query.agentId.toString());
-    if (typeof query.isActive === 'boolean') {
-      searchParams.set('isActive', query.isActive.toString());
+    
+    // 新的篩選參數
+    if (query.commissionPercentMin !== undefined) {
+      searchParams.set('commissionPercentMin', query.commissionPercentMin.toString());
+    }
+    if (query.commissionPercentMax !== undefined) {
+      searchParams.set('commissionPercentMax', query.commissionPercentMax.toString());
+    }
+    if (query.settlementCycle) {
+      searchParams.set('settlementCycle', query.settlementCycle);
+    }
+    if (query.systemType) {
+      searchParams.set('systemType', query.systemType);
     }
 
     const endpoint = searchParams.toString() ? `?${searchParams.toString()}` : '';

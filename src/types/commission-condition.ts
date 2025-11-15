@@ -62,6 +62,11 @@ export interface CommissionConditionListItem {
   agentName: string;
   method: CommissionMethod;
   isActive: boolean;
+  systemType?: string;
+  agentLevel?: string;
+  commissionPercent?: number;
+  gameRebateRates?: Record<string, number>;
+  settlementCycle?: string;
   groupCount: number;
   updatedAt: string;
 }
@@ -69,9 +74,10 @@ export interface CommissionConditionListItem {
 export interface CommissionConditionQuery {
   page?: number;
   limit?: number;
-  keyword?: string;
-  agentId?: number;
-  isActive?: boolean;
+  commissionPercentMin?: number;
+  commissionPercentMax?: number;
+  settlementCycle?: string;
+  systemType?: string;
 }
 
 export interface CommissionConditionListResponse {

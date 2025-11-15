@@ -184,7 +184,7 @@ export default function Sidebar() {
                   onClick={() => handleNavClick("/admin/agents/commission-condition")}
                   className={cn("sidebar-subitem", pathname === "/admin/agents/commission-condition" && currentActive === null && "active")}
                 >
-                  占成條件
+                  分潤管理
                 </Link>
                 <Link
                   href="/admin/agents/commission-calculation"
