@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import '@/styles/pages/articles.css'
 import { sanitizeHtml } from '@/lib/sanitize'
 
@@ -43,6 +43,7 @@ interface ArticleDetailClientProps {
 
 export default function ArticleDetailClient({ articleData, companyCode }: ArticleDetailClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { article, relatedArticles, prev, next } = articleData
 
   const formatDate = (dateString: string) => {
@@ -57,11 +58,20 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
   }
 
   const handleBackToList = () => {
-    router.push(`/${companyCode}/articles`)
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString())
+    const queryString = currentParams.toString()
+    const articlesUrl = `/${companyCode}/articles${queryString ? `?${queryString}` : ''}`
+    router.push(articlesUrl)
   }
 
   const handleCategoryClick = () => {
-    router.push(`/${companyCode}/articles?categoryId=${article.category.id}`)
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString())
+    currentParams.set('categoryId', article.category.id.toString())
+    const queryString = currentParams.toString()
+    const categoryUrl = `/${companyCode}/articles?${queryString}`
+    router.push(categoryUrl)
   }
 
   const handleShare = (platform: string) => {
@@ -93,7 +103,13 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
           <nav className="breadcrumb-nav">
             <div className="breadcrumb-container">
               <button 
-                onClick={() => router.push(`/${companyCode}`)}
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString())
+                  const queryString = currentParams.toString()
+                  const homeUrl = `/${companyCode}${queryString ? `?${queryString}` : ''}`
+                  router.push(homeUrl)
+                }}
                 className="breadcrumb-link"
               >
                 <svg className="breadcrumb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,7 +277,13 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
                 <div className="nav-links">
                   {prev && (
                     <button
-                      onClick={() => router.push(`/${companyCode}/articles/${prev.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const articleUrl = `/${companyCode}/articles/${prev.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(articleUrl)
+                      }}
                       className="nav-link prev"
                     >
                       <div className="nav-direction">
@@ -275,7 +297,13 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
                   )}
                   {next && (
                     <button
-                      onClick={() => router.push(`/${companyCode}/articles/${next.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const articleUrl = `/${companyCode}/articles/${next.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(articleUrl)
+                      }}
                       className="nav-link next"
                     >
                       <div className="nav-direction">
@@ -311,7 +339,13 @@ export default function ArticleDetailClient({ articleData, companyCode }: Articl
                     <article
                       key={item.id}
                       className="related-article-item"
-                      onClick={() => router.push(`/${companyCode}/articles/${item.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const articleUrl = `/${companyCode}/articles/${item.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(articleUrl)
+                      }}
                     >
                       <div className="related-item-number">{index + 1}</div>
                       <div className="related-item-content">

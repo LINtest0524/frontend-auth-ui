@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { MenuItem } from './MenuRenderer'
+import { useAgentContext } from '@/hooks/useAgentContext'
 
 interface MobileMenuProps {
   menus: MenuItem[]
 }
 
 export default function MobileMenu({ menus }: MobileMenuProps) {
+  const { getLinkWithAgent } = useAgentContext()
   const [isOpen, setIsOpen] = useState(false)
   const [openSubmenus, setOpenSubmenus] = useState<Set<number>>(new Set())
 
@@ -90,7 +92,7 @@ export default function MobileMenu({ menus }: MobileMenuProps) {
           ) : item.url ? (
             // 沒有子選單且有連結的項目：點擊跳轉
             <a
-              href={item.url}
+              href={getLinkWithAgent(item.url)}
               target={item.target_blank ? '_blank' : '_self'}
               rel={item.target_blank ? 'noopener noreferrer' : undefined}
               className="mobile-menu-link"

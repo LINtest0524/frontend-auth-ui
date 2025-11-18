@@ -1,7 +1,7 @@
 'use client'
 
 import { useFavoritesStore } from '@/hooks/use-favorites-store'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface MemberFavoritesProps {
   companyCode: string
@@ -10,6 +10,7 @@ interface MemberFavoritesProps {
 export default function MemberFavorites({ companyCode }: MemberFavoritesProps) {
   const { favorites, removeFromFavorites, clearFavorites } = useFavoritesStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleRemoveItem = (productId: number, productName: string) => {
     if (confirm(`確定要從收藏中移除「${productName}」嗎？`)) {
@@ -25,7 +26,11 @@ export default function MemberFavorites({ companyCode }: MemberFavoritesProps) {
   }
 
   const handleGoToProduct = (productId: number) => {
-    router.push(`/${companyCode}/products/${productId}`)
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString())
+    const queryString = currentParams.toString()
+    const productUrl = `/${companyCode}/products/${productId}${queryString ? `?${queryString}` : ''}`
+    router.push(productUrl)
   }
 
   if (favorites.length === 0) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import './modern-wheel.css';
 
 interface Prize {
@@ -36,6 +36,8 @@ interface User {
 }
 
 export default function Wheel() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<DrawResult | null>(null);
@@ -263,14 +265,23 @@ export default function Wheel() {
               <p className="subtitle">轉動命運之輪，贏取豐富獎品</p>
             </div>
             
-            <Link href={`/${companyCode}/lucky-draw/history`} className="history-button">
+            <button 
+              onClick={() => {
+                // 保持原有的查詢參數（如 agent 參數）
+                const currentParams = new URLSearchParams(searchParams.toString());
+                const queryString = currentParams.toString();
+                const historyUrl = `/${companyCode}/lucky-draw/history${queryString ? `?${queryString}` : ''}`;
+                router.push(historyUrl);
+              }}
+              className="history-button"
+            >
               <svg className="history-icon" viewBox="0 0 24 24" fill="none">
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M3 3v5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 7v5l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <span>抽獎記錄</span>
-            </Link>
+            </button>
           </div>
         </div>
 

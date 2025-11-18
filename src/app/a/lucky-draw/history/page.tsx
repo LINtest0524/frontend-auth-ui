@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import './modern-history.css';
 
 interface DrawRecord {
@@ -37,6 +37,8 @@ interface User {
 }
 
 export default function LuckyDrawHistoryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [records, setRecords] = useState<DrawRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -225,19 +227,37 @@ export default function LuckyDrawHistoryPage() {
             </div>
             
             <div className="nav-actions">
-              <Link href="/a/lucky-draw" className="action-button primary">
+              <button 
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString());
+                  const queryString = currentParams.toString();
+                  const luckyDrawUrl = `/a/lucky-draw${queryString ? `?${queryString}` : ''}`;
+                  router.push(luckyDrawUrl);
+                }}
+                className="action-button primary"
+              >
                 <svg className="button-icon" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                   <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span>開始抽獎</span>
-              </Link>
-              <Link href="/a" className="action-button secondary">
+              </button>
+              <button 
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString());
+                  const queryString = currentParams.toString();
+                  const homeUrl = `/a${queryString ? `?${queryString}` : ''}`;
+                  router.push(homeUrl);
+                }}
+                className="action-button secondary"
+              >
                 <svg className="button-icon" viewBox="0 0 24 24" fill="none">
                   <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span>返回首頁</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import './LatestNews.css'
 
 type NewsItem = {
@@ -25,6 +26,8 @@ export default function LatestNews({
   limit = 4, 
   showMore = true 
 }: LatestNewsProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [latestNews, setLatestNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -91,12 +94,18 @@ export default function LatestNews({
         <div className="latest-news-header">
           <h2 className="latest-news-title">最新消息</h2>
           {showMore && (
-            <a 
-              href={`/${companyCode}/news`}
+            <button 
+              onClick={() => {
+                // 保持原有的查詢參數（如 agent 參數）
+                const currentParams = new URLSearchParams(searchParams.toString())
+                const queryString = currentParams.toString()
+                const newsUrl = `/${companyCode}/news${queryString ? `?${queryString}` : ''}`
+                router.push(newsUrl)
+              }}
               className="latest-news-more-btn"
             >
               MORE+
-            </a>
+            </button>
           )}
         </div>
         <div style={{ 
@@ -120,21 +129,34 @@ export default function LatestNews({
       <div className="latest-news-header">
         <h2 className="latest-news-title">最新消息</h2>
         {showMore && (
-          <a 
-            href={`/${companyCode}/news`}
+          <button 
+            onClick={() => {
+              // 保持原有的查詢參數（如 agent 參數）
+              const currentParams = new URLSearchParams(searchParams.toString())
+              const queryString = currentParams.toString()
+              const newsUrl = `/${companyCode}/news${queryString ? `?${queryString}` : ''}`
+              router.push(newsUrl)
+            }}
             className="latest-news-more-btn"
           >
             MORE+
-          </a>
+          </button>
         )}
       </div>
       
       <div className="latest-news-grid">
         {latestNews.map((news) => (
-          <a
+          <div
             key={news.id}
-            href={`/${companyCode}/news/${news.id}`}
+            onClick={() => {
+              // 保持原有的查詢參數（如 agent 參數）
+              const currentParams = new URLSearchParams(searchParams.toString())
+              const queryString = currentParams.toString()
+              const newsUrl = `/${companyCode}/news/${news.id}${queryString ? `?${queryString}` : ''}`
+              router.push(newsUrl)
+            }}
             className="latest-news-card"
+            style={{ cursor: 'pointer' }}
           >
             {news.image_url && (
               <div className="latest-news-image">
@@ -170,7 +192,7 @@ export default function LatestNews({
                 </span>
               </div>
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>

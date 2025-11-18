@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
 import '@/styles/pages/promotions-frontend.css'
 
@@ -25,6 +25,7 @@ interface Promotion {
 
 export default function PromotionsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const companySlug = useCompanySlug()
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [categories, setCategories] = useState<PromotionCategory[]>([])
@@ -124,7 +125,11 @@ export default function PromotionsPage() {
   }
 
   const handlePromotionClick = (promotionId: number) => {
-    router.push(`/a/promotions/${promotionId}`)
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString())
+    const queryString = currentParams.toString()
+    const promotionUrl = `/a/promotions/${promotionId}${queryString ? `?${queryString}` : ''}`
+    router.push(promotionUrl)
   }
 
   if (loading) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { checkLoginByCompany } from '@/lib/duplicateLoginChecker'
 import { CsrfTokenManager } from '@/lib/csrf'
 import '../../a/login/login.css'
@@ -12,6 +13,7 @@ export default function DynamicCompanyLoginPage() {
   const params = useParams()
   const companyCode = params.companyCode as string
   const { setUser } = useUserStore()
+  const { agentCode: urlAgentCode, navigateWithAgent, getLinkWithAgent } = useAgentContext()
   
   const [formData, setFormData] = useState({
     username: '',
@@ -82,9 +84,13 @@ export default function DynamicCompanyLoginPage() {
 
           setUser(data.user)
 
-          // 重導向到首頁
+          // 重導向到首頁，保持代理商上下文
           console.log('🔄 [Login] Redirecting to:', `/${companyCode}`)
-          router.push(`/${companyCode}`)
+          if (urlAgentCode) {
+            navigateWithAgent(`/${companyCode}`)
+          } else {
+            router.push(`/${companyCode}`)
+          }
         }, 100)
       } else {
         const errorData = await response.json()
@@ -103,7 +109,10 @@ export default function DynamicCompanyLoginPage() {
       return
     }
     
-    const facebookAuthUrl = `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/facebook?companyCode=${companyCode}`
+    let facebookAuthUrl = `${process.env.NEXT_PUBLIC_API_BASE}/portal/auth/facebook?companyCode=${companyCode}`
+    if (urlAgentCode) {
+      facebookAuthUrl += `&agent=${urlAgentCode}`
+    }
     window.location.href = facebookAuthUrl
   }
 
@@ -202,12 +211,13 @@ export default function DynamicCompanyLoginPage() {
         <div className="login-footer">
           <p>
             還沒有帳號？
-            <a href={`/${companyCode}/register`} className="register-link">
+            <a href={getLinkWithAgent(`/${companyCode}/register`)} className="register-link">
               立即註冊
             </a>
           </p>
           <p className="company-code">
             公司代碼: <span>{companyCode}</span>
+            {urlAgentCode && <><br />代理商: <span style={{ color: '#0ea5e9' }}>{urlAgentCode}</span></>}
           </p>
         </div>
       </div>

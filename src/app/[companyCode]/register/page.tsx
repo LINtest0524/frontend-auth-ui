@@ -1,17 +1,23 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useCartStore } from '@/hooks/use-cart-store-new'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { CsrfTokenManager } from '@/lib/csrf'
 import '../../a/register/register.css'
 
 export default function DynamicCompanyRegisterPage() {
+  // 最簡單的測試 - 這應該會彈出對話框
+  if (typeof window !== 'undefined') {
+    alert('註冊頁面已載入！URL: ' + window.location.href)
+  }
   const router = useRouter()
   const params = useParams()
   const companyCode = params.companyCode as string
   const { setUser } = useUserStore()
+  const { agentCode: urlAgentCode, navigateWithAgent, getLinkWithAgent } = useAgentContext()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -19,6 +25,52 @@ export default function DynamicCompanyRegisterPage() {
   const [agentCode, setAgentCode] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // 確保組件已掛載
+  useEffect(() => {
+    setMounted(true)
+    console.log('🚀 [Register] Component mounted, current URL:', window.location.href)
+  }, [])
+
+  // 自動填入 URL 中的代理商代碼
+  useEffect(() => {
+    if (!mounted) return
+    
+    // 直接從 window.location 獲取參數，確保在客戶端正確執行
+    console.log('🔍 [Register] Checking URL params...')
+    const urlParams = new URLSearchParams(window.location.search)
+    const agentParam = urlParams.get('agent')
+    
+    console.log('📍 [Register] URL analysis:', {
+      fullUrl: window.location.href,
+      searchParams: window.location.search,
+      agentParam: agentParam
+    })
+    
+    if (agentParam) {
+      console.log('✅ [Register] Setting agent code:', agentParam)
+      setAgentCode(agentParam)
+    } else {
+      console.log('❌ [Register] No agent parameter found')
+    }
+  }, [mounted])
+
+  // 備用：也監聽 useAgentContext 的變化
+  useEffect(() => {
+    if (urlAgentCode && !agentCode) {
+      setAgentCode(urlAgentCode)
+    }
+  }, [urlAgentCode, agentCode])
+
+  // 調試：監控代理商代碼的變化
+  useEffect(() => {
+    console.log('🔍 [Register] Agent code state:', {
+      agentCode,
+      urlAgentCode,
+      location: window.location.href
+    });
+  }, [agentCode, urlAgentCode])
 
   const handleSubmit = async () => {
     if (!username || !password) {
@@ -36,6 +88,15 @@ export default function DynamicCompanyRegisterPage() {
 
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+      
+      // 調試：顯示要發送的數據
+      console.log('📤 [Register] Sending registration data:', {
+        username,
+        email,
+        agent_code: agentCode,
+        companyCode
+      });
+      
       const res = await fetch(
         `${apiBase}/portal/auth/register?company=${companyCode}`,
         {
@@ -64,7 +125,12 @@ export default function DynamicCompanyRegisterPage() {
       useCartStore.getState().refreshCart()
 
       const targetCompany = data.user.company?.code || companyCode
-      router.push(`/${targetCompany}?justRegistered=true`) // 導回動態路由的首頁，添加註冊標記
+      // 註冊成功後保持代理商上下文
+      if (urlAgentCode) {
+        navigateWithAgent(`/${targetCompany}?justRegistered=true`)
+      } else {
+        router.push(`/${targetCompany}?justRegistered=true`)
+      }
     } catch (err: any) {
       setMessage(`${err.message || '發生錯誤'}`)
     } finally {
@@ -130,13 +196,19 @@ export default function DynamicCompanyRegisterPage() {
             <label className="input-label">代理商推廣代碼</label>
             <input
               type="text"
-              placeholder="請輸入代理商推廣代碼（選填）"
+              placeholder={urlAgentCode ? `自動偵測: ${urlAgentCode}` : "請輸入代理商推廣代碼（選填）"}
               value={agentCode}
               onChange={(e) => setAgentCode(e.target.value)}
               className="input-field"
               onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+              style={urlAgentCode ? { backgroundColor: '#f0f9ff', borderColor: '#0ea5e9' } : {}}
             />
-            <div className="input-hint">若無代理商代碼，將自動分配給預設代理商</div>
+            <div className="input-hint">
+              {urlAgentCode 
+                ? `✅ 來自代理商 ${urlAgentCode} 的邀請連結，註冊後將成為其下線會員` 
+                : '若無代理商代碼，將自動分配給預設代理商'
+              }
+            </div>
           </div>
 
           <button
@@ -157,11 +229,11 @@ export default function DynamicCompanyRegisterPage() {
 
         {/* 底部連結 */}
         <div className="register-footer">
-          <a href={`/${companyCode}/login`} className="footer-link">
+          <a href={getLinkWithAgent(`/${companyCode}/login`)} className="footer-link">
             已有帳戶？立即登入
           </a>
           <span style={{ margin: '0 1rem', color: '#e2e8f0' }}>|</span>
-          <a href={`/${companyCode}`} className="footer-link">
+          <a href={getLinkWithAgent(`/${companyCode}`)} className="footer-link">
             返回首頁
           </a>
         </div>

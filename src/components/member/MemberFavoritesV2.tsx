@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEnhancedFavoritesStore } from '@/hooks/use-favorites-store-v2'
 
 interface MemberFavoritesV2Props {
@@ -9,6 +9,7 @@ interface MemberFavoritesV2Props {
 }
 
 export default function MemberFavoritesV2({ companyCode }: MemberFavoritesV2Props) {
+  const searchParams = useSearchParams()
   const {
     favorites,
     isLoading,
@@ -66,7 +67,11 @@ export default function MemberFavoritesV2({ companyCode }: MemberFavoritesV2Prop
   }
 
   const handleGoToProduct = (productId: number) => {
-    router.push(`/${companyCode}/products/${productId}`)
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString())
+    const queryString = currentParams.toString()
+    const productUrl = `/${companyCode}/products/${productId}${queryString ? `?${queryString}` : ''}`
+    router.push(productUrl)
   }
 
   const pendingCount = getPendingSyncCount()

@@ -21,6 +21,15 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
   // 🚀 整合配置系統
   const companyCode = params.companyCode as string
   const { config, loading: configLoading, error: configError } = useCompanyConfig(companyCode)
+  
+  // 檢查是否來自代理商子網域
+  const [agentCode, setAgentCode] = useState<string | null>(null)
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const agentParam = urlParams.get('agent')
+    setAgentCode(agentParam)
+  }, [pathname])
 
   useEffect(() => {
     // 從動態路由獲取公司代碼
@@ -62,7 +71,12 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
     const isArticlePage = pathname.startsWith(`/${currentCompanyCode}/articles`)
     const isProductPage = pathname.startsWith(`/${currentCompanyCode}/products`)
     const isPromotionPage = pathname.startsWith(`/${currentCompanyCode}/promotions`)
-    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage || isPromotionPage
+    
+    // 檢查是否為代理商子網域頁面 (格式: /a/subdomain 或 /b/subdomain)
+    const agentSubdomainPattern = new RegExp(`^/${currentCompanyCode}/[a-zA-Z0-9_-]+(/.*)?$`)
+    const isAgentSubdomainPage = agentSubdomainPattern.test(pathname)
+    
+    const isPublicPage = publicPaths.includes(pathname) || isNewsPage || isArticlePage || isProductPage || isPromotionPage || isAgentSubdomainPage
 
     if (token && userData) {
       try {
@@ -166,12 +180,33 @@ export default function DynamicCompanyPortalLayout({ children }: { children: Rea
         '--primary-color': config?.branding?.primaryColor || '#1a202c',
         '--secondary-color': config?.branding?.secondaryColor || '#2d3748',
         '--accent-color': config?.branding?.accentColor || '#f6e05e',
-        '--layout-type': config?.layout?.type || 'standard'
+        '--layout-type': config?.layout?.type || 'standard',
+        // 為代理商標識條添加頂部間距
+        ...(agentCode && { paddingTop: '28px' })
       } as React.CSSProperties}
     >
+      {/* 代理商標識條 */}
+      {agentCode && (
+        <div style={{ 
+          backgroundColor: '#007bff', 
+          color: 'white',
+          padding: '4px 10px', 
+          fontSize: '12px',
+          textAlign: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000
+        }}>
+          🏢 {agentCode} 代理商專屬頁面
+        </div>
+      )}
+
       {/* 🎯 配置系統狀態指示器 */}
       {config && (
-        <div className="fixed top-0 right-0 z-50 bg-green-500 text-white px-3 py-1 text-xs">
+        <div className="fixed top-0 right-0 z-50 bg-green-500 text-white px-3 py-1 text-xs"
+             style={{ top: agentCode ? '28px' : '0px' }}>
           ✅ {currentCompanyCode.toUpperCase()} | {config.branding.theme} | 
           {config.system.useNewArchitecture ? '新架構' : '舊架構'}
         </div>

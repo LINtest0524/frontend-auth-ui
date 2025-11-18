@@ -3,6 +3,7 @@
 import { useUserStore } from '@/hooks/use-user-store'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
 import { useRouter, usePathname } from 'next/navigation'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { getUser, getToken, logout, setUser as setUserAuth } from '@/lib/useAuth'
 import { logoutWithRecord } from '@/lib/logout'
@@ -23,6 +24,7 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
   const company = companyCode || useCompanySlug() //   優先使用傳入的公司代碼
   const router = useRouter()
   const pathname = usePathname()
+  const { navigateWithAgent, getLinkWithAgent } = useAgentContext()
   const [mounted, setMounted] = useState(false)
   const [companyId, setCompanyId] = useState<number | null>(null)
   const [logo, setLogo] = useState<any>(null)
@@ -240,12 +242,12 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
       setUser(null)
       // 登出時刷新購物車（切換到訪客模式）
       refreshCart()
-      router.push(`/${company}`) //   登出後回到首頁
+      navigateWithAgent(`/${company}`) //   登出後回到首頁，保持代理商上下文
     }
   }
 
   const handleGoToMember = () => {
-    router.push(`/${company}/member`) //   點會員去會員中心
+    navigateWithAgent(`/${company}/member`) //   點會員去會員中心，保持代理商上下文
   }
 
   if (!mounted) return null
@@ -353,8 +355,8 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
               )}
             </a>
             
-            <a href={`/${company}/register`} className="f-btn-2">註冊</a>
-            <a href={`/${company}/login`} className="f-btn-1">登入</a>
+            <a href={getLinkWithAgent(`/${company}/register`)} className="f-btn-2">註冊</a>
+            <a href={getLinkWithAgent(`/${company}/login`)} className="f-btn-1">登入</a>
           </div>
         ) : (
           <div className="fl6">
@@ -362,7 +364,7 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
             
             {/* 購物車圖標 */}
             <a 
-              href={`/${company}/cart`} 
+              href={getLinkWithAgent(`/${company}/cart`)} 
               className="cart-icon" 
               title={`購物車 (${getTotalItems()} 件商品)`}
               style={{

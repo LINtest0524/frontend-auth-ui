@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { MenuItem } from './MenuRenderer'
+import { useAgentContext } from '@/hooks/useAgentContext'
 
 interface DesktopMenuProps {
   menus: MenuItem[]
 }
 
 export default function DesktopMenu({ menus }: DesktopMenuProps) {
+  const { getLinkWithAgent } = useAgentContext()
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
   const [activeSubDropdown, setActiveSubDropdown] = useState<number | null>(null)
   const [leaveTimer, setLeaveTimer] = useState<NodeJS.Timeout | null>(null)
@@ -81,7 +83,7 @@ export default function DesktopMenu({ menus }: DesktopMenuProps) {
       >
         {item.url ? (
           <a
-            href={item.url}
+            href={getLinkWithAgent(item.url)}
             target={item.target_blank ? '_blank' : '_self'}
             rel={item.target_blank ? 'noopener noreferrer' : undefined}
             className="menu-link"

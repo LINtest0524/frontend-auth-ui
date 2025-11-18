@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { useCompanySlug } from '@/hooks/useCompanySlug'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail } from 'lucide-react'
 
 export default function MessageIcon() {
   const { user } = useUserStore()
   const company = useCompanySlug()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [unreadCount, setUnreadCount] = useState(0)
   const [mounted, setMounted] = useState(false)
 
@@ -89,7 +90,11 @@ export default function MessageIcon() {
   // 點擊跳轉到消息中心
   const handleClick = () => {
     if (company) {
-      router.push(`/${company}/messages`)
+      // 保持原有的查詢參數（如 agent 參數）
+      const currentParams = new URLSearchParams(searchParams.toString())
+      const queryString = currentParams.toString()
+      const messagesUrl = `/${company}/messages${queryString ? `?${queryString}` : ''}`
+      router.push(messagesUrl)
     }
   }
 

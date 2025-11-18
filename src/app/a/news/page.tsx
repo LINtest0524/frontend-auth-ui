@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import '@/styles/pages/news.css'
 
 
@@ -27,6 +27,7 @@ type NewsResponse = {
 
 export default function NewsListPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [news, setNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -285,7 +286,13 @@ export default function NewsListPage() {
                       <article
                         key={`featured-${item.id}`}
                         className="news-card featured"
-                        onClick={() => router.push(`/a/news/${item.id}`)}
+                        onClick={() => {
+                          // 保持原有的查詢參數（如 agent 參數）
+                          const currentParams = new URLSearchParams(searchParams.toString())
+                          const queryString = currentParams.toString()
+                          const newsUrl = `/a/news/${item.id}${queryString ? `?${queryString}` : ''}`
+                          router.push(newsUrl)
+                        }}
                       >
                         <div className="news-card-header">
                           {item.image_url && (
@@ -338,7 +345,13 @@ export default function NewsListPage() {
                     <article
                       key={item.id}
                       className="news-card"
-                      onClick={() => router.push(`/a/news/${item.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const newsUrl = `/a/news/${item.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(newsUrl)
+                      }}
                     >
                       <div className="news-card-header">
                         {item.image_url && (

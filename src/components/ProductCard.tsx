@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCompanyConfig, useThemeConfig } from '@/hooks/useCompanyConfig';
 import '@/styles/components/product-card.css';
 
@@ -37,6 +37,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, companySlug, onAddToCart }: ProductCardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   // 🚀 配置系統整合
   const { config } = useCompanyConfig(companySlug);
@@ -70,7 +71,11 @@ export default function ProductCard({ product, companySlug, onAddToCart }: Produ
   const hasDiscount = displayData.original_price && Number(displayData.original_price) > Number(displayData.price);
 
   const handleCardClick = () => {
-    router.push(`/${companySlug}/products/${product.id}`);
+    // 保持原有的查詢參數（如 agent 參數）
+    const currentParams = new URLSearchParams(searchParams.toString());
+    const queryString = currentParams.toString();
+    const productUrl = `/${companySlug}/products/${product.id}${queryString ? `?${queryString}` : ''}`;
+    router.push(productUrl);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {

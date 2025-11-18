@@ -177,7 +177,7 @@ export default function Sidebar() {
                   onClick={() => handleNavClick("/admin/agents")}
                   className={cn("sidebar-subitem", pathname === "/admin/agents" && currentActive === null && "active")}
                 >
-                  代理商
+                  代理資料
                 </Link>
                 <Link
                   href="/admin/agents/commission-condition"

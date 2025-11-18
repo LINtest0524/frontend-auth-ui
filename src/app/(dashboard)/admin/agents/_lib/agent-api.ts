@@ -36,6 +36,12 @@ export type CreateAgentPayload = {
   status: 'active' | 'inactive' | 'pending';
   loginAccount: string;
   password: string;
+  confirmPassword?: string;
+  frontendUrl?: string;
+  defaultVipLevel?: string;
+  defaultRebateSettlement?: string;
+  defaultPaymentGroup?: string;
+  accountStatus?: string[];
   note?: string;
   // 預留
   revenueShare?: string;

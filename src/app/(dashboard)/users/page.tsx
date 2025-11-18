@@ -764,9 +764,11 @@ export default function UserListPage() {
                     <div className="agent-info">
                       {(user as any).parent_agent ? (
                         <div>
-                          <div className="agent-name">{(user as any).parent_agent.username}</div>
+                          <div className="agent-name">
+                            {(user as any).parent_agent.agent_name || (user as any).parent_agent.username}
+                          </div>
                           <div className="agent-code" style={{ fontSize: '12px', color: '#666' }}>
-                            {(user as any).parent_agent.agent_code}
+                            {(user as any).parent_agent.agent_code || (user as any).parent_agent.username}
                           </div>
                         </div>
                       ) : (

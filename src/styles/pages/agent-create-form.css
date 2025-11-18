@@ -10,27 +10,78 @@
 
 /* 表單標題區域 */
 .agent-form-header {
-  background: white;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
 }
 
 .agent-form-header h1 {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1f2937;
-  margin: 0 0 8px 0;
+  font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .agent-form-header p {
-  color: #6b7280;
+  color: #fff;
   font-size: 14px;
   margin: 0;
 }
 
 /* 表單內容區域 */
+.agent-form-content.agent-01 form{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.agent-form-content.agent-01 form .section-title{
+  font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+}
+
+.form-section-big01{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.form-section-big01 .form-section{
+  width: 49%;
+}
+
+.a_radiobox01 label{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.a_radiobox01 label .a_radio01{
+  width: 23px;
+  margin-right: 10px;
+}
+
+.a_checkbig_box{
+  margin: 5px 0 0 20px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.a_radiobox01 label .a_checkbox01{
+  width: 23px;
+  margin-right: 10px;
+}
+
 .agent-form-content {
   background: white;
   border-radius: 16px;
@@ -69,7 +120,6 @@
 }
 
 .form-field label {
-  display: block;
   font-size: 13px;
   font-weight: 600;
   color: #374151;

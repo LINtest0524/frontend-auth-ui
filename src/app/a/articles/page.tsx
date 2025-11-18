@@ -123,8 +123,19 @@ export default function ArticlesListPage() {
   }
 
   const handleCategoryChange = (categoryId: string) => {
-    // 直接更新 URL，讓 useEffect 處理狀態和數據載入
-    const newUrl = categoryId ? `/a/articles?categoryId=${categoryId}` : '/a/articles'
+    // 保持原有的查詢參數（如 agent 參數）並更新分類
+    const currentParams = new URLSearchParams(searchParams.toString())
+    
+    if (categoryId) {
+      currentParams.set('categoryId', categoryId)
+    } else {
+      currentParams.delete('categoryId')
+    }
+    
+    // 重設頁面為第一頁
+    currentParams.delete('page')
+    
+    const newUrl = `/a/articles${currentParams.toString() ? `?${currentParams.toString()}` : ''}`
     router.replace(newUrl)
   }
 
@@ -150,8 +161,9 @@ export default function ArticlesListPage() {
         <button
           key={1}
           onClick={() => {
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(searchParams.toString())
             if (selectedCategory) params.set('categoryId', selectedCategory)
+            params.delete('page')
             router.replace(`/a/articles?${params.toString()}`)
           }}
           className="pagination-btn"
@@ -174,9 +186,10 @@ export default function ArticlesListPage() {
         <button
           key={i}
           onClick={() => {
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(searchParams.toString())
             if (selectedCategory) params.set('categoryId', selectedCategory)
             if (i > 1) params.set('page', i.toString())
+            else params.delete('page')
             router.replace(`/a/articles?${params.toString()}`)
           }}
           className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
@@ -199,7 +212,7 @@ export default function ArticlesListPage() {
         <button
           key={totalPages}
           onClick={() => {
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(searchParams.toString())
             if (selectedCategory) params.set('categoryId', selectedCategory)
             params.set('page', totalPages.toString())
             router.replace(`/a/articles?${params.toString()}`)
@@ -216,9 +229,10 @@ export default function ArticlesListPage() {
         <button
           onClick={() => {
             const prevPage = currentPage - 1
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(searchParams.toString())
             if (selectedCategory) params.set('categoryId', selectedCategory)
             if (prevPage > 1) params.set('page', prevPage.toString())
+            else params.delete('page')
             router.replace(`/a/articles?${params.toString()}`)
           }}
           disabled={currentPage === 1}
@@ -237,7 +251,7 @@ export default function ArticlesListPage() {
         <button
           onClick={() => {
             const nextPage = currentPage + 1
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(searchParams.toString())
             if (selectedCategory) params.set('categoryId', selectedCategory)
             params.set('page', nextPage.toString())
             router.replace(`/a/articles?${params.toString()}`)
@@ -362,7 +376,13 @@ export default function ArticlesListPage() {
                       <article
                         key={`featured-${item.id}`}
                         className="article-card featured"
-                        onClick={() => router.push(`/a/articles/${item.id}`)}
+                        onClick={() => {
+                          // 保持原有的查詢參數（如 agent 參數）
+                          const currentParams = new URLSearchParams(searchParams.toString())
+                          const queryString = currentParams.toString()
+                          const articleUrl = `/a/articles/${item.id}${queryString ? `?${queryString}` : ''}`
+                          router.push(articleUrl)
+                        }}
                       >
                         <div className="article-card-header">
                           {item.image_url && (
@@ -415,7 +435,13 @@ export default function ArticlesListPage() {
                     <article
                       key={item.id}
                       className="article-card"
-                      onClick={() => router.push(`/a/articles/${item.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const articleUrl = `/a/articles/${item.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(articleUrl)
+                      }}
                     >
                       <div className="article-card-header">
                         {item.image_url && (

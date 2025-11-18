@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { sanitizeHtml } from '@/lib/sanitize'
 
 type NewsDetail = {
@@ -35,6 +35,7 @@ interface NewsDetailClientProps {
 
 export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDetailClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -88,7 +89,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
           <nav className="breadcrumb-nav">
             <div className="breadcrumb-container">
               <button 
-                onClick={() => router.push(`/${companyCode}`)}
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString())
+                  const queryString = currentParams.toString()
+                  const homeUrl = `/${companyCode}${queryString ? `?${queryString}` : ''}`
+                  router.push(homeUrl)
+                }}
                 className="breadcrumb-link"
               >
                 <svg className="breadcrumb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +107,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
               <button 
-                onClick={() => router.push(`/${companyCode}/news`)}
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString())
+                  const queryString = currentParams.toString()
+                  const newsUrl = `/${companyCode}/news${queryString ? `?${queryString}` : ''}`
+                  router.push(newsUrl)
+                }}
                 className="breadcrumb-link"
               >
                 <svg className="breadcrumb-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +257,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
                 <div className="nav-links">
                   {prev && (
                     <button
-                      onClick={() => router.push(`/${companyCode}/news/${prev.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const newsUrl = `/${companyCode}/news/${prev.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(newsUrl)
+                      }}
                       className="nav-link prev"
                     >
                       <div className="nav-direction">
@@ -258,7 +277,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
                   )}
                   {next && (
                     <button
-                      onClick={() => router.push(`/${companyCode}/news/${next.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const newsUrl = `/${companyCode}/news/${next.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(newsUrl)
+                      }}
                       className="nav-link next"
                     >
                       <div className="nav-direction">
@@ -294,7 +319,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
                     <article
                       key={item.id}
                       className="related-news-item"
-                      onClick={() => router.push(`/${companyCode}/news/${item.id}`)}
+                      onClick={() => {
+                        // 保持原有的查詢參數（如 agent 參數）
+                        const currentParams = new URLSearchParams(searchParams.toString())
+                        const queryString = currentParams.toString()
+                        const newsUrl = `/${companyCode}/news/${item.id}${queryString ? `?${queryString}` : ''}`
+                        router.push(newsUrl)
+                      }}
                     >
                       <div className="related-item-number">{index + 1}</div>
                       <div className="related-item-content">
@@ -318,7 +349,13 @@ export default function NewsDetailClient({ newsData, companyCode = 'a' }: NewsDe
             {/* 返回按鈕 */}
             <div className="back-to-list">
               <button
-                onClick={() => router.push(`/${companyCode}/news`)}
+                onClick={() => {
+                  // 保持原有的查詢參數（如 agent 參數）
+                  const currentParams = new URLSearchParams(searchParams.toString())
+                  const queryString = currentParams.toString()
+                  const newsUrl = `/${companyCode}/news${queryString ? `?${queryString}` : ''}`
+                  router.push(newsUrl)
+                }}
                 className="back-btn"
               >
                 <svg className="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
