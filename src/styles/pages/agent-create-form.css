@@ -54,10 +54,27 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  padding: 16px;
+  gap: 10px;
+}
+
+.fd1-w100{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 .form-section-big01 .form-section{
-  width: 49%;
+  width: 100%;
+}
+
+.form-section-big01 .form-field{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .a_radiobox01 label{
@@ -116,7 +133,7 @@
 
 /* 表單欄位 */
 .form-field {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .form-field label {

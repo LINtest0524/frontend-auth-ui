@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useUserStore } from '@/hooks/use-user-store'
 import { usePathname, useRouter } from 'next/navigation'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import FloatingAds from '@/components/FloatingAds'
 import PopupAnnouncement from '@/components/PopupAnnouncement'
 import FloatingCustomerService from '@/components/FloatingCustomerService'
@@ -13,6 +14,7 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
   const { setUser, user } = useUserStore()
   const pathname = usePathname()
   const router = useRouter()
+  const { getLinkWithAgent } = useAgentContext()
   const [hydrated, setHydrated] = useState(false)
   const [sessionId, setSessionId] = useState<string>('')
 
@@ -68,7 +70,10 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
         localStorage.removeItem(`portalToken_${currentCompanyCode}`)
         localStorage.removeItem(`portalUser_${currentCompanyCode}`)
         localStorage.removeItem(`enabledModules_${currentCompanyCode}`)
-        router.replace(`/${currentCompanyCode}/login`)
+        // 直接從當前 URL 獲取代理商參數
+        const currentSearch = window.location.search
+        const loginUrl = `/${currentCompanyCode}/login${currentSearch}`
+        window.location.replace(loginUrl)
         return
       }
     } else {
@@ -82,7 +87,10 @@ export default function CompanyPortalLayout({ children }: { children: React.Reac
         })
 
       if (!isPublicPage) {
-        router.replace(`/${currentCompanyCode}/login`)
+        // 直接從當前 URL 獲取代理商參數
+        const currentSearch = window.location.search
+        const loginUrl = `/${currentCompanyCode}/login${currentSearch}`
+        window.location.replace(loginUrl)
         return
       }
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/hooks/use-user-store'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { useCartStore } from '@/hooks/use-cart-store-new'
 import FacebookLoginButton from '@/components/FacebookLoginButton'
 import { CsrfTokenManager } from '@/lib/csrf'
@@ -10,6 +11,7 @@ import './login.css'
 
 
 export default function AgentLoginPage() {
+  const { getLinkWithAgent } = useAgentContext()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -227,11 +229,11 @@ export default function AgentLoginPage() {
 
         {/* 底部連結 */}
         <div className="login-footer">
-          <a href={`/${companyCode}/register`} className="footer-link">
+          <a href={getLinkWithAgent(`/${companyCode}/register`)} className="footer-link">
             還沒有帳戶？立即註冊
           </a>
           <span style={{ margin: '0 1rem', color: '#e2e8f0' }}>|</span>
-          <a href={`/${companyCode}`} className="footer-link">
+          <a href={getLinkWithAgent(`/${companyCode}`)} className="footer-link">
             返回首頁
           </a>
         </div>

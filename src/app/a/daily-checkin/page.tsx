@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useUserStore } from "@/hooks/use-user-store";
+import { useAgentContext } from "@/hooks/useAgentContext";
 import { apiClient } from "@/lib/api/apiClient";
 import { useDebounce } from "@/hooks/use-debounce";
 import { handleApiError } from "@/lib/errorHandler";
@@ -31,6 +32,7 @@ interface CheckinStatus {
 }
 
 export default function DailyCheckinPage() {
+  const { getLinkWithAgent } = useAgentContext();
   const [status, setStatus] = useState<CheckinStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [showReward, setShowReward] = useState(false);
@@ -49,11 +51,11 @@ export default function DailyCheckinPage() {
       const companyCode = window.location.pathname.split('/')[1]
       const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token && !user) {
-        window.location.href = '/a/duplicate-login'
+        window.location.replace(getLinkWithAgent('/a/duplicate-login'))
         return
       }
     }
-  }, [user])
+  }, [user, getLinkWithAgent])
 
   const loadAvailableActivity = useCallback(async (isMounted = true) => {
     try {
@@ -314,7 +316,7 @@ export default function DailyCheckinPage() {
             <div className="login-prompt">
               <h2>請先登入</h2>
               <p>登入後即可參與每日簽到活動</p>
-              <a href="/a/login" className="login-btn">前往登入</a>
+              <a href={getLinkWithAgent("/a/login")} className="login-btn">前往登入</a>
             </div>
           </div>
         </div>

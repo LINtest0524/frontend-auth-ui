@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { useCartStore } from '@/hooks/use-cart-store'
 
 export default function CartPage() {
+  const { getLinkWithAgent } = useAgentContext()
   const { 
     items, 
     totalItems, 
@@ -20,11 +22,11 @@ export default function CartPage() {
       const companyCode = window.location.pathname.split('/')[1] || 'b'
       const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
-        window.location.href = '/b/duplicate-login'
+        window.location.replace(getLinkWithAgent('/b/duplicate-login'))
         return
       }
     }
-  }, [])
+  }, [getLinkWithAgent])
 
   if (items.length === 0) {
     return (

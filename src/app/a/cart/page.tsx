@@ -1,10 +1,12 @@
 'use client'
 
 import { useCartStore, ShippingMethod } from '@/hooks/use-cart-store-new'
+import { useAgentContext } from '@/hooks/useAgentContext'
 import { useEffect, useState } from 'react'
 import './cart.css'
 
 export default function CartPage() {
+  const { getLinkWithAgent } = useAgentContext()
   const { 
     items, 
     getTotalItems,
@@ -46,11 +48,11 @@ export default function CartPage() {
       const companyCode = window.location.pathname.split('/')[1]
       const token = localStorage.getItem(`portalToken_${companyCode}`)
       if (!token) {
-        window.location.href = '/a/duplicate-login'
+        window.location.replace(getLinkWithAgent('/a/duplicate-login'))
         return
       }
     }
-  }, [])
+  }, [getLinkWithAgent])
 
   // 獲取運送方式
   const fetchShippingMethods = async () => {

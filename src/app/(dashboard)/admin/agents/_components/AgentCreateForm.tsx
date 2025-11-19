@@ -4,6 +4,8 @@ import '@/styles/pages/agent-create-form.css';
 import { createAgent, fetchAgentOptions, fetchParentAgents, CreateAgentPayload } from '../_lib/agent-api';
 import { useRouter } from 'next/navigation';
 import { handleApiError } from '@/lib/errorHandler';
+import { useCommissionConditionsStore } from '@/stores/useCommissionConditionsStore';
+import { CommissionMethod, CommissionConditionListItem } from '@/types/commission-condition';
 
 type Option<T extends string | number> = { label: string; value: T };
 
@@ -17,6 +19,14 @@ export default function AgentCreateForm() {
   const [commissionConditions, setCommissionConditions] = useState<Option<string>[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  // 分潤條件設定相關狀態
+  const [commissionSystem, setCommissionSystem] = useState<CommissionMethod | ''>('');
+  const [selectedCondition, setSelectedCondition] = useState<CommissionConditionListItem | null>(null);
+  const [filteredConditions, setFilteredConditions] = useState<CommissionConditionListItem[]>([]);
+
+  // 使用 commission conditions store
+  const { items: allCommissionConditions, fetchList: fetchCommissionConditions } = useCommissionConditionsStore();
 
   const [form, setForm] = useState<CreateAgentPayload>({
     companyId: 0,
@@ -115,6 +125,81 @@ export default function AgentCreateForm() {
       }
     })();
   }, [form.companyId, parentLevel]);
+
+  // 載入分潤條件數據
+  useEffect(() => {
+    const loadConditions = async () => {
+      try {
+        // 載入所有啟用的分潤條件
+        await fetchCommissionConditions({ 
+          limit: 1000, // 載入大量資料以確保包含所有條件
+          page: 1 
+        });
+      } catch (error) {
+        console.error('Failed to load commission conditions:', error);
+      }
+    };
+    loadConditions();
+  }, [fetchCommissionConditions]);
+
+  // 根據代理制度篩選分潤條件
+  useEffect(() => {
+    console.log('🔍 篩選分潤條件:', {
+      commissionSystem,
+      allConditionsCount: allCommissionConditions.length,
+      allConditions: allCommissionConditions.map(c => ({ 
+        id: c.id, 
+        name: c.name, 
+        method: c.method, 
+        systemType: c.systemType,
+        isActive: c.isActive 
+      }))
+    });
+
+    if (commissionSystem) {
+      // 將代理制度值轉換為 systemType 格式
+      let targetSystemType = '';
+      switch (commissionSystem) {
+        case 'SETTLEMENT_ACTIVE_MEMBERS':
+          targetSystemType = 'COMMISSION'; // 占成制
+          break;
+        case 'SETTLEMENT_ECPAY_PERSON': 
+          targetSystemType = 'REBATE'; // 返水制
+          break;
+        default:
+          targetSystemType = commissionSystem;
+      }
+
+      const filtered = allCommissionConditions.filter(item => {
+        const matches = item.systemType === targetSystemType && item.isActive;
+        console.log(`條件 ${item.name}: method=${item.method}, systemType=${item.systemType}, targetSystemType=${targetSystemType}, isActive=${item.isActive}, matches=${matches}`);
+        return matches;
+      });
+      
+      console.log('✅ 篩選結果:', filtered.map(c => ({ 
+        id: c.id, 
+        name: c.name, 
+        method: c.method,
+        systemType: c.systemType
+      })));
+      
+      setFilteredConditions(filtered);
+    } else {
+      setFilteredConditions([]);
+    }
+    setSelectedCondition(null);
+    update('commissionConditionId', null);
+  }, [commissionSystem, allCommissionConditions]);
+
+  // 當選擇分潤條件時，更新選中的條件數據
+  useEffect(() => {
+    if (form.commissionConditionId) {
+      const condition = filteredConditions.find(item => item.id === form.commissionConditionId);
+      setSelectedCondition(condition || null);
+    } else {
+      setSelectedCondition(null);
+    }
+  }, [form.commissionConditionId, filteredConditions]);
 
   const canSubmit = useMemo(() => {
     return !!form.companyId && !!form.displayName && !!form.loginAccount && !!form.password && !!form.agentLevel && form.password === form.confirmPassword;
@@ -456,60 +541,163 @@ export default function AgentCreateForm() {
           </div>
         </div>
 
-        {/* 聯絡資訊區塊 */}
-        <div className="form-section">
-          <div className="section-title">
-            <span>📞</span>
-            聯絡資訊
-          </div>
-              
-          <div className="form-field">
-            <label>手機號碼</label>
-            <input 
-              type="tel"
-              value={form.phone} 
-              onChange={e => update('phone', e.target.value)} 
-              placeholder="09xx-xxx-xxx" 
-            />
+
+
+
+        <div className="fd1-w100">
+          {/* 聯絡資訊區塊 */}
+          <div className="form-section">
+            <div className="section-title">
+              聯絡資訊
+            </div>
+                
+            <div className="form-field">
+              <label>手機號碼</label>
+              <input 
+                type="tel"
+                value={form.phone} 
+                onChange={e => update('phone', e.target.value)} 
+                placeholder="09xx-xxx-xxx" 
+              />
+            </div>
+
+            <div className="form-field">
+              <label>電子郵件</label>
+              <input 
+                type="email" 
+                value={form.email} 
+                onChange={e => update('email', e.target.value)} 
+                placeholder="agent@example.com" 
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Telegram</label>
+              <input 
+                value={form.telegram} 
+                onChange={e => update('telegram', e.target.value)} 
+                placeholder="@telegram_account" 
+              />
+            </div>
+
+            <div className="form-field">
+              <label>LINE ID</label>
+              <input 
+                value={form.line} 
+                onChange={e => update('line', e.target.value)} 
+                placeholder="LINE ID" 
+              />
+            </div>
+
+            <div className="form-field">
+              <label>QQ</label>
+              <input 
+                value={form.qq} 
+                onChange={e => update('qq', e.target.value)} 
+                placeholder="QQ 號碼" 
+              />
+            </div>
           </div>
 
-          <div className="form-field">
-            <label>電子郵件</label>
-            <input 
-              type="email" 
-              value={form.email} 
-              onChange={e => update('email', e.target.value)} 
-              placeholder="agent@example.com" 
-            />
-          </div>
+          {/* 分潤條件設定 */}
+          <div className="form-section">
+            <div className="section-title">
+              分潤條件設定
+            </div>
 
-          <div className="form-field">
-            <label>Telegram</label>
-            <input 
-              value={form.telegram} 
-              onChange={e => update('telegram', e.target.value)} 
-              placeholder="@telegram_account" 
-            />
-          </div>
+            {/* 1. 代理制度 */}
+            <div className="form-field">
+              <label className="required">代理制度</label>
+              <select 
+                value={commissionSystem} 
+                onChange={e => setCommissionSystem(e.target.value as CommissionMethod | '')}
+              >
+                <option value="">請選擇代理制度</option>
+                <option value={CommissionMethod.SETTLEMENT_ACTIVE_MEMBERS}>占成制</option>
+                <option value={CommissionMethod.SETTLEMENT_ECPAY_PERSON}>返水制(總投注額回饋)</option>
+              </select>
+            </div>
 
-          <div className="form-field">
-            <label>LINE ID</label>
-            <input 
-              value={form.line} 
-              onChange={e => update('line', e.target.value)} 
-              placeholder="LINE ID" 
-            />
-          </div>
+            {/* 2. 分潤選擇 */}
+            <div className="form-field">
+              <label className="required">分潤選擇</label>
+              <select 
+                value={form.commissionConditionId || ''} 
+                onChange={e => update('commissionConditionId', e.target.value || null)}
+                disabled={!commissionSystem}
+              >
+                <option value="">請選擇分潤方案</option>
+                {filteredConditions.map(condition => (
+                  <option key={condition.id} value={condition.id}>
+                    {condition.name} ({condition.agentName})
+                  </option>
+                ))}
+              </select>
+              {!commissionSystem && (
+                <div className="form-hint" style={{ color: '#f56565' }}>請先選擇代理制度</div>
+              )}
+            </div>
 
-          <div className="form-field">
-            <label>QQ</label>
-            <input 
-              value={form.qq} 
-              onChange={e => update('qq', e.target.value)} 
-              placeholder="QQ 號碼" 
-            />
+            {/* 3. 分潤比例(%) */}
+            <div className="form-field">
+              <label>分潤比例(%)</label>
+              <div style={{ 
+                padding: '8px 12px', 
+                backgroundColor: '#f8f9fa', 
+                border: '1px solid #dee2e6', 
+                borderRadius: '4px',
+                color: '#495057'
+              }}>
+                {selectedCondition?.commissionPercent || '未設定'}%
+              </div>
+            </div>
+
+            {/* 4. 代理返水條件 */}
+            <div className="form-field">
+              <label>代理返水條件</label>
+              <div style={{ 
+                padding: '12px', 
+                backgroundColor: '#f8f9fa', 
+                border: '1px solid #dee2e6', 
+                borderRadius: '4px'
+              }}>
+                {selectedCondition?.gameRebateRates ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                    <div><strong>真人:</strong> {selectedCondition.gameRebateRates.live || 0}%</div>
+                    <div><strong>電子:</strong> {selectedCondition.gameRebateRates.slot || 0}%</div>
+                    <div><strong>體育:</strong> {selectedCondition.gameRebateRates.sport || 0}%</div>
+                    <div><strong>彩票:</strong> {selectedCondition.gameRebateRates.lottery || 0}%</div>
+                    <div><strong>棋牌:</strong> {selectedCondition.gameRebateRates.card || 0}%</div>
+                    <div><strong>捕魚:</strong> {selectedCondition.gameRebateRates.fishing || 0}%</div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#6c757d' }}>未設定返水條件</div>
+                )}
+              </div>
+            </div>
+
+            {/* 5. 分潤結算時機 */}
+            <div className="form-field">
+              <label>分潤結算時機</label>
+              <div style={{ 
+                padding: '8px 12px', 
+                backgroundColor: '#f8f9fa', 
+                border: '1px solid #dee2e6', 
+                borderRadius: '4px',
+                color: '#495057'
+              }}>
+                {selectedCondition?.settlementCycle 
+                  ? (selectedCondition.settlementCycle === 'WEEKLY' 
+                    ? '週結(每週日 23:59:59)' 
+                    : selectedCondition.settlementCycle === 'MONTHLY'
+                    ? '月結(每月最後一天 23:59:59)'
+                    : selectedCondition.settlementCycle)
+                  : '未設定'}
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
 
 

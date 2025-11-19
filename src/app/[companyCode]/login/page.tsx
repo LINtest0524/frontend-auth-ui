@@ -214,6 +214,10 @@ export default function DynamicCompanyLoginPage() {
             <a href={getLinkWithAgent(`/${companyCode}/register`)} className="register-link">
               立即註冊
             </a>
+            <span style={{ margin: '0 1rem', color: '#e2e8f0' }}>|</span>
+            <a href={getLinkWithAgent(`/${companyCode}`)} className="footer-link">
+              返回首頁
+            </a>
           </p>
           <p className="company-code">
             公司代碼: <span>{companyCode}</span>

@@ -27,7 +27,6 @@ export default function PortalRegisterPage() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
       const agentParam = urlParams.get('agent')
-      console.log('🎯 [Register A] URL agent param:', agentParam)
       if (agentParam) {
         // 通過 API 獲取真正的推廣代碼
         fetchAgentPromoCode(agentParam)
@@ -38,19 +37,15 @@ export default function PortalRegisterPage() {
   // 獲取代理商的真正推廣代碼
   const fetchAgentPromoCode = async (subdomain: string) => {
     try {
-      console.log('🔍 [Register A] Fetching promo code for:', subdomain)
       const response = await fetch(`/api/agents/verify-subdomain?companyCode=${company}&subdomain=${subdomain}`)
       if (response.ok) {
         const data = await response.json()
         const promoCode = data.promoCode
-        console.log('✅ [Register A] Got promo code:', promoCode)
         setAgentCode(promoCode)
       } else {
-        console.log('❌ [Register A] Failed to fetch promo code')
         setAgentCode(subdomain) // 備用：使用子網域名稱
       }
     } catch (error) {
-      console.error('🚨 [Register A] Error fetching promo code:', error)
       setAgentCode(subdomain) // 備用：使用子網域名稱
     }
   }
@@ -72,19 +67,9 @@ export default function PortalRegisterPage() {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
       
-      // 調試：顯示要發送的數據
-      console.log('📤 [Register] Sending registration data:', {
-        username,
-        email,
-        agent_code: agentCode,
-        company,
-        apiBase,
-        fullUrl: `${apiBase}/portal/auth/register?company=${company}`
-      });
       
       const headers = CsrfTokenManager.getHeaders();
       
-      console.log('📤 [Register] Request headers:', headers);
       
       const res = await fetch(
         `${apiBase}/portal/auth/register?company=${company}`,
@@ -95,12 +80,9 @@ export default function PortalRegisterPage() {
         }
       )
 
-      console.log('🔍 [Register] Response status:', res.status);
-      console.log('🔍 [Register] Response headers:', Object.fromEntries(res.headers.entries()));
 
       if (!res.ok) {
         const responseText = await res.text();
-        console.error('❌ [Register] Error response:', responseText);
         
         let errData;
         try {

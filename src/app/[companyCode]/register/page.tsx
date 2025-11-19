@@ -9,10 +9,6 @@ import { CsrfTokenManager } from '@/lib/csrf'
 import '../../a/register/register.css'
 
 export default function DynamicCompanyRegisterPage() {
-  // 最簡單的測試 - 這應該會彈出對話框
-  if (typeof window !== 'undefined') {
-    alert('註冊頁面已載入！URL: ' + window.location.href)
-  }
   const router = useRouter()
   const params = useParams()
   const companyCode = params.companyCode as string
@@ -30,7 +26,6 @@ export default function DynamicCompanyRegisterPage() {
   // 確保組件已掛載
   useEffect(() => {
     setMounted(true)
-    console.log('🚀 [Register] Component mounted, current URL:', window.location.href)
   }, [])
 
   // 自動填入 URL 中的代理商代碼
@@ -38,21 +33,13 @@ export default function DynamicCompanyRegisterPage() {
     if (!mounted) return
     
     // 直接從 window.location 獲取參數，確保在客戶端正確執行
-    console.log('🔍 [Register] Checking URL params...')
     const urlParams = new URLSearchParams(window.location.search)
     const agentParam = urlParams.get('agent')
     
-    console.log('📍 [Register] URL analysis:', {
-      fullUrl: window.location.href,
-      searchParams: window.location.search,
-      agentParam: agentParam
-    })
     
     if (agentParam) {
-      console.log('✅ [Register] Setting agent code:', agentParam)
       setAgentCode(agentParam)
     } else {
-      console.log('❌ [Register] No agent parameter found')
     }
   }, [mounted])
 
@@ -65,11 +52,6 @@ export default function DynamicCompanyRegisterPage() {
 
   // 調試：監控代理商代碼的變化
   useEffect(() => {
-    console.log('🔍 [Register] Agent code state:', {
-      agentCode,
-      urlAgentCode,
-      location: window.location.href
-    });
   }, [agentCode, urlAgentCode])
 
   const handleSubmit = async () => {
@@ -89,13 +71,6 @@ export default function DynamicCompanyRegisterPage() {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
       
-      // 調試：顯示要發送的數據
-      console.log('📤 [Register] Sending registration data:', {
-        username,
-        email,
-        agent_code: agentCode,
-        companyCode
-      });
       
       const res = await fetch(
         `${apiBase}/portal/auth/register?company=${companyCode}`,

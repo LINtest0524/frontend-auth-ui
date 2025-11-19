@@ -305,7 +305,7 @@ export default function PortalHeaderBar({ companyCode, config }: PortalHeaderBar
           <div className="fl6">
             {/* 購物車圖標 (未登入用戶) */}
             <a 
-              href={`/${company}/cart`} 
+              href={getLinkWithAgent(`/${company}/cart`)} 
               className="cart-icon" 
               title={`購物車 (${getTotalItems()} 件商品)`}
               style={{
