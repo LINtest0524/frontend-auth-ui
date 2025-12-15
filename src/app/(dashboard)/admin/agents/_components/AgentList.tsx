@@ -47,6 +47,80 @@ interface Agent {
 }
 
 export default function AgentList() {
+  // 動態計算並更新第2欄的 left 位置
+  React.useEffect(() => {
+    // 添加固定欄位的 CSS
+    const style = document.createElement('style');
+    style.id = 'agent-sticky-columns-style';
+    style.innerHTML = `
+      .sticky-col-1 {
+        white-space: nowrap !important;
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 10 !important;
+        border-right: 0px solid #d3d3d3 !important;
+        border-bottom: 0px solid #d3d3d3 !important;
+        background-color: white !important;
+        box-shadow: inset -1px 0 0 #ddd, inset 0 -1px 0 #ddd, 2px 0 4px rgba(0,0,0,0.1) !important;
+      }
+      
+      .sticky-col-2 {
+        white-space: nowrap !important;
+        position: sticky !important;
+        z-index: 10 !important;
+        border-right: 0px solid #d3d3d3 !important;
+        border-bottom: 0px solid #d3d3d3 !important;
+        background-color: white !important;
+        box-shadow: inset -1px 0 0 #ddd, inset 0 -1px 0 #ddd, 2px 0 4px rgba(0,0,0,0.1) !important;
+      }
+      
+      thead .sticky-col-1,
+      thead .sticky-col-2 {
+        z-index: 11 !important;
+      }
+      
+      tbody tr:nth-child(even) .sticky-col-1,
+      tbody tr:nth-child(even) .sticky-col-2 {
+        background-color: #efefef !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const updateSecondColumnPosition = () => {
+      const table = document.getElementById('agent-table-view');
+      if (!table) return;
+
+      // 獲取第一欄的實際寬度
+      const firstCol = table.querySelector('th:nth-child(1)') as HTMLElement;
+      if (!firstCol) return;
+      
+      const firstColWidth = firstCol.offsetWidth;
+      
+      // 更新所有第2欄的 left 位置
+      const secondHeaders = table.querySelectorAll('th:nth-child(2)');
+      const secondCells = table.querySelectorAll('td:nth-child(2)');
+      
+      [...secondHeaders, ...secondCells].forEach((el: any) => {
+        if (el) {
+          el.style.left = `${firstColWidth}px`;
+        }
+      });
+    };
+
+    // 初始化
+    const timer = setTimeout(updateSecondColumnPosition, 100);
+
+    // 監聽視窗大小變化
+    window.addEventListener('resize', updateSecondColumnPosition);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateSecondColumnPosition);
+      const styleEl = document.getElementById('agent-sticky-columns-style');
+      if (styleEl) document.head.removeChild(styleEl);
+    };
+  }, []); // 空依賴,避免循環依賴
+
   const router = useRouter();
   const currentUser = useUserStore((state) => state.user);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -99,6 +173,19 @@ export default function AgentList() {
     try {
       const data = await fetchAgents(selectedCompany || undefined);
       setAgents(data);
+      // 數據更新後重新計算第2欄位置
+      setTimeout(() => {
+        const table = document.getElementById('agent-table-view');
+        if (!table) return;
+        const firstCol = table.querySelector('th:nth-child(1)') as HTMLElement;
+        if (!firstCol) return;
+        const firstColWidth = firstCol.offsetWidth;
+        const secondHeaders = table.querySelectorAll('th:nth-child(2)');
+        const secondCells = table.querySelectorAll('td:nth-child(2)');
+        [...secondHeaders, ...secondCells].forEach((el: any) => {
+          if (el) el.style.left = `${firstColWidth}px`;
+        });
+      }, 200);
     } catch (e) {
       handleApiError(e, 'AgentList-loadAgents');
     }
@@ -307,7 +394,7 @@ export default function AgentList() {
     return (
       <tr key={agent.id}>
         {/* 1. 代理級別 */}
-        <td style={{ whiteSpace: 'nowrap' }}>
+        <td className="sticky-col-1">
           {agent.next_level_count && agent.next_level_count > 0 ? (
             <a
               href="#"
@@ -334,7 +421,7 @@ export default function AgentList() {
         </td>
         
         {/* 2. 代理名稱 */}
-        <td style={{ whiteSpace: 'nowrap' }}>
+        <td className="sticky-col-2">
           <div>
             <div style={{ fontWeight: '500', color: '#333' }}>{agent.display_name || agent.username}</div>
             <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
@@ -622,7 +709,7 @@ export default function AgentList() {
           </div>
         </div>
       ) : (
-        <div className="table-wrapper">
+        <div className="table-wrapper" style={{ position: 'relative', overflow: 'auto' }}>
           {viewMode === 'tree' ? (
             // 樹狀視圖
             <table className="data-table">
@@ -643,11 +730,11 @@ export default function AgentList() {
             </table>
           ) : (
             // 表格視圖
-            <table className="data-table" style={{ fontSize: '12px' }}>
+            <table className="data-table" style={{ fontSize: '12px', position: 'relative' }} id="agent-table-view">
               <thead>
                 <tr>
-                  <th>代理級別</th>
-                  <th>代理名稱</th>
+                  <th className="sticky-col-1">代理級別</th>
+                  <th className="sticky-col-2">代理名稱</th>
                   <th>會員數量</th>
                   <th>代理帳號</th>
                   <th>代理姓名</th>
