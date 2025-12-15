@@ -905,26 +905,281 @@ export default function AgentEditForm({ agentId }: AgentEditFormProps) {
               />
             </div>
 
-            {/* 銀行卡資料 - 簡化版本，僅顯示不可編輯 */}
+            {/* 銀行卡資料區塊 */}
             <div className="form-field">
               <label>銀行卡資料</label>
-              {(form.bankCards && form.bankCards.length > 0) ? (
-                <div style={{ padding: '10px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                  {form.bankCards.map((card, index) => (
-                    <div key={index} style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #ddd' }}>
-                      <div>銀行: {card.bankCode || '未設定'}</div>
-                      <div>帳號: {card.accountNumber || '未設定'}</div>
-                      <div>狀態: {card.status === 'ACTIVE' ? '啟用' : '停用'}</div>
-                      {card.note && <div>備註: {card.note}</div>}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ padding: '10px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>
-                  尚無銀行卡資料
-                </div>
-              )}
-              <div className="form-hint">銀行卡資料編輯功能開發中</div>
+              <div className="bank-cards-container">
+                <table className="bank-cards-table" style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  marginBottom: '10px'
+                }}>
+                  <thead>
+                    <tr>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>銀行名稱</th>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>銀行帳號</th>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>存摺封面</th>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>狀態</th>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>備註</th>
+                      <th style={{border: '1px solid #ddd', padding: '8px', backgroundColor: '#f5f5f5'}}>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(form.bankCards || []).map((card, index) => (
+                      <tr key={index}>
+                        <td style={{border: '1px solid #ddd', padding: '8px'}}>
+                          <select 
+                            value={card.bankCode || ''} 
+                            onChange={e => updateBankCard(index, 'bankCode', e.target.value)}
+                            style={{width: '100%', padding: '4px'}}
+                          >
+                            <option value="">請選擇銀行</option>
+                            <option value="004_臺灣銀行">004 臺灣銀行</option>
+                            <option value="005_臺灣土地銀行">005 臺灣土地銀行</option>
+                            <option value="006_合作金庫商業銀行">006 合作金庫商業銀行</option>
+                            <option value="007_第一商業銀行">007 第一商業銀行</option>
+                            <option value="008_華南商業銀行">008 華南商業銀行</option>
+                            <option value="009_彰化商業銀行">009 彰化商業銀行</option>
+                            <option value="011_上海商業儲蓄銀行">011 上海商業儲蓄銀行</option>
+                            <option value="012_台北富邦商業銀行">012 台北富邦商業銀行</option>
+                            <option value="013_國泰世華商業銀行">013 國泰世華商業銀行</option>
+                            <option value="016_高雄銀行">016 高雄銀行</option>
+                            <option value="017_兆豐國際商業銀行">017 兆豐國際商業銀行</option>
+                            <option value="021_花旗(台灣)商業銀行">021 花旗(台灣)商業銀行</option>
+                            <option value="048_王道商業銀行">048 王道商業銀行</option>
+                            <option value="050_臺灣中小企業銀行">050 臺灣中小企業銀行</option>
+                            <option value="052_渣打國際商業銀行">052 渣打國際商業銀行</option>
+                            <option value="053_台中商業銀行">053 台中商業銀行</option>
+                            <option value="054_京城商業銀行">054 京城商業銀行</option>
+                            <option value="081_滙豐(台灣)商業銀行">081 滙豐(台灣)商業銀行</option>
+                            <option value="101_瑞興商業銀行">101 瑞興商業銀行</option>
+                            <option value="102_華泰商業銀行">102 華泰商業銀行</option>
+                            <option value="103_臺灣新光商業銀行">103 臺灣新光商業銀行</option>
+                            <option value="108_陽信商業銀行">108 陽信商業銀行</option>
+                            <option value="118_板信商業銀行">118 板信商業銀行</option>
+                            <option value="147_三信商業銀行">147 三信商業銀行</option>
+                            <option value="700_中華郵政 (郵局)">700 中華郵政 (郵局)</option>
+                            <option value="803_聯邦商業銀行">803 聯邦商業銀行</option>
+                            <option value="805_遠東國際商業銀行">805 遠東國際商業銀行</option>
+                            <option value="806_元大商業銀行">806 元大商業銀行</option>
+                            <option value="807_永豐商業銀行">807 永豐商業銀行</option>
+                            <option value="808_玉山商業銀行">808 玉山商業銀行</option>
+                            <option value="809_凱基商業銀行">809 凱基商業銀行</option>
+                            <option value="810_星展(台灣)商業銀行">810 星展(台灣)商業銀行</option>
+                            <option value="812_台新國際商業銀行">812 台新國際商業銀行</option>
+                            <option value="816_安泰商業銀行">816 安泰商業銀行</option>
+                            <option value="822_中國信託商業銀行">822 中國信託商業銀行</option>
+                            <option value="823_將來銀行">823 將來銀行</option>
+                            <option value="824_連線商業銀行 (LINE Bank)">824 連線商業銀行 (LINE Bank)</option>
+                            <option value="826_樂天國際商業銀行">826 樂天國際商業銀行</option>
+                          </select>
+                        </td>
+                        <td style={{border: '1px solid #ddd', padding: '8px'}}>
+                          <input 
+                            type="text"
+                            value={card.accountNumber || ''} 
+                            onChange={e => {
+                              const value = e.target.value.replace(/[^0-9]/g, '');
+                              updateBankCard(index, 'accountNumber', value);
+                            }}
+                            placeholder="銀行帳號"
+                            style={{width: '100%', padding: '4px'}}
+                          />
+                        </td>
+                        <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+                          <div className="file-upload-wrapper">
+                            {(card.passbookCover || card.passbookCoverUrl) ? (
+                              <div className="file-preview" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'}}>
+                                <div style={{position: 'relative'}}>
+                                  <img 
+                                    src={
+                                      card.passbookCoverPreview || 
+                                      (card.passbookCoverUrl?.startsWith('http') 
+                                        ? card.passbookCoverUrl 
+                                        : `${process.env.NEXT_PUBLIC_API_BASE}${card.passbookCoverUrl}`)
+                                    } 
+                                    alt="存摺封面" 
+                                    onClick={() => {
+                                      const imageUrl = card.passbookCoverPreview || 
+                                        (card.passbookCoverUrl?.startsWith('http') 
+                                          ? card.passbookCoverUrl 
+                                          : `${process.env.NEXT_PUBLIC_API_BASE}${card.passbookCoverUrl}`);
+                                      window.open(imageUrl, '_blank');
+                                    }}
+                                    style={{
+                                      width: '60px', 
+                                      height: '60px', 
+                                      objectFit: 'cover', 
+                                      border: '2px solid #e0e0e0',
+                                      borderRadius: '6px',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                      opacity: card.uploading ? 0.6 : 1,
+                                      cursor: card.uploading ? 'default' : 'pointer',
+                                      transition: 'transform 0.2s, box-shadow 0.2s'
+                                    }}
+                                    onMouseOver={(e) => {
+                                      if (!card.uploading) {
+                                        (e.target as HTMLImageElement).style.transform = 'scale(1.1)';
+                                        (e.target as HTMLImageElement).style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                                      }
+                                    }}
+                                    onMouseOut={(e) => {
+                                      if (!card.uploading) {
+                                        (e.target as HTMLImageElement).style.transform = 'scale(1)';
+                                        (e.target as HTMLImageElement).style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                                      }
+                                    }}
+                                    title="點擊查看大圖"
+                                  />
+                                  {card.uploading && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      fontSize: '16px'
+                                    }}>
+                                      ⏳
+                                    </div>
+                                  )}
+                                </div>
+                                {card.uploading ? (
+                                  <div style={{
+                                    fontSize: '10px',
+                                    color: '#007bff',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    上傳中...
+                                  </div>
+                                ) : (card.passbookCoverUrl || card.passbookCover) ? (
+                                  <div style={{
+                                    fontSize: '10px',
+                                    color: '#28a745',
+                                    fontWeight: 'bold'
+                                  }}>
+                                    ✅ 已上傳
+                                  </div>
+                                ) : null}
+                                <button 
+                                  type="button" 
+                                  onClick={() => removeBankCardImage(index)} 
+                                  disabled={card.uploading}
+                                  style={{
+                                    padding: '4px 8px', 
+                                    fontSize: '11px',
+                                    backgroundColor: card.uploading ? '#6c757d' : '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: card.uploading ? 'not-allowed' : 'pointer',
+                                    transition: 'background-color 0.2s'
+                                  }}
+                                  onMouseOver={(e) => !card.uploading && ((e.target as HTMLButtonElement).style.backgroundColor = '#c82333')}
+                                  onMouseOut={(e) => !card.uploading && ((e.target as HTMLButtonElement).style.backgroundColor = '#dc3545')}
+                                >
+                                  🗑️ 移除
+                                </button>
+                              </div>
+                            ) : (
+                              <button 
+                                type="button" 
+                                onClick={() => triggerBankCardFileUpload(index)} 
+                                style={{
+                                  padding: '8px 12px', 
+                                  fontSize: '12px',
+                                  backgroundColor: '#28a745',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  transition: 'background-color 0.2s'
+                                }}
+                                onMouseOver={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#218838'}
+                                onMouseOut={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#28a745'}
+                              >
+                                上傳
+                              </button>
+                            )}
+                            <input 
+                              type="file" 
+                              ref={(el) => {
+                                if (bankCardFileRefs.current) {
+                                  bankCardFileRefs.current[index] = el;
+                                }
+                              }}
+                              style={{display: 'none'}}
+                              accept="image/*"
+                              onChange={(e) => handleBankCardFileSelect(e, index)}
+                            />
+                          </div>
+                        </td>
+                        <td style={{border: '1px solid #ddd', padding: '8px'}}>
+                          <select 
+                            value={card.status || 'ACTIVE'} 
+                            onChange={e => updateBankCard(index, 'status', e.target.value)}
+                            style={{width: '100%', padding: '4px'}}
+                          >
+                            <option value="ACTIVE">啟用</option>
+                            <option value="INACTIVE">停用</option>
+                          </select>
+                        </td>
+                        <td style={{border: '1px solid #ddd', padding: '8px'}}>
+                          <input 
+                            type="text"
+                            value={card.note || ''} 
+                            onChange={e => updateBankCard(index, 'note', e.target.value)}
+                            placeholder="備註"
+                            style={{width: '100%', padding: '4px'}}
+                          />
+                        </td>
+                        <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+                          <button 
+                            type="button" 
+                            onClick={() => removeBankCard(index)} 
+                            style={{
+                              padding: '6px 12px', 
+                              fontSize: '12px',
+                              backgroundColor: '#fd7e14',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              margin: '0 auto',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#e8590c'}
+                            onMouseOut={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#fd7e14'}
+                          >
+                            刪除
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <button 
+                  type="button" 
+                  onClick={addBankCard} 
+                  className="btn-add-bank-card"
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ➕ 新增銀行卡
+                </button>
+              </div>
             </div>
           </div>
 
