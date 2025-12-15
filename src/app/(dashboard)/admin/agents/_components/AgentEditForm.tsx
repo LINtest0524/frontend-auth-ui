@@ -139,7 +139,7 @@ export default function AgentEditForm({ agentId }: AgentEditFormProps) {
           companyId: agentData.company_id || 0,
           agentLevel: agentData.agent_level || 1,
           parentAgentId: agentData.parent_agent_id || null,
-          displayName: agentData.agent_name || agentData.display_name || '',
+          displayName: agentData.display_name || '',
           commissionConditionId: agentData.commission_condition_id || null,
           phone: agentData.phone || '',
           email: agentData.email || '',
