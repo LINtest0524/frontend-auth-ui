@@ -43,6 +43,26 @@ export type CreateAgentPayload = {
   defaultPaymentGroup?: string;
   accountStatus?: string[];
   note?: string;
+  // 代理資料
+  agentName?: string;
+  gender?: 'MALE' | 'FEMALE';
+  idNumber?: string;
+  bankCards?: Array<{
+    bankCode?: string;
+    accountNumber?: string;
+    passbookCoverUrl?: string;
+    status?: 'ACTIVE' | 'INACTIVE';
+    note?: string;
+  }>;
+  // 禁止遊戲廠商
+  bannedGameProviders?: {
+    live?: { enabled: boolean; providers: string[] };
+    slot?: { enabled: boolean; providers: string[] };
+    sports?: { enabled: boolean; providers: string[] };
+    lottery?: { enabled: boolean; providers: string[] };
+    card?: { enabled: boolean; providers: string[] };
+    fishing?: { enabled: boolean; providers: string[] };
+  };
   // 預留
   revenueShare?: string;
   rebateLevel?: string;
@@ -76,6 +96,31 @@ export type UpdateAgentPayload = {
   loginAccount?: string;
   password?: string;
   note?: string;
+  // 新增欄位
+  frontendUrl?: string;
+  defaultVipLevel?: string;
+  defaultRebateSettlement?: string;
+  defaultPaymentGroup?: string;
+  accountStatus?: string[];
+  agentName?: string;
+  gender?: 'MALE' | 'FEMALE';
+  idNumber?: string;
+  bankCards?: Array<{
+    bankCode?: string;
+    accountNumber?: string;
+    passbookCoverUrl?: string;
+    status?: 'ACTIVE' | 'INACTIVE';
+    note?: string;
+  }>;
+  bannedGameProviders?: {
+    live?: { enabled: boolean; providers: string[] };
+    slot?: { enabled: boolean; providers: string[] };
+    sports?: { enabled: boolean; providers: string[] };
+    lottery?: { enabled: boolean; providers: string[] };
+    card?: { enabled: boolean; providers: string[] };
+    fishing?: { enabled: boolean; providers: string[] };
+  };
+  // 預留
   revenueShare?: string;
   rebateLevel?: string;
 };

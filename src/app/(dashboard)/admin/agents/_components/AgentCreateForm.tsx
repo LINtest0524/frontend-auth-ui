@@ -192,18 +192,6 @@ export default function AgentCreateForm() {
 
   // 根據代理制度篩選分潤條件
   useEffect(() => {
-    console.log('🔍 篩選分潤條件:', {
-      commissionSystem,
-      allConditionsCount: allCommissionConditions.length,
-      allConditions: allCommissionConditions.map(c => ({ 
-        id: c.id, 
-        name: c.name, 
-        method: c.method, 
-        systemType: c.systemType,
-        isActive: c.isActive 
-      }))
-    });
-
     if (commissionSystem) {
       // 將代理制度值轉換為 systemType 格式
       let targetSystemType = '';
@@ -218,18 +206,9 @@ export default function AgentCreateForm() {
           targetSystemType = commissionSystem;
       }
 
-      const filtered = allCommissionConditions.filter(item => {
-        const matches = item.systemType === targetSystemType && item.isActive;
-        console.log(`條件 ${item.name}: method=${item.method}, systemType=${item.systemType}, targetSystemType=${targetSystemType}, isActive=${item.isActive}, matches=${matches}`);
-        return matches;
-      });
-      
-      console.log('✅ 篩選結果:', filtered.map(c => ({ 
-        id: c.id, 
-        name: c.name, 
-        method: c.method,
-        systemType: c.systemType
-      })));
+      const filtered = allCommissionConditions.filter(item => 
+        item.systemType === targetSystemType && item.isActive
+      );
       
       setFilteredConditions(filtered);
     } else {
@@ -323,8 +302,6 @@ export default function AgentCreateForm() {
       // 上傳成功，保存伺服器路徑
       updateBankCard(index, 'passbookCoverUrl', uploadResult.url);
       updateBankCard(index, 'uploading', false);
-      
-      console.log('文件上傳成功:', uploadResult);
     } catch (error: any) {
       console.error('文件上傳失敗:', error);
       alert(`文件上傳失敗: ${error.message}`);
@@ -387,7 +364,37 @@ export default function AgentCreateForm() {
     if (!canSubmit || submitting) return;
     setSubmitting(true);
     try {
-      await createAgent(form);
+      // 準備提交的 payload
+      const { bankCards, confirmPassword, ...formData } = form;
+      
+      const payload: CreateAgentPayload = {
+        ...formData,
+        commissionConditionId: form.commissionConditionId || null,
+        parentAgentId: form.parentAgentId || null,
+      };
+      
+      // 處理銀行卡資料
+      if (bankCards && bankCards.length > 0) {
+        payload.bankCards = bankCards.map(card => ({
+          bankCode: card.bankCode,
+          accountNumber: card.accountNumber,
+          passbookCoverUrl: card.passbookCoverUrl || card.passbookCoverPreview,
+          status: card.status || 'ACTIVE',
+          note: card.note || ''
+        }));
+      }
+      
+      // 處理禁止遊戲廠商
+      payload.bannedGameProviders = {
+        live: bannedGames.live,
+        slot: bannedGames.slot,
+        sports: bannedGames.sports,
+        lottery: bannedGames.lottery,
+        card: bannedGames.card,
+        fishing: bannedGames.fishing,
+      };
+      
+      await createAgent(payload);
       alert('代理商建立成功！');
       router.push('/admin/agents');
     } catch (e) {
