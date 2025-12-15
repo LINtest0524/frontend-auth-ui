@@ -204,7 +204,23 @@ export default function AdminUserEditPage() {
       case "AGENT_LEVEL_3":
         return "三級代理商，可管理下級代理商和客服人員";
       case "AGENT_LEVEL_4":
-        return "四級代理商，可管理客服人員";
+        return "四級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_5":
+        return "五級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_6":
+        return "六級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_7":
+        return "七級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_8":
+        return "八級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_9":
+        return "九級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_10":
+        return "十級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_11":
+        return "十一級代理商，可管理下級代理商和客服人員";
+      case "AGENT_LEVEL_12":
+        return "十二級代理商，可管理客服人員";
       case "AGENT_SUPPORT":
         return "客服人員，負責處理會員問題和支援服務";
       default:
@@ -466,6 +482,14 @@ export default function AdminUserEditPage() {
                     <option value="AGENT_LEVEL_2">🥈 二級代理商</option>
                     <option value="AGENT_LEVEL_3">🥉 三級代理商</option>
                     <option value="AGENT_LEVEL_4">4️⃣ 四級代理商</option>
+                    <option value="AGENT_LEVEL_5">5️⃣ 五級代理商</option>
+                    <option value="AGENT_LEVEL_6">6️⃣ 六級代理商</option>
+                    <option value="AGENT_LEVEL_7">7️⃣ 七級代理商</option>
+                    <option value="AGENT_LEVEL_8">8️⃣ 八級代理商</option>
+                    <option value="AGENT_LEVEL_9">9️⃣ 九級代理商</option>
+                    <option value="AGENT_LEVEL_10">🔟 十級代理商</option>
+                    <option value="AGENT_LEVEL_11">1️⃣1️⃣ 十一級代理商</option>
+                    <option value="AGENT_LEVEL_12">1️⃣2️⃣ 十二級代理商</option>
                     <option value="AGENT_SUPPORT">🎧 客服</option>
                   </select>
                   {fieldErrors.role && (
@@ -495,6 +519,14 @@ export default function AdminUserEditPage() {
                        form.role === "AGENT_LEVEL_2" ? "🥈 二級代理商" :
                        form.role === "AGENT_LEVEL_3" ? "🥉 三級代理商" :
                        form.role === "AGENT_LEVEL_4" ? "4️⃣ 四級代理商" :
+                       form.role === "AGENT_LEVEL_5" ? "5️⃣ 五級代理商" :
+                       form.role === "AGENT_LEVEL_6" ? "6️⃣ 六級代理商" :
+                       form.role === "AGENT_LEVEL_7" ? "7️⃣ 七級代理商" :
+                       form.role === "AGENT_LEVEL_8" ? "8️⃣ 八級代理商" :
+                       form.role === "AGENT_LEVEL_9" ? "9️⃣ 九級代理商" :
+                       form.role === "AGENT_LEVEL_10" ? "🔟 十級代理商" :
+                       form.role === "AGENT_LEVEL_11" ? "1️⃣1️⃣ 十一級代理商" :
+                       form.role === "AGENT_LEVEL_12" ? "1️⃣2️⃣ 十二級代理商" :
                        form.role === "AGENT_SUPPORT" ? "🎧 客服" : form.role}
                     </div>
                   </div>

@@ -87,3 +87,40 @@ export async function updateAgent(id: number, payload: UpdateAgentPayload) {
 export async function deleteAgent(id: number) {
   return adminApiDelete(`/agents/${id}`);
 }
+
+// 上傳存摺封面圖片
+export async function uploadBankCardImage(file: File): Promise<{ url: string; filename: string; originalName: string; size: number }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/agents/upload/bankcard`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(error || 'Upload failed');
+  }
+  
+  return res.json();
+}
+
+// 遊戲廠商相關類型
+export interface GameProvider {
+  code: string;
+  name: string;
+  category: string;
+  isActive: boolean;
+  logoUrl?: string;
+  description?: string;
+}
+
+// 獲取所有啟用的遊戲廠商
+export async function fetchGameProviders(): Promise<GameProvider[]> {
+  return adminApiGet('/api/admin/game-providers');
+}

@@ -141,6 +141,14 @@ export default function IPBlacklistPage() {
     "AGENT_LEVEL_2", 
     "AGENT_LEVEL_3", 
     "AGENT_LEVEL_4", 
+    "AGENT_LEVEL_5", 
+    "AGENT_LEVEL_6", 
+    "AGENT_LEVEL_7", 
+    "AGENT_LEVEL_8", 
+    "AGENT_LEVEL_9", 
+    "AGENT_LEVEL_10", 
+    "AGENT_LEVEL_11", 
+    "AGENT_LEVEL_12", 
     "AGENT_SUPPORT"
   ].includes(currentUser.role);
 

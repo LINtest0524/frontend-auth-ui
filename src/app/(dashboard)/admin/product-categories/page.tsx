@@ -213,7 +213,15 @@ export default function ProductCategoriesPage() {
             currentUser?.role === "AGENT_LEVEL_1" ||
             currentUser?.role === "AGENT_LEVEL_2" ||
             currentUser?.role === "AGENT_LEVEL_3" ||
-            currentUser?.role === "AGENT_LEVEL_4") && (
+            currentUser?.role === "AGENT_LEVEL_4" ||
+            currentUser?.role === "AGENT_LEVEL_5" ||
+            currentUser?.role === "AGENT_LEVEL_6" ||
+            currentUser?.role === "AGENT_LEVEL_7" ||
+            currentUser?.role === "AGENT_LEVEL_8" ||
+            currentUser?.role === "AGENT_LEVEL_9" ||
+            currentUser?.role === "AGENT_LEVEL_10" ||
+            currentUser?.role === "AGENT_LEVEL_11" ||
+            currentUser?.role === "AGENT_LEVEL_12") && (
             <button
               onClick={() => router.push("/admin/product-categories/new")}
               className="btn-primary"
@@ -391,7 +399,15 @@ export default function ProductCategoriesPage() {
                         currentUser?.role === "AGENT_LEVEL_1" ||
                         currentUser?.role === "AGENT_LEVEL_2" ||
                         currentUser?.role === "AGENT_LEVEL_3" ||
-                        currentUser?.role === "AGENT_LEVEL_4") && (
+                        currentUser?.role === "AGENT_LEVEL_4" ||
+                        currentUser?.role === "AGENT_LEVEL_5" ||
+                        currentUser?.role === "AGENT_LEVEL_6" ||
+                        currentUser?.role === "AGENT_LEVEL_7" ||
+                        currentUser?.role === "AGENT_LEVEL_8" ||
+                        currentUser?.role === "AGENT_LEVEL_9" ||
+                        currentUser?.role === "AGENT_LEVEL_10" ||
+                        currentUser?.role === "AGENT_LEVEL_11" ||
+                        currentUser?.role === "AGENT_LEVEL_12") && (
                         <button
                           onClick={() => router.push(`/admin/product-categories/${category.id}/edit`)}
                           className="btn-edit"

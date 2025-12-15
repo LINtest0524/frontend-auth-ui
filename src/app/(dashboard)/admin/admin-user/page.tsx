@@ -13,6 +13,14 @@ const roleMap: Record<string, string> = {
   AGENT_LEVEL_2: "二級代理商",
   AGENT_LEVEL_3: "三級代理商",
   AGENT_LEVEL_4: "四級代理商",
+  AGENT_LEVEL_5: "五級代理商",
+  AGENT_LEVEL_6: "六級代理商",
+  AGENT_LEVEL_7: "七級代理商",
+  AGENT_LEVEL_8: "八級代理商",
+  AGENT_LEVEL_9: "九級代理商",
+  AGENT_LEVEL_10: "十級代理商",
+  AGENT_LEVEL_11: "十一級代理商",
+  AGENT_LEVEL_12: "十二級代理商",
   AGENT_SUPPORT: "客服",
   USER: "會員",
 };
@@ -31,8 +39,16 @@ const roleLevel: Record<string, number> = {
   AGENT_LEVEL_2: 3,
   AGENT_LEVEL_3: 4,
   AGENT_LEVEL_4: 5,
-  AGENT_SUPPORT: 6,
-  USER: 7,
+  AGENT_LEVEL_5: 6,
+  AGENT_LEVEL_6: 7,
+  AGENT_LEVEL_7: 8,
+  AGENT_LEVEL_8: 9,
+  AGENT_LEVEL_9: 10,
+  AGENT_LEVEL_10: 11,
+  AGENT_LEVEL_11: 12,
+  AGENT_LEVEL_12: 13,
+  AGENT_SUPPORT: 14,
+  USER: 15,
 };
 
 // 根據階層關係控制權限（後端已過濾角色）
@@ -167,7 +183,7 @@ export default function AdminUserListPage() {
   useEffect(() => {
     if (!currentUser) return;
     
-    const allowedRoles = ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4'];
+    const allowedRoles = ['SUPER_ADMIN', 'GLOBAL_ADMIN', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'AGENT_LEVEL_5', 'AGENT_LEVEL_6', 'AGENT_LEVEL_7', 'AGENT_LEVEL_8', 'AGENT_LEVEL_9', 'AGENT_LEVEL_10', 'AGENT_LEVEL_11', 'AGENT_LEVEL_12'];
     
     if (!allowedRoles.includes(currentUser.role || '')) {
       // 權限不足，重導向到未授權頁面
@@ -225,13 +241,21 @@ export default function AdminUserListPage() {
 
   const canSeeActions =
     currentUser?.role !== undefined &&
-    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4"].includes(currentUser.role);
+    ["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4", "AGENT_LEVEL_5", "AGENT_LEVEL_6", "AGENT_LEVEL_7", "AGENT_LEVEL_8", "AGENT_LEVEL_9", "AGENT_LEVEL_10", "AGENT_LEVEL_11", "AGENT_LEVEL_12"].includes(currentUser.role);
 
   const canModify =
     currentUser?.role === "AGENT_LEVEL_1" ||
     currentUser?.role === "AGENT_LEVEL_2" ||
     currentUser?.role === "AGENT_LEVEL_3" ||
     currentUser?.role === "AGENT_LEVEL_4" ||
+    currentUser?.role === "AGENT_LEVEL_5" ||
+    currentUser?.role === "AGENT_LEVEL_6" ||
+    currentUser?.role === "AGENT_LEVEL_7" ||
+    currentUser?.role === "AGENT_LEVEL_8" ||
+    currentUser?.role === "AGENT_LEVEL_9" ||
+    currentUser?.role === "AGENT_LEVEL_10" ||
+    currentUser?.role === "AGENT_LEVEL_11" ||
+    currentUser?.role === "AGENT_LEVEL_12" ||
     currentUser?.role === "SUPER_ADMIN" ||
     currentUser?.role === "GLOBAL_ADMIN";
 
@@ -414,6 +438,14 @@ export default function AdminUserListPage() {
                       admin.role === "AGENT_LEVEL_2" ? "role-agent-owner" :
                       admin.role === "AGENT_LEVEL_3" ? "role-agent-owner" :
                       admin.role === "AGENT_LEVEL_4" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_5" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_6" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_7" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_8" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_9" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_10" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_11" ? "role-agent-owner" :
+                      admin.role === "AGENT_LEVEL_12" ? "role-agent-owner" :
                       admin.role === "AGENT_SUPPORT" ? "role-agent-support" :
                       "role-user"
                     }`}>

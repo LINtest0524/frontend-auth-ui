@@ -56,6 +56,14 @@ export interface TimeRange {
 export type UserRole = 
   | 'USER' 
   | 'AGENT_SUPPORT' 
+  | 'AGENT_LEVEL_12'
+  | 'AGENT_LEVEL_11'
+  | 'AGENT_LEVEL_10'
+  | 'AGENT_LEVEL_9'
+  | 'AGENT_LEVEL_8'
+  | 'AGENT_LEVEL_7'
+  | 'AGENT_LEVEL_6'
+  | 'AGENT_LEVEL_5'
   | 'AGENT_LEVEL_4'
   | 'AGENT_LEVEL_3'
   | 'AGENT_LEVEL_2'
@@ -105,6 +113,62 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   ],
   
   'AGENT_LEVEL_4': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_5': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_6': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_7': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_8': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_9': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_10': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_11': [
+    'agent_dashboard',
+    'member_management',
+    'basic_reports',
+    'games_access'
+  ],
+  
+  'AGENT_LEVEL_12': [
     'agent_dashboard',
     'member_management',
     'basic_reports',

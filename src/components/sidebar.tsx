@@ -153,7 +153,7 @@ export default function Sidebar() {
         )}
 
         {/* 代理管理 - 超級管理員、全域管理員、代理商可見，客服不可見 */}
-        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4") && (
+        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4" || role === "AGENT_LEVEL_5" || role === "AGENT_LEVEL_6" || role === "AGENT_LEVEL_7" || role === "AGENT_LEVEL_8" || role === "AGENT_LEVEL_9" || role === "AGENT_LEVEL_10" || role === "AGENT_LEVEL_11" || role === "AGENT_LEVEL_12") && (
           <div>
             <button
               onClick={() => {
@@ -199,7 +199,7 @@ export default function Sidebar() {
         )}
 
         {/* 管理員管理 - 超級管理員、全域管理員、代理商可見，客服不可見 */}
-        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4") && (
+        {(role === "SUPER_ADMIN" || role === "GLOBAL_ADMIN" || role === "AGENT_LEVEL_1" || role === "AGENT_LEVEL_2" || role === "AGENT_LEVEL_3" || role === "AGENT_LEVEL_4" || role === "AGENT_LEVEL_5" || role === "AGENT_LEVEL_6" || role === "AGENT_LEVEL_7" || role === "AGENT_LEVEL_8" || role === "AGENT_LEVEL_9" || role === "AGENT_LEVEL_10" || role === "AGENT_LEVEL_11" || role === "AGENT_LEVEL_12") && (
           <Link
             href="/admin/admin-user"
             onClick={() => handleNavClick("/admin/admin-user")}
@@ -431,7 +431,7 @@ export default function Sidebar() {
 
 
         {/* 商品管理 */}
-        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4", "AGENT_SUPPORT"].includes(role) && (
+        {["SUPER_ADMIN", "GLOBAL_ADMIN", "AGENT_OWNER", "AGENT_LEVEL_1", "AGENT_LEVEL_2", "AGENT_LEVEL_3", "AGENT_LEVEL_4", "AGENT_LEVEL_5", "AGENT_LEVEL_6", "AGENT_LEVEL_7", "AGENT_LEVEL_8", "AGENT_LEVEL_9", "AGENT_LEVEL_10", "AGENT_LEVEL_11", "AGENT_LEVEL_12", "AGENT_SUPPORT"].includes(role) && (
           <div>
             <button
               onClick={() => {

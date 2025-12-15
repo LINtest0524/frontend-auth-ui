@@ -102,7 +102,7 @@ export default function AdminMessagesPage() {
   // 檢查是否有系統廣播權限
   const canUseBroadcast = () => {
     if (!currentUser?.role) return false
-    return ['AGENT_SUPPORT', 'AGENT_OWNER', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'SUPER_ADMIN'].includes(currentUser.role)
+    return ['AGENT_SUPPORT', 'AGENT_OWNER', 'AGENT_LEVEL_1', 'AGENT_LEVEL_2', 'AGENT_LEVEL_3', 'AGENT_LEVEL_4', 'AGENT_LEVEL_5', 'AGENT_LEVEL_6', 'AGENT_LEVEL_7', 'AGENT_LEVEL_8', 'AGENT_LEVEL_9', 'AGENT_LEVEL_10', 'AGENT_LEVEL_11', 'AGENT_LEVEL_12', 'SUPER_ADMIN'].includes(currentUser.role)
   }
 
   // 快速設定日期時間
@@ -1031,6 +1031,14 @@ export default function AdminMessagesPage() {
             <li>• 二級代理商 (AGENT_LEVEL_2)</li>
             <li>• 三級代理商 (AGENT_LEVEL_3)</li>
             <li>• 四級代理商 (AGENT_LEVEL_4)</li>
+            <li>• 五級代理商 (AGENT_LEVEL_5)</li>
+            <li>• 六級代理商 (AGENT_LEVEL_6)</li>
+            <li>• 七級代理商 (AGENT_LEVEL_7)</li>
+            <li>• 八級代理商 (AGENT_LEVEL_8)</li>
+            <li>• 九級代理商 (AGENT_LEVEL_9)</li>
+            <li>• 十級代理商 (AGENT_LEVEL_10)</li>
+            <li>• 十一級代理商 (AGENT_LEVEL_11)</li>
+            <li>• 十二級代理商 (AGENT_LEVEL_12)</li>
             <li>• 超級管理員 (SUPER_ADMIN)</li>
           </ul>
           <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>
@@ -1049,6 +1057,14 @@ export default function AdminMessagesPage() {
             <li>• 二級代理商 (AGENT_LEVEL_2)</li>
             <li>• 三級代理商 (AGENT_LEVEL_3)</li>
             <li>• 四級代理商 (AGENT_LEVEL_4)</li>
+            <li>• 五級代理商 (AGENT_LEVEL_5)</li>
+            <li>• 六級代理商 (AGENT_LEVEL_6)</li>
+            <li>• 七級代理商 (AGENT_LEVEL_7)</li>
+            <li>• 八級代理商 (AGENT_LEVEL_8)</li>
+            <li>• 九級代理商 (AGENT_LEVEL_9)</li>
+            <li>• 十級代理商 (AGENT_LEVEL_10)</li>
+            <li>• 十一級代理商 (AGENT_LEVEL_11)</li>
+            <li>• 十二級代理商 (AGENT_LEVEL_12)</li>
             <li>• 超級管理員 (SUPER_ADMIN)</li>
           </ul>
           <p>您目前的角色：<strong>{currentUser?.role || '未知'}</strong></p>

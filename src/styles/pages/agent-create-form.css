@@ -312,3 +312,79 @@
     padding: 16px;
   }
 }
+
+/* 禁止遊戲區塊樣式 */
+.banned-games-section {
+  margin: 20px 16px 16px 16px;
+}
+
+.game-category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.game-category-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.game-providers-grid {
+  margin-left: 20px;
+  display: flex;
+  gap: 6px 25px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.provider-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.provider-checkbox-item:hover {
+  background-color: #f8f9fa;
+}
+
+.provider-checkbox-item input[type="checkbox"] {
+  margin: 0px 10px 0 0;
+  width: 23px;
+  cursor: pointer;
+}
+
+.provider-checkbox-item span {
+  font-size: 14px;
+  color: #495057;
+  user-select: none;
+  cursor: pointer;
+}
+
+.category-checkbox {
+  margin: 10px;
+  width: 23px !important;
+  cursor: pointer;
+}
+
+/* 響應式設計 - 移動設備 */
+@media (max-width: 768px) {
+  .game-providers-grid {
+    grid-template-columns: 1fr;
+    margin-left: 15px;
+  }
+  
+  .game-category-header {
+    flex-wrap: wrap;
+  }
+  
+  .game-category-title {
+    font-size: 15px;
+  }
+}
