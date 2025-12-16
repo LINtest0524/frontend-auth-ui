@@ -771,6 +771,9 @@ export default function Sidebar() {
             <Link href="/audit-log/admin-user" onClick={() => handleNavClick("/audit-log/admin-user")} className={cn("sidebar-subitem", pathname === "/audit-log/admin-user" && currentActive === null && "active")}>
               管理員操作紀錄
             </Link>
+            <Link href="/audit-log/agent-operations" onClick={() => handleNavClick("/audit-log/agent-operations")} className={cn("sidebar-subitem", pathname === "/audit-log/agent-operations" && currentActive === null && "active")}>
+              代理商操作紀錄
+            </Link>
             <Link href="/audit-log/back-userstatus" onClick={() => handleNavClick("/audit-log/back-userstatus")} className={cn("sidebar-subitem", pathname === "/audit-log/back-userstatus" && currentActive === null && "active")}>
               會員狀態紀錄
             </Link>
