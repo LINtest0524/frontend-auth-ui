@@ -4,8 +4,11 @@ import { useRouter } from 'next/navigation';
 import { fetchAgents, fetchAgentOptions, deleteAgent } from '../_lib/agent-api';
 import { handleApiError } from '@/lib/errorHandler';
 import { useUserStore } from '@/hooks/use-user-store';
+// import { useCommissionConditionsStore } from '@/stores/useCommissionConditionsStore';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
 import '@/styles/pages/agent-form.css';
 import '@/styles/pages/commission-conditions.css';
+import '@/styles/pages/users.css';
 
 interface Agent {
   id: number;
@@ -140,6 +143,39 @@ export default function AgentList() {
   ]);
   const [currentParentId, setCurrentParentId] = useState<number | null>(null);
 
+  // 篩選條件狀態（暫存，未套用）
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filterAgentLevel, setFilterAgentLevel] = useState('');
+  const [filterAgentName, setFilterAgentName] = useState('');
+  const [filterUsername, setFilterUsername] = useState('');
+  const [filterDisplayName, setFilterDisplayName] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPaymentGroup, setFilterPaymentGroup] = useState('');
+  const [filterCreatedFrom, setFilterCreatedFrom] = useState('');
+  const [filterCreatedTo, setFilterCreatedTo] = useState('');
+  const [filterLoginFrom, setFilterLoginFrom] = useState('');
+  const [filterLoginTo, setFilterLoginTo] = useState('');
+  const [filterCommissionSystem, setFilterCommissionSystem] = useState('');
+  
+  // 已套用的篩選條件（點擊查詢後才更新）
+  const [appliedFilterAgentLevel, setAppliedFilterAgentLevel] = useState('');
+  const [appliedFilterAgentName, setAppliedFilterAgentName] = useState('');
+  const [appliedFilterUsername, setAppliedFilterUsername] = useState('');
+  const [appliedFilterDisplayName, setAppliedFilterDisplayName] = useState('');
+  const [appliedFilterStatus, setAppliedFilterStatus] = useState('');
+  const [appliedFilterPaymentGroup, setAppliedFilterPaymentGroup] = useState('');
+  const [appliedFilterCreatedFrom, setAppliedFilterCreatedFrom] = useState('');
+  const [appliedFilterCreatedTo, setAppliedFilterCreatedTo] = useState('');
+  const [appliedFilterLoginFrom, setAppliedFilterLoginFrom] = useState('');
+  const [appliedFilterLoginTo, setAppliedFilterLoginTo] = useState('');
+  const [appliedFilterCommissionSystem, setAppliedFilterCommissionSystem] = useState('');
+  
+  const isNavigatingRef = React.useRef(false); // 標記是否正在使用麵包屑導航
+  
+  // 分潤條件和金流群組選項 (不使用，僅用於未來擴展)
+  // const commissionConditionsStore = useCommissionConditionsStore();
+  // const [commissionConditions, setCommissionConditions] = useState<any[]>([]);
+
   // 權限檢查函數
   const canDeleteAgent = () => {
     return currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'GLOBAL_ADMIN';
@@ -151,11 +187,153 @@ export default function AgentList() {
 
   useEffect(() => {
     loadData();
+    // 暫時註解掉分潤條件載入，避免影響頁面載入速度
+    // loadCommissionConditions();
   }, []);
 
   useEffect(() => {
     loadAgents();
   }, [selectedCompany]);
+
+  // 載入分潤條件選項 (暫時註解，避免影響載入速度)
+  // const loadCommissionConditions = async () => {
+  //   try {
+  //     await commissionConditionsStore.fetchList({ page: 1, limit: 100 });
+  //     setCommissionConditions(commissionConditionsStore.items);
+  //   } catch (e) {
+  //     // 靜默失敗，不影響主要功能
+  //     console.error('載入分潤條件失敗:', e);
+  //   }
+  // };
+
+  // 快速日期設定
+  const quickSetDate = (type: string, target: "created" | "login") => {
+    const today = new Date();
+    let fromDate = "";
+    let toDate = "";
+
+    switch (type) {
+      case "today":
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}T${String(todayStart.getHours()).padStart(2, '0')}:${String(todayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd.getFullYear()}-${String(todayEnd.getMonth() + 1).padStart(2, '0')}-${String(todayEnd.getDate()).padStart(2, '0')}T${String(todayEnd.getHours()).padStart(2, '0')}:${String(todayEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case "yesterday":
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const yesterdayStart = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0);
+        const yesterdayEnd = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59);
+        fromDate = `${yesterdayStart.getFullYear()}-${String(yesterdayStart.getMonth() + 1).padStart(2, '0')}-${String(yesterdayStart.getDate()).padStart(2, '0')}T${String(yesterdayStart.getHours()).padStart(2, '0')}:${String(yesterdayStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${yesterdayEnd.getFullYear()}-${String(yesterdayEnd.getMonth() + 1).padStart(2, '0')}-${String(yesterdayEnd.getDate()).padStart(2, '0')}T${String(yesterdayEnd.getHours()).padStart(2, '0')}:${String(yesterdayEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case "3days":
+        const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const threeDaysStart = new Date(threeDaysAgo.getFullYear(), threeDaysAgo.getMonth(), threeDaysAgo.getDate(), 0, 0);
+        const todayEnd3 = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59);
+        fromDate = `${threeDaysStart.getFullYear()}-${String(threeDaysStart.getMonth() + 1).padStart(2, '0')}-${String(threeDaysStart.getDate()).padStart(2, '0')}T${String(threeDaysStart.getHours()).padStart(2, '0')}:${String(threeDaysStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${todayEnd3.getFullYear()}-${String(todayEnd3.getMonth() + 1).padStart(2, '0')}-${String(todayEnd3.getDate()).padStart(2, '0')}T${String(todayEnd3.getHours()).padStart(2, '0')}:${String(todayEnd3.getMinutes()).padStart(2, '0')}`;
+        break;
+      case "thisMonth":
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0);
+        const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59);
+        fromDate = `${thisMonthStart.getFullYear()}-${String(thisMonthStart.getMonth() + 1).padStart(2, '0')}-${String(thisMonthStart.getDate()).padStart(2, '0')}T${String(thisMonthStart.getHours()).padStart(2, '0')}:${String(thisMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${thisMonthEnd.getFullYear()}-${String(thisMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(thisMonthEnd.getDate()).padStart(2, '0')}T${String(thisMonthEnd.getHours()).padStart(2, '0')}:${String(thisMonthEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+      case "lastMonth":
+        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1, 0, 0);
+        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59);
+        fromDate = `${lastMonthStart.getFullYear()}-${String(lastMonthStart.getMonth() + 1).padStart(2, '0')}-${String(lastMonthStart.getDate()).padStart(2, '0')}T${String(lastMonthStart.getHours()).padStart(2, '0')}:${String(lastMonthStart.getMinutes()).padStart(2, '0')}`;
+        toDate = `${lastMonthEnd.getFullYear()}-${String(lastMonthEnd.getMonth() + 1).padStart(2, '0')}-${String(lastMonthEnd.getDate()).padStart(2, '0')}T${String(lastMonthEnd.getHours()).padStart(2, '0')}:${String(lastMonthEnd.getMinutes()).padStart(2, '0')}`;
+        break;
+    }
+
+    if (target === "created") {
+      setFilterCreatedFrom(fromDate);
+      setFilterCreatedTo(toDate);
+    } else {
+      setFilterLoginFrom(fromDate);
+      setFilterLoginTo(toDate);
+    }
+  };
+
+  // 執行查詢（套用篩選條件）
+  const handleSearch = () => {
+    setAppliedFilterAgentLevel(filterAgentLevel);
+    setAppliedFilterAgentName(filterAgentName);
+    setAppliedFilterUsername(filterUsername);
+    setAppliedFilterDisplayName(filterDisplayName);
+    setAppliedFilterStatus(filterStatus);
+    setAppliedFilterPaymentGroup(filterPaymentGroup);
+    setAppliedFilterCreatedFrom(filterCreatedFrom);
+    setAppliedFilterCreatedTo(filterCreatedTo);
+    setAppliedFilterLoginFrom(filterLoginFrom);
+    setAppliedFilterLoginTo(filterLoginTo);
+    setAppliedFilterCommissionSystem(filterCommissionSystem);
+    
+    // 如果有任何篩選條件，清除層級導航狀態
+    const hasAnyFilter = filterAgentLevel || filterAgentName || filterUsername || 
+      filterDisplayName || filterStatus || filterPaymentGroup || filterCommissionSystem ||
+      filterCreatedFrom || filterCreatedTo || filterLoginFrom || filterLoginTo;
+    
+    if (hasAnyFilter) {
+      // 清除層級導航，讓篩選可以搜尋所有代理
+      setCurrentParentId(null);
+      
+      // 如果有代理級別篩選，更新麵包屑
+      if (filterAgentLevel) {
+        const level = parseInt(filterAgentLevel);
+        setBreadcrumbs([{ 
+          agentId: null, 
+          agentName: `${level}級代理`, 
+          level: level 
+        }]);
+      } else {
+        // 其他篩選條件，麵包屑顯示「篩選結果」
+        setBreadcrumbs([{ 
+          agentId: null, 
+          agentName: '篩選結果', 
+          level: 0 
+        }]);
+      }
+    }
+    
+    // 關閉篩選區域
+    setIsFilterOpen(false);
+  };
+
+  // 清除篩選
+  const clearFilter = () => {
+    // 清除輸入欄位
+    setFilterAgentLevel('');
+    setFilterAgentName('');
+    setFilterUsername('');
+    setFilterDisplayName('');
+    setFilterStatus('');
+    setFilterPaymentGroup('');
+    setFilterCreatedFrom('');
+    setFilterCreatedTo('');
+    setFilterLoginFrom('');
+    setFilterLoginTo('');
+    setFilterCommissionSystem('');
+    
+    // 清除已套用的篩選
+    setAppliedFilterAgentLevel('');
+    setAppliedFilterAgentName('');
+    setAppliedFilterUsername('');
+    setAppliedFilterDisplayName('');
+    setAppliedFilterStatus('');
+    setAppliedFilterPaymentGroup('');
+    setAppliedFilterCreatedFrom('');
+    setAppliedFilterCreatedTo('');
+    setAppliedFilterLoginFrom('');
+    setAppliedFilterLoginTo('');
+    setAppliedFilterCommissionSystem('');
+    
+    // 重置麵包屑到初始狀態
+    setBreadcrumbs([{ agentId: null, agentName: '1級代理', level: 1 }]);
+    setCurrentParentId(null);
+  };
+
 
   const loadData = async () => {
     try {
@@ -191,35 +369,222 @@ export default function AgentList() {
     }
   };
 
+  // 建立完整的麵包屑路徑（追溯到根節點）
+  const buildBreadcrumbPath = (agent: Agent): BreadcrumbItem[] => {
+    const path: BreadcrumbItem[] = [];
+    let currentAgent: Agent | undefined = agent;
+    
+    // 從當前代理向上追溯到根節點
+    while (currentAgent) {
+      path.unshift({
+        agentId: currentAgent.id,
+        agentName: currentAgent.display_name || currentAgent.username,
+        level: currentAgent.agent_level
+      });
+      
+      // 查找父代理
+      if (currentAgent.parent_agent_id) {
+        currentAgent = agents.find(a => a.id === currentAgent!.parent_agent_id);
+      } else {
+        break;
+      }
+    }
+    
+    // 不要在最前面加上"1級代理"，直接返回完整路徑
+    return path;
+  };
+
   // 處理層級導航點擊
   const handleLevelClick = (agent: Agent) => {
     if (agent.next_level_count && agent.next_level_count > 0) {
-      // 添加到麵包屑
-      setBreadcrumbs([...breadcrumbs, {
-        agentId: agent.id,
-        agentName: agent.display_name || agent.username,
-        level: agent.agent_level + 1
-      }]);
+      // 檢查是否有任何篩選條件被設置（使用已套用的篩選）
+      const hasActiveFilters = appliedFilterAgentLevel || appliedFilterAgentName || appliedFilterUsername || 
+        appliedFilterDisplayName || appliedFilterStatus || appliedFilterPaymentGroup || appliedFilterCommissionSystem ||
+        appliedFilterCreatedFrom || appliedFilterCreatedTo || appliedFilterLoginFrom || appliedFilterLoginTo;
+      
+      if (hasActiveFilters) {
+        // 如果有篩選條件，建立完整的父級路徑
+        const fullPath = buildBreadcrumbPath(agent);
+        // 添加下一層標籤（格式：第2代暗影 > 豐穎 > 蠍 > 4級代理）
+        fullPath.push({
+          agentId: agent.id,
+          agentName: `${agent.agent_level + 1}級代理`,
+          level: agent.agent_level + 1
+        });
+        setBreadcrumbs(fullPath);
+      } else {
+        // 如果沒有篩選條件，累加麵包屑
+        // 移除最後一個「X級代理」項目（如果存在）
+        let currentBreadcrumbs = [...breadcrumbs];
+        if (currentBreadcrumbs.length > 0 && currentBreadcrumbs[currentBreadcrumbs.length - 1].agentName.includes('級代理')) {
+          currentBreadcrumbs.pop();
+        }
+        
+        // 添加當前代理和下一級
+        const newBreadcrumbs = [
+          ...currentBreadcrumbs,
+          {
+            agentId: agent.id,
+            agentName: agent.display_name || agent.username,
+            level: agent.agent_level
+          },
+          {
+            agentId: agent.id,
+            agentName: `${agent.agent_level + 1}級代理`,
+            level: agent.agent_level + 1
+          }
+        ];
+        setBreadcrumbs(newBreadcrumbs);
+      }
+      
       setCurrentParentId(agent.id);
     }
   };
 
   // 處理麵包屑點擊
   const handleBreadcrumbClick = (index: number) => {
-    const newBreadcrumbs = breadcrumbs.slice(0, index + 1);
-    setBreadcrumbs(newBreadcrumbs);
-    setCurrentParentId(newBreadcrumbs[newBreadcrumbs.length - 1].agentId);
+    const clickedCrumb = breadcrumbs[index];
+    
+    // 設置導航標記，防止 useEffect 干擾
+    isNavigatingRef.current = true;
+    
+    // 清除暫存的篩選條件
+    setFilterAgentLevel('');
+    setFilterAgentName('');
+    setFilterUsername('');
+    setFilterDisplayName('');
+    setFilterStatus('');
+    setFilterPaymentGroup('');
+    setFilterCreatedFrom('');
+    setFilterCreatedTo('');
+    setFilterLoginFrom('');
+    setFilterLoginTo('');
+    setFilterCommissionSystem('');
+    
+    // 清除已套用的篩選條件（進入純層級導航模式）
+    setAppliedFilterAgentLevel('');
+    setAppliedFilterAgentName('');
+    setAppliedFilterUsername('');
+    setAppliedFilterDisplayName('');
+    setAppliedFilterStatus('');
+    setAppliedFilterPaymentGroup('');
+    setAppliedFilterCreatedFrom('');
+    setAppliedFilterCreatedTo('');
+    setAppliedFilterLoginFrom('');
+    setAppliedFilterLoginTo('');
+    setAppliedFilterCommissionSystem('');
+    
+    // 如果點擊的是「X級代理」標籤
+    if (clickedCrumb.agentName.includes('級代理')) {
+      // 截斷到這個位置
+      const newBreadcrumbs = breadcrumbs.slice(0, index + 1);
+      setBreadcrumbs(newBreadcrumbs);
+      setCurrentParentId(clickedCrumb.agentId);
+    } else {
+      // 如果點擊的是代理名稱，需要顯示該代理所在層級的所有代理
+      // 找到這個代理的父級
+      const clickedAgent = agents.find(a => a.id === clickedCrumb.agentId);
+      if (clickedAgent) {
+        // 截斷麵包屑到該代理的前一項，並加上對應的「X級代理」標籤
+        // 例如：點擊「豐穎」(2級) → 麵包屑變成「第2代暗影 > 2級代理」
+        const newBreadcrumbs = breadcrumbs.slice(0, index); // 不包含當前點擊的代理
+        newBreadcrumbs.push({
+          agentId: clickedAgent.parent_agent_id || null,
+          agentName: `${clickedAgent.agent_level}級代理`,
+          level: clickedAgent.agent_level
+        });
+        setBreadcrumbs(newBreadcrumbs);
+        // 設置 parentId 為該代理的父級，這樣會顯示同層級的所有代理
+        setCurrentParentId(clickedAgent.parent_agent_id || null);
+      }
+    }
+    
+    // 延遲重置導航標記，確保所有狀態更新完成
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 100);
   };
 
-  // 過濾代理商：只顯示當前層級的代理商
+  // 過濾代理商：只顯示當前層級的代理商 + 套用篩選條件
   const getFilteredAgents = () => {
-    if (currentParentId === null) {
-      // 顯示第一級代理商（沒有父級的）
-      return agents.filter(agent => !agent.parent_agent_id);
-    } else {
-      // 顯示指定父級的下級代理商
-      return agents.filter(agent => agent.parent_agent_id === currentParentId);
+    let filtered = agents;
+    
+    // 檢查是否有任何篩選條件被設置（使用已套用的篩選）
+    const hasActiveFilters = appliedFilterAgentLevel || appliedFilterAgentName || appliedFilterUsername || 
+      appliedFilterDisplayName || appliedFilterStatus || appliedFilterPaymentGroup || appliedFilterCommissionSystem ||
+      appliedFilterCreatedFrom || appliedFilterCreatedTo || appliedFilterLoginFrom || appliedFilterLoginTo;
+    
+    // 優先處理層級導航（當 currentParentId 被設置時）
+    if (currentParentId !== null) {
+      // 如果已經點擊進入某個代理的下一層，顯示該代理的子代理
+      filtered = agents.filter(agent => agent.parent_agent_id === currentParentId);
+    } else if (!hasActiveFilters) {
+      // 如果沒有篩選條件且在根層級，顯示第一級代理
+      filtered = agents.filter(agent => !agent.parent_agent_id);
     }
+    // 如果有篩選條件且 currentParentId 為 null，則顯示所有符合條件的代理
+
+    // 套用篩選條件（只在沒有進入層級導航時，使用已套用的篩選）
+    if (currentParentId === null) {
+      if (appliedFilterAgentLevel) {
+        filtered = filtered.filter(agent => agent.agent_level === parseInt(appliedFilterAgentLevel));
+      }
+      if (appliedFilterAgentName) {
+        filtered = filtered.filter(agent => 
+          agent.agent_name?.toLowerCase().includes(appliedFilterAgentName.toLowerCase())
+        );
+      }
+      if (appliedFilterUsername) {
+        filtered = filtered.filter(agent => 
+          agent.username?.toLowerCase().includes(appliedFilterUsername.toLowerCase())
+        );
+      }
+      if (appliedFilterDisplayName) {
+        filtered = filtered.filter(agent => {
+          // 搜尋 agent_name, display_name 和 username 三個欄位
+          const agentName = (agent.agent_name || '').toLowerCase();
+          const displayName = (agent.display_name || '').toLowerCase();
+          const username = (agent.username || '').toLowerCase();
+          const searchTerm = appliedFilterDisplayName.toLowerCase();
+          return agentName.includes(searchTerm) || 
+                 displayName.includes(searchTerm) || 
+                 username.includes(searchTerm);
+        });
+      }
+      if (appliedFilterStatus) {
+        filtered = filtered.filter(agent => agent.status === appliedFilterStatus);
+      }
+      if (appliedFilterPaymentGroup) {
+        filtered = filtered.filter(agent => agent.default_payment_group === appliedFilterPaymentGroup);
+      }
+      if (appliedFilterCommissionSystem) {
+        filtered = filtered.filter(agent => 
+          agent.commission_condition?.systemType === appliedFilterCommissionSystem
+        );
+      }
+      if (appliedFilterCreatedFrom) {
+        const fromDate = new Date(appliedFilterCreatedFrom);
+        filtered = filtered.filter(agent => new Date(agent.created_at) >= fromDate);
+      }
+      if (appliedFilterCreatedTo) {
+        const toDate = new Date(appliedFilterCreatedTo);
+        filtered = filtered.filter(agent => new Date(agent.created_at) <= toDate);
+      }
+      if (appliedFilterLoginFrom) {
+        const fromDate = new Date(appliedFilterLoginFrom);
+        filtered = filtered.filter(agent => 
+          agent.last_login_at && new Date(agent.last_login_at) >= fromDate
+        );
+      }
+      if (appliedFilterLoginTo) {
+        const toDate = new Date(appliedFilterLoginTo);
+        filtered = filtered.filter(agent => 
+          agent.last_login_at && new Date(agent.last_login_at) <= toDate
+        );
+      }
+    }
+
+    return filtered;
   };
 
   // 建立代理商樹狀結構
@@ -588,6 +953,189 @@ export default function AgentList() {
 
   return (
     <div className="content-section">
+      {/* 篩選條件區域 */}
+      <div className="filter-section">
+        <button 
+          onClick={() => setIsFilterOpen(!isFilterOpen)} 
+          className="filter-toggle"
+        >
+          🔍 篩選條件
+          <span className={`filter-arrow ${isFilterOpen ? "rotate" : ""}`}>▼</span>
+        </button>
+
+        {isFilterOpen && (
+          <div className="filter-content">
+            <div className="filter-grid">
+              {/* 1. 代理級別 */}
+              <div className="form-group">
+                <label htmlFor="agent-level-select" className="form-label">代理級別</label>
+                <select 
+                  id="agent-level-select"
+                  value={filterAgentLevel} 
+                  onChange={(e) => setFilterAgentLevel(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">請選擇</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(level => (
+                    <option key={level} value={level}>{level}級{level === 1 ? '總' : ''}代理</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 2. 代理名稱 */}
+              <div className="form-group">
+                <label htmlFor="agent-name-search" className="form-label">代理名稱</label>
+                <input 
+                  type="text" 
+                  id="agent-name-search"
+                  placeholder="請輸入代理名稱" 
+                  value={filterAgentName} 
+                  onChange={(e) => setFilterAgentName(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
+
+              {/* 3. 代理帳號 */}
+              <div className="form-group">
+                <label htmlFor="username-search" className="form-label">代理帳號</label>
+                <input 
+                  type="text" 
+                  id="username-search"
+                  placeholder="請輸入代理帳號" 
+                  value={filterUsername} 
+                  onChange={(e) => setFilterUsername(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
+
+              {/* 4. 代理姓名 */}
+              <div className="form-group">
+                <label htmlFor="display-name-search" className="form-label">代理姓名</label>
+                <input 
+                  type="text" 
+                  id="display-name-search"
+                  placeholder="請輸入代理姓名" 
+                  value={filterDisplayName} 
+                  onChange={(e) => setFilterDisplayName(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
+
+              {/* 5. 帳號狀態 */}
+              <div className="form-group">
+                <label htmlFor="status-select" className="form-label">帳號狀態</label>
+                <select 
+                  id="status-select" 
+                  value={filterStatus} 
+                  onChange={(e) => setFilterStatus(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部</option>
+                  <option value="ACTIVE">✅ 啟用</option>
+                  <option value="INACTIVE">⏸️ 停用</option>
+                </select>
+              </div>
+
+              {/* 6. 金流群組 */}
+              <div className="form-group">
+                <label htmlFor="payment-group-select" className="form-label">金流群組</label>
+                <select 
+                  id="payment-group-select" 
+                  value={filterPaymentGroup} 
+                  onChange={(e) => setFilterPaymentGroup(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部</option>
+                  <option value="regular">常規會員</option>
+                  <option value="old_member">老會員</option>
+                  <option value="credit_agent">信用代理</option>
+                  <option value="usdt_channel">USDT通道</option>
+                </select>
+              </div>
+
+              {/* 9. 分潤制度 */}
+              <div className="form-group">
+                <label htmlFor="commission-system-select" className="form-label">分潤制度</label>
+                <select 
+                  id="commission-system-select" 
+                  value={filterCommissionSystem} 
+                  onChange={(e) => setFilterCommissionSystem(e.target.value)} 
+                  className="form-select"
+                >
+                  <option value="">全部</option>
+                  <option value="COMMISSION">占成制</option>
+                  <option value="REBATE">返水制</option>
+                </select>
+              </div>
+            </div>
+
+            {/* 7. 註冊時間 */}
+            <div className="filter-row">
+              <div className="form-group date-range-group">
+                <label htmlFor="created-date-from" className="form-label">註冊時間範圍</label>
+                <div className="date-inputs">
+                  <DateTimePicker
+                    id="created-date-from"
+                    value={filterCreatedFrom} 
+                    onChange={(value) => setFilterCreatedFrom(value)} 
+                    className="form-input" 
+                    placeholder="選擇開始時間"
+                  />
+                  <span className="date-separator">至</span>
+                  <DateTimePicker
+                    value={filterCreatedTo} 
+                    onChange={(value) => setFilterCreatedTo(value)} 
+                    className="form-input" 
+                    placeholder="選擇結束時間"
+                  />
+                </div>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today", "created")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday", "created")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days", "created")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetDate("thisMonth", "created")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth", "created")} className="btn-quick-date">上月</button>
+                </div>
+              </div>
+
+              {/* 8. 最後登入時間 */}
+              <div className="form-group date-range-group">
+                <label htmlFor="login-date-from" className="form-label">最後登入時間</label>
+                <div className="date-inputs">
+                  <DateTimePicker
+                    id="login-date-from"
+                    value={filterLoginFrom} 
+                    onChange={(value) => setFilterLoginFrom(value)} 
+                    className="form-input" 
+                    placeholder="選擇開始時間"
+                  />
+                  <span className="date-separator">至</span>
+                  <DateTimePicker
+                    value={filterLoginTo} 
+                    onChange={(value) => setFilterLoginTo(value)} 
+                    className="form-input" 
+                    placeholder="選擇結束時間"
+                  />
+                </div>
+                <div className="quick-date-buttons">
+                  <button onClick={() => quickSetDate("today", "login")} className="btn-quick-date">今日</button>
+                  <button onClick={() => quickSetDate("yesterday", "login")} className="btn-quick-date">昨日</button>
+                  <button onClick={() => quickSetDate("3days", "login")} className="btn-quick-date">近三日</button>
+                  <button onClick={() => quickSetDate("thisMonth", "login")} className="btn-quick-date">本月</button>
+                  <button onClick={() => quickSetDate("lastMonth", "login")} className="btn-quick-date">上月</button>
+                </div>
+              </div>
+            </div>
+
+            {/* 10. 查詢和清除按鈕 */}
+            <div className="filter-actions">
+              <button onClick={handleSearch} className="btn-search">🔍 查詢</button>
+              <button onClick={clearFilter} className="btn-clear">🗑️ 清除</button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 麵包屑導航 - 只在表格視圖顯示 */}
       {viewMode === 'table' && (
         <div style={{
