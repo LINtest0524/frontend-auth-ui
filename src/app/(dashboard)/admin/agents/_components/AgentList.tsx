@@ -195,6 +195,29 @@ export default function AgentList() {
     loadAgents();
   }, [selectedCompany]);
 
+  // 當層級切換時,重新計算第2欄位置
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const table = document.getElementById('agent-table-view');
+      if (!table) return;
+      
+      const firstCol = table.querySelector('th:nth-child(1)') as HTMLElement;
+      if (!firstCol) return;
+      
+      const firstColWidth = firstCol.offsetWidth;
+      const secondHeaders = table.querySelectorAll('th:nth-child(2)');
+      const secondCells = table.querySelectorAll('td:nth-child(2)');
+      
+      [...secondHeaders, ...secondCells].forEach((el: any) => {
+        if (el) {
+          el.style.left = `${firstColWidth}px`;
+        }
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [currentParentId, breadcrumbs, agents]);
+
   // 載入分潤條件選項 (暫時註解，避免影響載入速度)
   // const loadCommissionConditions = async () => {
   //   try {
